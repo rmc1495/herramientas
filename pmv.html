@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Creador de PMV</title>
+    <!-- Cargamos Tailwind CSS desde su CDN oficial para evitar instalaciones -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Cargamos Lucide Icons para los iconos -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Cargamos html2pdf para exportar a PDF de forma directa -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    
+    <style>
+        /* Animaciones suaves para las transiciones entre pasos */
+        .fade-in {
+            animation: fadeIn 0.4s ease-out forwards;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Configuración para impresión */
+        @media print {
+            body { background-color: white !important; }
+            .print-hidden { display: none !important; }
+            .print-block { display: block !important; border: none !important; box-shadow: none !important; }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+
+    <!-- Navbar -->
+    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 print-hidden">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-2">
+                <div class="bg-indigo-600 p-2 rounded-lg text-white">
+                    <i data-lucide="lightbulb" class="w-6 h-6"></i>
+                </div>
+                <h1 class="text-xl font-bold text-slate-900">Creador de PMV</h1>
+            </div>
+            <div class="text-sm font-medium text-slate-500">
+                Paso <span id="currentStepText">1</span> de 5
+            </div>
+        </div>
+        
+        <!-- Progress bar -->
+        <div class="w-full bg-slate-100 h-1">
+            <div id="progressBar" class="bg-indigo-600 h-1 transition-all duration-300 ease-out" style="width: 20%;"></div>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Indicador de pasos visual -->
+        <div class="hidden sm:flex justify-between mb-12 relative print-hidden">
+            <div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 -translate-y-1/2"></div>
+            
+            <!-- Paso 1 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-1" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200">
+                    <i data-lucide="target" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-1" class="text-xs font-medium text-indigo-900">El Problema</span>
+            </div>
+            
+            <!-- Paso 2 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-2" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
+                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-2" class="text-xs font-medium text-slate-400">La Solución</span>
+            </div>
+
+            <!-- Paso 3 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-3" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
+                    <i data-lucide="list-todo" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-3" class="text-xs font-medium text-slate-400">Funcionalidades</span>
+            </div>
+
+            <!-- Paso 4 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-4" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
+                    <i data-lucide="line-chart" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-4" class="text-xs font-medium text-slate-400">Métricas</span>
+            </div>
+
+            <!-- Paso 5 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-5" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
+                    <i data-lucide="layout-template" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-5" class="text-xs font-medium text-slate-400">Canvas PMV</span>
+            </div>
+        </div>
+
+        <!-- Contenedor Principal del Formulario -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 print-block">
+            <div class="p-6 sm:p-10">
+                
+                <!-- PASO 1 -->
+                <div id="step-1" class="step-container space-y-6 fade-in">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Definamos el contexto</h2>
+                        <p class="text-slate-500">Todo gran producto comienza entendiendo un problema real.</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre del Proyecto (opcional)</label>
+                            <input type="text" id="projectName" placeholder="Ej. EcoDelivery" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Qué problema estás resolviendo?</label>
+                            <textarea id="problem" rows="3" placeholder="Ej. Las personas quieren comer saludable pero no tienen tiempo para cocinar o buscar restaurantes sanos cerca." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Quién es tu público objetivo?</label>
+                            <input type="text" id="audience" placeholder="Ej. Profesionales de 25-40 años que trabajan en oficinas" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 2 -->
+                <div id="step-2" class="step-container space-y-6 fade-in hidden">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Tu Solución</h2>
+                        <p class="text-slate-500">¿Cómo mejorarás la vida de tus usuarios?</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Propuesta de Valor Única</label>
+                            <p class="text-xs text-slate-500 mb-2">En una frase, ¿por qué deberían elegirte a ti?</p>
+                            <textarea id="valueProp" rows="3" placeholder="Ej. Entregamos comida casera y saludable en menos de 30 minutos a tu oficina." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Alternativas Actuales</label>
+                            <p class="text-xs text-slate-500 mb-2">¿Cómo resuelven este problema hoy los usuarios?</p>
+                            <textarea id="alternatives" rows="2" placeholder="Ej. Apps tradicionales de delivery (comida rápida), llevar tupper de casa." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 3 -->
+                <div id="step-3" class="step-container space-y-6 fade-in hidden">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Priorización de Funcionalidades</h2>
+                        <p class="text-slate-500">Anota todas tus ideas y luego decide qué es esencial para lanzar el PMV y qué puede esperar (Post-PMV).</p>
+                    </div>
+                    
+                    <form id="featureForm" class="flex gap-2">
+                        <input type="text" id="newFeature" placeholder="Ej. Sistema de pagos con tarjeta..." class="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
+                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm">
+                            <i data-lucide="plus" class="w-5 h-5 mr-1"></i> Añadir
+                        </button>
+                    </form>
+
+                    <div id="featuresList" class="mt-6 space-y-3">
+                        <!-- Las funcionalidades se inyectarán aquí con JavaScript -->
+                        <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
+                            <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
+                            <p>Aún no has añadido funcionalidades.</p>
+                            <p class="text-sm mt-1">Empieza a escribir arriba.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 4 -->
+                <div id="step-4" class="step-container space-y-6 fade-in hidden">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Métricas de Éxito</h2>
+                        <p class="text-slate-500">¿Cómo sabrás si tu PMV ha validado tu idea?</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">KPIs o Métricas Clave</label>
+                            <p class="text-xs text-slate-500 mb-2">Elige 1 o 2 métricas accionables (Ej. Tasa de conversión, Retención, Entrevistas completadas).</p>
+                            <textarea id="metrics" rows="4" placeholder="Ej. Conseguir 50 pedidos pagados en la primera semana. Lograr que el 20% de los usuarios repita un pedido." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 5: CANvAS -->
+                <div id="step-5" class="step-container space-y-6 fade-in hidden">
+                    <div class="flex justify-between items-end print-hidden">
+                        <div>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-2">Canvas de tu PMV</h2>
+                            <p class="text-slate-500">Aquí tienes el resumen estratégico de tu producto mínimo viable.</p>
+                        </div>
+                        <button id="btnExport" onclick="exportPDF()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
+                            <i data-lucide="download" class="w-4 h-4"></i> Descargar PDF
+                        </button>
+                    </div>
+
+                    <!-- El Canvas en sí -->
+                    <div id="canvas-content" class="border-2 border-slate-800 rounded-xl overflow-hidden bg-white">
+                        
+                        <!-- Header Canvas -->
+                        <div class="bg-slate-800 text-white p-4">
+                            <h3 id="canvas-projectName" class="text-xl font-bold uppercase tracking-wide">Proyecto Sin Nombre</h3>
+                            <p class="text-slate-300 text-sm mt-1">Documento de Definición de Producto Mínimo Viable</p>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
+                            <!-- Col 1 -->
+                            <div class="border-b lg:border-b-0 lg:border-r border-slate-200 p-5">
+                                <div class="mb-6">
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i data-lucide="target" class="w-3.5 h-3.5"></i> El Problema
+                                    </h4>
+                                    <p id="canvas-problem" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i data-lucide="target" class="w-3.5 h-3.5"></i> Público Objetivo
+                                    </h4>
+                                    <p id="canvas-audience" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
+                                </div>
+                            </div>
+
+                            <!-- Col 2 -->
+                            <div class="border-b lg:border-b-0 lg:border-r border-slate-200 p-5 bg-slate-50/50">
+                                <div class="mb-6">
+                                    <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Propuesta de Valor
+                                    </h4>
+                                    <p id="canvas-valueProp" class="text-slate-900 font-medium text-sm leading-relaxed text-slate-300 italic font-normal">No especificado</p>
+                                </div>
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                                        Alternativas Actuales
+                                    </h4>
+                                    <p id="canvas-alternatives" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
+                                </div>
+                            </div>
+
+                            <!-- Col 3 -->
+                            <div class="p-5 flex flex-col justify-between">
+                                <div>
+                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
+                                        <i data-lucide="line-chart" class="w-3.5 h-3.5"></i> Métricas de Éxito
+                                    </h4>
+                                    <p id="canvas-metrics" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificadas</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Fila Inferior (Full Width) para Funcionalidades -->
+                        <div class="border-t border-slate-200 grid grid-cols-1 md:grid-cols-2">
+                            <div class="border-b md:border-b-0 md:border-r border-slate-200 p-5 bg-emerald-50/30">
+                                <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Esencial para el PMV (Alcance)
+                                </h4>
+                                <ul id="canvas-mvp-list" class="list-disc list-inside text-sm text-slate-800 space-y-1">
+                                    <li class="text-slate-400 italic list-none">Ninguna funcionalidad definida</li>
+                                </ul>
+                            </div>
+                            
+                            <div class="p-5 bg-slate-50">
+                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
+                                    <i data-lucide="list-todo" class="w-3.5 h-3.5"></i> Post-PMV (Para el futuro)
+                                </h4>
+                                <ul id="canvas-post-mvp-list" class="list-disc list-inside text-sm text-slate-600 space-y-1">
+                                    <li class="text-slate-400 italic list-none">Ninguna funcionalidad en espera</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            
+            <!-- Footer Navigation Print:hidden -->
+            <div class="bg-slate-50 p-6 border-t border-slate-200 flex justify-between items-center print-hidden">
+                <button id="btnPrev" disabled class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-400 cursor-not-allowed opacity-50">
+                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
+                </button>
+                
+                <button id="btnNext" class="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm">
+                    Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                </button>
+
+                <button id="btnRestart" class="hidden flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm">
+                    Volver al inicio
+                </button>
+            </div>
+        </div>
+    </main>
+
+    <!-- Script Principal con la lógica de la App -->
+    <script>
+        // Inicializar iconos de Lucide
+        lucide.createIcons();
+
+        // Estado de la aplicación
+        let currentStep = 1;
+        const totalSteps = 5;
+        let features = [];
+
+        // Referencias al DOM
+        const btnNext = document.getElementById('btnNext');
+        const btnPrev = document.getElementById('btnPrev');
+        const btnRestart = document.getElementById('btnRestart');
+        const progressBar = document.getElementById('progressBar');
+        const currentStepText = document.getElementById('currentStepText');
+        const featureForm = document.getElementById('featureForm');
+
+        // Eventos de Navegación
+        btnNext.addEventListener('click', () => {
+            if (currentStep < totalSteps) {
+                currentStep++;
+                updateUI();
+            }
+        });
+
+        btnPrev.addEventListener('click', () => {
+            if (currentStep > 1) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        btnRestart.addEventListener('click', () => {
+            currentStep = 1;
+            updateUI();
+        });
+
+        // Evento de formulario de Funcionalidades
+        featureForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const input = document.getElementById('newFeature');
+            const text = input.value.trim();
+            if (text !== '') {
+                features.push({ id: Date.now(), text, isMVP: true });
+                input.value = '';
+                renderFeatures();
+            }
+        });
+
+        // Funciones Globales para Funcionalidades
+        window.toggleFeature = (id) => {
+            features = features.map(f => f.id === id ? { ...f, isMVP: !f.isMVP } : f);
+            renderFeatures();
+        };
+
+        window.removeFeature = (id) => {
+            features = features.filter(f => f.id !== id);
+            renderFeatures();
+        };
+
+        // Actualizar la lista de funcionalidades en el paso 3
+        function renderFeatures() {
+            const list = document.getElementById('featuresList');
+            if (features.length === 0) {
+                list.innerHTML = `
+                    <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
+                        <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
+                        <p>Aún no has añadido funcionalidades.</p>
+                        <p class="text-sm mt-1">Empieza a escribir arriba.</p>
+                    </div>`;
+            } else {
+                list.innerHTML = features.map(f => `
+                    <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-300 transition-colors group">
+                        <span class="font-medium text-slate-700 flex-1">${f.text}</span>
+                        <div class="flex items-center gap-3">
+                            <button type="button" onclick="toggleFeature(${f.id})" class="px-3 py-1 text-xs font-bold rounded-full transition-colors ${f.isMVP ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
+                                ${f.isMVP ? 'Esencial (PMV)' : 'Futuro (Post-PMV)'}
+                            </button>
+                            <button type="button" onclick="removeFeature(${f.id})" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Eliminar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            lucide.createIcons(); // Re-renderizar iconos nuevos
+        }
+
+        // Función Principal para actualizar las vistas y botones
+        function updateUI() {
+            // 1. Mostrar/Ocultar Pasos
+            document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
+            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+
+            // 2. Actualizar Textos y Progreso
+            currentStepText.textContent = currentStep;
+            progressBar.style.width = `${(currentStep / totalSteps) * 100}%`;
+
+            // 3. Actualizar Indicadores Visuales (Bolitas de arriba)
+            for (let i = 1; i <= totalSteps; i++) {
+                const indicator = document.getElementById(`indicator-${i}`);
+                const text = document.getElementById(`indicator-text-${i}`);
+                
+                if (i === currentStep) { // Paso Activo
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200';
+                    text.className = 'text-xs font-medium text-indigo-900';
+                } else if (i < currentStep) { // Paso Completado
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-100 border-indigo-600 text-indigo-600';
+                    text.className = 'text-xs font-medium text-indigo-600';
+                } else { // Paso Futuro
+                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400';
+                    text.className = 'text-xs font-medium text-slate-400';
+                }
+            }
+
+            // 4. Lógica de los botones de navegación inferiores
+            if (currentStep === 1) {
+                btnPrev.disabled = true;
+                btnPrev.className = 'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-400 cursor-not-allowed opacity-50';
+            } else {
+                btnPrev.disabled = false;
+                btnPrev.className = 'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-700 hover:bg-slate-200 bg-white border border-slate-300 shadow-sm';
+            }
+
+            if (currentStep === totalSteps) {
+                btnNext.classList.add('hidden');
+                btnRestart.classList.remove('hidden');
+                populateCanvas(); // Llenar el resumen cuando llegamos al paso 5
+            } else {
+                btnNext.classList.remove('hidden');
+                btnRestart.classList.add('hidden');
+            }
+        }
+
+        // Función para pasar la información del form al Canvas final
+        function populateCanvas() {
+            const getValue = (id) => document.getElementById(id).value.trim();
+            
+            const setField = (canvasId, text, placeholder) => {
+                const el = document.getElementById(canvasId);
+                if (text) {
+                    // Convertir saltos de línea a <br>
+                    el.innerHTML = text.replace(/\n/g, '<br>');
+                    el.classList.remove('text-slate-300', 'italic', 'font-normal');
+                } else {
+                    el.textContent = placeholder;
+                    el.classList.add('text-slate-300', 'italic');
+                    if (canvasId === 'canvas-valueProp') el.classList.add('font-normal');
+                }
+            };
+
+            setField('canvas-projectName', getValue('projectName'), 'Proyecto Sin Nombre');
+            setField('canvas-problem', getValue('problem'), 'No especificado');
+            setField('canvas-audience', getValue('audience'), 'No especificado');
+            setField('canvas-valueProp', getValue('valueProp'), 'No especificado');
+            setField('canvas-alternatives', getValue('alternatives'), 'No especificado');
+            setField('canvas-metrics', getValue('metrics'), 'No especificadas');
+
+            // Separar y mostrar funcionalidades en el Canvas
+            const mvpList = document.getElementById('canvas-mvp-list');
+            const postMvpList = document.getElementById('canvas-post-mvp-list');
+            
+            const mvpFeatures = features.filter(f => f.isMVP);
+            const postMvpFeatures = features.filter(f => !f.isMVP);
+
+            if (mvpFeatures.length > 0) {
+                mvpList.innerHTML = mvpFeatures.map(f => `<li>${f.text}</li>`).join('');
+            } else {
+                mvpList.innerHTML = '<li class="text-slate-400 italic list-none">Ninguna funcionalidad definida</li>';
+            }
+
+            if (postMvpFeatures.length > 0) {
+                postMvpList.innerHTML = postMvpFeatures.map(f => `<li>${f.text}</li>`).join('');
+            } else {
+                postMvpList.innerHTML = '<li class="text-slate-400 italic list-none">Ninguna funcionalidad en espera</li>';
+            }
+        }
+
+        // Función para exportar a PDF usando html2pdf
+        function exportPDF() {
+            const element = document.getElementById('canvas-content');
+            const btn = document.getElementById('btnExport');
+            
+            // Mostrar estado de carga en el botón
+            const originalHTML = btn.innerHTML;
+            btn.innerHTML = 'Generando PDF...';
+            btn.disabled = true;
+            btn.classList.add('opacity-75', 'cursor-wait');
+
+            // 1. Crear un contenedor temporal para fijar dimensiones y evitar recortes
+            const wrapper = document.createElement('div');
+            wrapper.style.padding = '30px'; 
+            wrapper.style.backgroundColor = '#ffffff'; 
+            wrapper.style.width = '1100px'; // Ancho fijo amplio para evitar que se corte a la derecha
+            
+            // Envolver el canvas temporalmente
+            element.parentNode.insertBefore(wrapper, element);
+            wrapper.appendChild(element);
+
+            // 2. Calcular dimensiones exactas del nuevo contenedor
+            const elementWidth = wrapper.offsetWidth;
+            const elementHeight = wrapper.offsetHeight;
+            
+            // Convertir píxeles a milímetros (1px ≈ 0.264583mm)
+            const widthMm = elementWidth * 0.264583; 
+            const heightMm = elementHeight * 0.264583;
+
+            // 3. Configuración del PDF (SIN márgenes para evitar el salto de página)
+            const opt = {
+                margin:       0, 
+                filename:     'Mi_Canvas_PMV.pdf',
+                image:        { type: 'jpeg', quality: 1 },
+                html2canvas:  { 
+                    scale: 2, 
+                    useCORS: true, 
+                    windowWidth: elementWidth, // Obliga a capturar todo el ancho
+                    scrollY: 0
+                }, 
+                jsPDF:        { 
+                    unit: 'mm', 
+                    format: [widthMm, heightMm], 
+                    orientation: widthMm > heightMm ? 'landscape' : 'portrait' 
+                }
+            };
+
+            // 4. Generar y descargar el documento
+            html2pdf().set(opt).from(wrapper).save().then(() => {
+                // Restaurar el DOM a su estado original (quitar el wrapper)
+                wrapper.parentNode.insertBefore(element, wrapper);
+                wrapper.parentNode.removeChild(wrapper);
+
+                // Restaurar el botón a la normalidad
+                btn.innerHTML = originalHTML;
+                btn.disabled = false;
+                btn.classList.remove('opacity-75', 'cursor-wait');
+                lucide.createIcons(); // Volver a renderizar el icono
+            });
+        }
+    </script>
+</body>
+</html>

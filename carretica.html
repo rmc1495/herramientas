@@ -1,0 +1,1387 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La CarreTica — Calculadora de Costos</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root {
+    --cream: #F5EDD8;
+    --warm: #EAD9B5;
+    --brown: #5C3D1E;
+    --rust: #C4522A;
+    --green: #3A6B35;
+    --gold: #D4A017;
+    --dark: #1E1208;
+    --light-text: #7A5C3A;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background-color: var(--cream);
+    font-family: 'DM Sans', sans-serif;
+    color: var(--dark);
+    min-height: 100vh;
+  }
+
+  /* Noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    padding: 0 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* HEADER */
+  header {
+    text-align: center;
+    padding: 60px 0 40px;
+    border-bottom: 2px solid var(--brown);
+    margin-bottom: 48px;
+    position: relative;
+  }
+
+  header::after {
+    content: '🛺';
+    font-size: 48px;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.5rem);
+    font-weight: 900;
+    color: var(--brown);
+    line-height: 1;
+    letter-spacing: -1px;
+  }
+
+  h1 span { color: var(--rust); }
+
+  .subtitle {
+    margin-top: 10px;
+    font-size: 0.85rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--light-text);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* TABS */
+  .tabs {
+    display: flex;
+    gap: 0;
+    margin-bottom: 36px;
+    border: 2px solid var(--brown);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 14px 10px;
+    background: transparent;
+    border: none;
+    border-right: 2px solid var(--brown);
+    cursor: pointer;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    color: var(--light-text);
+    transition: all 0.2s;
+  }
+
+  .tab-btn:last-child { border-right: none; }
+
+  .tab-btn.active {
+    background: var(--brown);
+    color: var(--cream);
+  }
+
+  .tab-btn:hover:not(.active) {
+    background: var(--warm);
+  }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* SECTION TITLES */
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.6rem;
+    color: var(--brown);
+    margin-bottom: 24px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--warm);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .section-title .icon { font-size: 1.2rem; }
+
+  /* GRID */
+  .grid-2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+
+  @media (max-width: 600px) { .grid-2 { grid-template-columns: 1fr; } }
+
+  /* INPUT CARD */
+  .input-card {
+    background: white;
+    border: 2px solid var(--warm);
+    border-radius: 6px;
+    padding: 20px;
+    transition: border-color 0.2s;
+  }
+
+  .input-card:hover { border-color: var(--rust); }
+
+  .input-card label {
+    display: block;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--light-text);
+    margin-bottom: 8px;
+  }
+
+  .input-card .input-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .input-card input[type="number"] {
+    flex: 1;
+    border: 1px solid var(--warm);
+    border-radius: 4px;
+    padding: 10px 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 1rem;
+    color: var(--dark);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .input-card input[type="number"]:focus {
+    border-color: var(--rust);
+  }
+
+  .unit {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.75rem;
+    color: var(--light-text);
+    white-space: nowrap;
+  }
+
+  /* RESULT CARDS */
+  .results {
+    background: var(--brown);
+    border-radius: 6px;
+    padding: 28px;
+    margin-top: 28px;
+    color: var(--cream);
+  }
+
+  .results h3 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    margin-bottom: 20px;
+    color: var(--gold);
+    letter-spacing: 0.5px;
+  }
+
+  .result-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+  }
+
+  .result-item {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 4px;
+    padding: 16px;
+  }
+
+  .result-item .r-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.65rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(245,237,216,0.6);
+    margin-bottom: 6px;
+  }
+
+  .result-item .r-value {
+    font-family: 'DM Mono', monospace;
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--gold);
+  }
+
+  .result-item .r-value.highlight {
+    font-size: 1.5rem;
+    color: #FFD45E;
+  }
+
+  .result-item .r-sub {
+    font-size: 0.75rem;
+    color: rgba(245,237,216,0.5);
+    margin-top: 3px;
+  }
+
+  /* CALC BUTTON */
+  .calc-btn {
+    display: block;
+    width: 100%;
+    margin-top: 24px;
+    padding: 16px;
+    background: var(--rust);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background 0.2s, transform 0.1s;
+  }
+
+  .calc-btn:hover { background: #A83E1E; }
+  .calc-btn:active { transform: scale(0.99); }
+
+  /* BREAKDOWN TABLE */
+  .breakdown {
+    margin-top: 20px;
+    background: white;
+    border: 2px solid var(--warm);
+    border-radius: 6px;
+    overflow: hidden;
+  }
+
+  .breakdown table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .breakdown th {
+    background: var(--warm);
+    padding: 12px 16px;
+    text-align: left;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--brown);
+  }
+
+  .breakdown td {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--warm);
+    font-size: 0.9rem;
+  }
+
+  .breakdown tr:last-child td { border-bottom: none; }
+  .breakdown tr:hover td { background: #fdf8f0; }
+
+  .breakdown td:last-child {
+    font-family: 'DM Mono', monospace;
+    font-weight: 500;
+    text-align: right;
+    color: var(--rust);
+  }
+
+  .breakdown .total-row td {
+    background: var(--warm);
+    font-weight: 600;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* EQUILIBRIO VISUAL */
+  .eq-bar-container {
+    margin-top: 24px;
+    background: white;
+    border: 2px solid var(--warm);
+    border-radius: 6px;
+    padding: 20px;
+  }
+
+  .eq-bar-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--light-text);
+    margin-bottom: 10px;
+  }
+
+  .eq-bar-track {
+    background: var(--warm);
+    border-radius: 100px;
+    height: 24px;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .eq-bar-fill {
+    height: 100%;
+    border-radius: 100px;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 10px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    color: white;
+    font-weight: 500;
+    min-width: 40px;
+  }
+
+  .eq-bar-fill.under { background: var(--rust); }
+  .eq-bar-fill.over { background: var(--green); }
+
+  .eq-note {
+    margin-top: 10px;
+    font-size: 0.82rem;
+    color: var(--light-text);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 100px;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 500;
+  }
+
+  .badge.danger { background: #FDECEA; color: var(--rust); }
+  .badge.success { background: #EAF5EA; color: var(--green); }
+
+  /* CASADO */
+  .casado-plate {
+    background: white;
+    border: 2px solid var(--warm);
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .plate-emoji { font-size: 3rem; }
+
+  .plate-info h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--brown);
+  }
+
+  .plate-info p {
+    font-size: 0.82rem;
+    color: var(--light-text);
+    margin-top: 4px;
+  }
+
+  /* CHART */
+  .chart-container {
+    background: white;
+    border: 2px solid var(--warm);
+    border-radius: 6px;
+    padding: 24px;
+    margin-top: 24px;
+  }
+
+  .chart-container h4 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    color: var(--brown);
+    margin-bottom: 6px;
+  }
+
+  .chart-container .chart-desc {
+    font-size: 0.8rem;
+    color: var(--light-text);
+    margin-bottom: 20px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  .chart-legend {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 14px;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.78rem;
+    color: var(--light-text);
+    font-family: 'DM Mono', monospace;
+  }
+
+  .legend-dot {
+    width: 14px;
+    height: 5px;
+    border-radius: 3px;
+  }
+
+  .chart-pe-label {
+    display: flex;
+    gap: 24px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .pe-tag {
+    font-family: 'DM Mono', monospace;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 100px;
+    border: 1px solid;
+  }
+
+  .pe-tag.ingresos { background: #EAF5EA; color: var(--green); border-color: var(--green); }
+  .pe-tag.costos { background: #FDECEA; color: var(--rust); border-color: var(--rust); }
+  .pe-tag.fijos { background: #FFF8E7; color: var(--gold); border-color: var(--gold); }
+  .pe-tag.eq { background: var(--warm); color: var(--brown); border-color: var(--brown); }
+
+  /* Step indicators */
+  .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  .step {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    background: white;
+    border: 1px solid var(--warm);
+    border-radius: 4px;
+    font-size: 0.88rem;
+  }
+
+  .step-num {
+    background: var(--brown);
+    color: var(--cream);
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'DM Mono', monospace;
+    font-size: 0.7rem;
+    flex-shrink: 0;
+  }
+
+  .step strong { font-family: 'DM Mono', monospace; color: var(--rust); }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>La <span>CarreTica</span></h1>
+    <div class="subtitle">Calculadora de Costos · Emprendimiento e Innovación</div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab-btn active" onclick="switchTab('plato')">📦 Plato Básico</button>
+    <button class="tab-btn" onclick="switchTab('equilibrio')">⚖️ Punto de Equilibrio</button>
+    <button class="tab-btn" onclick="switchTab('casado')">🍽️ Casado Completo</button>
+  </div>
+
+  <!-- TAB 1: PLATO BÁSICO -->
+  <div id="tab-plato" class="tab-panel active">
+    <div class="section-title"><span class="icon">🛒</span> Insumos y Porciones</div>
+
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Arroz — cantidad comprada</label>
+        <div class="input-row">
+          <input type="number" id="arroz_kg" value="2" min="0.1" step="0.1">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Costo del arroz</label>
+        <div class="input-row">
+          <input type="number" id="arroz_costo" value="1500" min="1">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Porción de arroz por persona</label>
+        <div class="input-row">
+          <input type="number" id="arroz_porcion" value="100" min="1">
+          <span class="unit">g</span>
+        </div>
+      </div>
+
+      <div class="input-card">
+        <label>Frijoles — cantidad comprada</label>
+        <div class="input-row">
+          <input type="number" id="frijoles_kg" value="1" min="0.1" step="0.1">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Costo de los frijoles</label>
+        <div class="input-row">
+          <input type="number" id="frijoles_costo" value="2000" min="1">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Porción de frijoles por persona</label>
+        <div class="input-row">
+          <input type="number" id="frijoles_porcion" value="50" min="1">
+          <span class="unit">g</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:32px"><span class="icon">🥗</span> Ensalada</div>
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Tomate — cantidad comprada</label>
+        <div class="input-row">
+          <input type="number" id="tomate_kg" value="1" min="0.1" step="0.1">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Costo del tomate</label>
+        <div class="input-row">
+          <input type="number" id="tomate_costo" value="1000" min="1">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Porción de tomate por ensalada</label>
+        <div class="input-row">
+          <input type="number" id="tomate_porcion" value="25" min="1">
+          <span class="unit">g</span>
+        </div>
+      </div>
+
+      <div class="input-card">
+        <label>Repollo — cantidad comprada</label>
+        <div class="input-row">
+          <input type="number" id="repollo_kg" value="1" min="0.1" step="0.1">
+          <span class="unit">kg</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Costo del repollo</label>
+        <div class="input-row">
+          <input type="number" id="repollo_costo" value="800" min="1">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Porción de repollo por ensalada</label>
+        <div class="input-row">
+          <input type="number" id="repollo_porcion" value="50" min="1">
+          <span class="unit">g</span>
+        </div>
+      </div>
+
+      <div class="input-card">
+        <label>Aderezo — cantidad comprada</label>
+        <div class="input-row">
+          <input type="number" id="aderezo_ml" value="500" min="1">
+          <span class="unit">ml</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Costo del aderezo</label>
+        <div class="input-row">
+          <input type="number" id="aderezo_costo" value="2500" min="1">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Porción de aderezo por ensalada</label>
+        <div class="input-row">
+          <input type="number" id="aderezo_porcion" value="5" min="1">
+          <span class="unit">ml</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:32px"><span class="icon">⚙️</span> Otros parámetros</div>
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Costos indirectos por plato (agua, gas, etc.)</label>
+        <div class="input-row">
+          <input type="number" id="indirectos" value="50" min="0">
+          <span class="unit">₡</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Margen de ganancia deseado</label>
+        <div class="input-row">
+          <input type="number" id="margen" value="50" min="0">
+          <span class="unit">%</span>
+        </div>
+      </div>
+      <div class="input-card">
+        <label>Platos por día</label>
+        <div class="input-row">
+          <input type="number" id="platos_dia" value="100" min="1">
+          <span class="unit">platos</span>
+        </div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calcularPlato()">▶ Calcular Estructura de Costos</button>
+
+    <div class="results" id="resultados-plato" style="display:none">
+      <h3>📊 Resultados — Plato Básico</h3>
+      <div class="result-grid" id="rp-grid"></div>
+    </div>
+
+    <div class="breakdown" id="breakdown-plato" style="display:none; margin-top:20px">
+      <table>
+        <thead>
+          <tr>
+            <th>Ingrediente</th>
+            <th>Porciones posibles</th>
+            <th>Costo por porción</th>
+          </tr>
+        </thead>
+        <tbody id="breakdown-body"></tbody>
+      </table>
+    </div>
+
+    <div class="steps" id="steps-plato" style="display:none; margin-top:20px"></div>
+  </div>
+
+  <!-- TAB 2: PUNTO DE EQUILIBRIO -->
+  <div id="tab-equilibrio" class="tab-panel">
+    <div class="section-title"><span class="icon">💰</span> Gastos Fijos Mensuales</div>
+
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Alquiler del local</label>
+        <div class="input-row"><input type="number" id="eq_alquiler" value="300000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Salarios (todos los empleados)</label>
+        <div class="input-row"><input type="number" id="eq_salarios" value="600000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Electricidad</label>
+        <div class="input-row"><input type="number" id="eq_electricidad" value="80000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Agua</label>
+        <div class="input-row"><input type="number" id="eq_agua" value="30000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Internet y teléfono</label>
+        <div class="input-row"><input type="number" id="eq_internet" value="25000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Seguro del negocio</label>
+        <div class="input-row"><input type="number" id="eq_seguro" value="40000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Permisos municipales</label>
+        <div class="input-row"><input type="number" id="eq_permisos" value="20000" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Gastos de marketing</label>
+        <div class="input-row"><input type="number" id="eq_marketing" value="50000" min="0"><span class="unit">₡</span></div>
+      </div>
+    </div>
+
+    <div class="section-title" style="margin-top:32px"><span class="icon">🍽️</span> Datos del Plato</div>
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Costo variable por plato</label>
+        <div class="input-row"><input type="number" id="eq_costo_variable" value="315" min="1"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Precio de venta por plato</label>
+        <div class="input-row"><input type="number" id="eq_precio_venta" value="473" min="1"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Días de operación al mes</label>
+        <div class="input-row"><input type="number" id="eq_dias" value="30" min="1"><span class="unit">días</span></div>
+      </div>
+      <div class="input-card">
+        <label>Platos actuales por día</label>
+        <div class="input-row"><input type="number" id="eq_platos_actuales" value="100" min="1"><span class="unit">platos</span></div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calcularEquilibrio()">▶ Calcular Punto de Equilibrio</button>
+
+    <div class="results" id="resultados-eq" style="display:none">
+      <h3>⚖️ Resultados — Punto de Equilibrio</h3>
+      <div class="result-grid" id="eq-grid"></div>
+    </div>
+
+    <div id="eq-bar-section" style="display:none">
+      <div class="eq-bar-container">
+        <div class="eq-bar-label">Producción actual vs punto de equilibrio</div>
+        <div class="eq-bar-track">
+          <div class="eq-bar-fill" id="eq-bar" style="width:0%"></div>
+        </div>
+        <div class="eq-note" id="eq-note"></div>
+      </div>
+    </div>
+
+    <div id="eq-chart-section" style="display:none">
+      <div class="chart-container">
+        <h4>📈 Gráfico de Punto de Equilibrio</h4>
+        <div class="chart-desc">Ingresos vs. Costos Totales — el cruce es el punto de equilibrio</div>
+        <canvas id="eq-chart" height="320"></canvas>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#3A6B35"></div>Ingresos totales</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#C4522A"></div>Costos totales (fijos + variables)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#D4A017; border: 1px dashed #D4A017; height:2px; background:none; width:18px"></div>Costos fijos</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#5C3D1E"></div>Punto de equilibrio</div>
+        </div>
+        <div class="chart-pe-label" id="eq-chart-tags"></div>
+      </div>
+    </div>
+
+    <div class="steps" id="steps-eq" style="display:none; margin-top:20px"></div>
+  </div>
+
+  <!-- TAB 3: CASADO COMPLETO -->
+  <div id="tab-casado" class="tab-panel">
+    <div class="casado-plate">
+      <div class="plate-emoji">🍽️</div>
+      <div class="plate-info">
+        <h4>Creando el Casado Completo</h4>
+        <p>Agrega proteína, guarnición y refresco al plato básico y recalcula el punto de equilibrio.</p>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="icon">🥩</span> Nuevos Elementos del Casado</div>
+    <div class="grid-2">
+      <div class="input-card">
+        <label>Costo del plato básico (base)</label>
+        <div class="input-row"><input type="number" id="cs_base" value="315" min="1"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Proteína (pollo, res, cerdo…)</label>
+        <div class="input-row"><input type="number" id="cs_proteina" value="1200" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Guarnición (plátanos, verduras…)</label>
+        <div class="input-row"><input type="number" id="cs_guarnicion" value="400" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Refresco natural</label>
+        <div class="input-row"><input type="number" id="cs_refresco" value="300" min="0"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Nuevo precio de venta</label>
+        <div class="input-row"><input type="number" id="cs_precio" value="3750" min="1"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Gastos fijos mensuales totales</label>
+        <div class="input-row"><input type="number" id="cs_fijos" value="1145000" min="1"><span class="unit">₡</span></div>
+      </div>
+      <div class="input-card">
+        <label>Días de operación al mes</label>
+        <div class="input-row"><input type="number" id="cs_dias" value="30" min="1"><span class="unit">días</span></div>
+      </div>
+    </div>
+
+    <button class="calc-btn" onclick="calcularCasado()">▶ Calcular Casado Completo</button>
+
+    <div class="results" id="resultados-casado" style="display:none">
+      <h3>🍽️ Resultados — Casado Completo</h3>
+      <div class="result-grid" id="cs-grid"></div>
+    </div>
+
+    <div id="cs-chart-section" style="display:none">
+      <div class="chart-container">
+        <h4>📈 Gráfico de Punto de Equilibrio — Casado</h4>
+        <div class="chart-desc">Ingresos vs. Costos Totales con el nuevo precio del casado completo</div>
+        <canvas id="cs-chart" height="320"></canvas>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#3A6B35"></div>Ingresos totales</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#C4522A"></div>Costos totales (fijos + variables)</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#D4A017; border: 1px dashed #D4A017; height:2px; background:none; width:18px"></div>Costos fijos</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#5C3D1E"></div>Punto de equilibrio</div>
+        </div>
+        <div class="chart-pe-label" id="cs-chart-tags"></div>
+      </div>
+    </div>
+
+    <div class="steps" id="steps-casado" style="display:none; margin-top:20px"></div>
+  </div>
+
+</div>
+
+<script>
+function n(id){ return parseFloat(document.getElementById(id).value) || 0; }
+function col(v){ return '₡' + v.toLocaleString('es-CR', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+function switchTab(name){
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  event.target.classList.add('active');
+}
+
+function calcularPlato(){
+  // Ingredientes
+  const arroz_kg = n('arroz_kg'), arroz_costo = n('arroz_costo'), arroz_porcion = n('arroz_porcion');
+  const frijoles_kg = n('frijoles_kg'), frijoles_costo = n('frijoles_costo'), frijoles_porcion = n('frijoles_porcion');
+  const tomate_kg = n('tomate_kg'), tomate_costo = n('tomate_costo'), tomate_porcion = n('tomate_porcion');
+  const repollo_kg = n('repollo_kg'), repollo_costo = n('repollo_costo'), repollo_porcion = n('repollo_porcion');
+  const aderezo_ml = n('aderezo_ml'), aderezo_costo = n('aderezo_costo'), aderezo_porcion = n('aderezo_porcion');
+  const indirectos = n('indirectos'), margen = n('margen'), platos_dia = n('platos_dia');
+
+  // a, b, c porciones
+  const porc_arroz = Math.floor((arroz_kg * 1000) / arroz_porcion);
+  const porc_frijoles = Math.floor((frijoles_kg * 1000) / frijoles_porcion);
+  const porc_tomate = Math.floor((tomate_kg * 1000) / tomate_porcion);
+  const porc_repollo = Math.floor((repollo_kg * 1000) / repollo_porcion);
+  const porc_aderezo = Math.floor(aderezo_ml / aderezo_porcion);
+  const porc_ensalada = Math.min(porc_tomate, porc_repollo, porc_aderezo);
+
+  // d, e, f costos por porción
+  const costo_arroz = arroz_costo / porc_arroz;
+  const costo_frijoles = frijoles_costo / porc_frijoles;
+  const costo_tomate = tomate_costo / porc_tomate;
+  const costo_repollo = repollo_costo / porc_repollo;
+  const costo_aderezo = aderezo_costo / porc_aderezo;
+  const costo_ensalada = costo_tomate + costo_repollo + costo_aderezo;
+
+  // g costo total por plato
+  const costo_total = costo_arroz + costo_frijoles + costo_ensalada + indirectos;
+
+  // h precio de venta
+  const precio_venta = costo_total * (1 + margen / 100);
+
+  // i costo total 100 platos
+  const costo_100 = costo_total * platos_dia;
+
+  // Mostrar resultados
+  const grid = document.getElementById('rp-grid');
+  grid.innerHTML = `
+    <div class="result-item"><div class="r-label">a) Porciones de arroz</div><div class="r-value">${porc_arroz} porciones</div><div class="r-sub">de ${arroz_kg} kg</div></div>
+    <div class="result-item"><div class="r-label">b) Porciones de frijoles</div><div class="r-value">${porc_frijoles} porciones</div><div class="r-sub">de ${frijoles_kg} kg</div></div>
+    <div class="result-item"><div class="r-label">c) Porciones de ensalada</div><div class="r-value">${porc_ensalada} porciones</div><div class="r-sub">limitado por: ${porc_tomate < porc_repollo && porc_tomate < porc_aderezo ? 'tomate' : porc_repollo < porc_aderezo ? 'repollo' : 'aderezo'}</div></div>
+    <div class="result-item"><div class="r-label">d) Costo arroz/porción</div><div class="r-value">${col(costo_arroz)}</div></div>
+    <div class="result-item"><div class="r-label">e) Costo frijoles/porción</div><div class="r-value">${col(costo_frijoles)}</div></div>
+    <div class="result-item"><div class="r-label">f) Costo ensalada/porción</div><div class="r-value">${col(costo_ensalada)}</div><div class="r-sub">tomate + repollo + aderezo</div></div>
+    <div class="result-item"><div class="r-label">g) Costo total por plato</div><div class="r-value highlight">${col(costo_total)}</div><div class="r-sub">incluye ${col(indirectos)} indirectos</div></div>
+    <div class="result-item"><div class="r-label">h) Precio de venta (${margen}% ganancia)</div><div class="r-value highlight">${col(precio_venta)}</div></div>
+    <div class="result-item"><div class="r-label">i) Costo total — ${platos_dia} platos/día</div><div class="r-value highlight">${col(costo_100)}</div></div>
+  `;
+
+  document.getElementById('resultados-plato').style.display = 'block';
+
+  // Breakdown table
+  const tbody = document.getElementById('breakdown-body');
+  tbody.innerHTML = `
+    <tr><td>🌾 Arroz</td><td>${porc_arroz} porciones</td><td>${col(costo_arroz)}</td></tr>
+    <tr><td>🫘 Frijoles</td><td>${porc_frijoles} porciones</td><td>${col(costo_frijoles)}</td></tr>
+    <tr><td>🍅 Tomate (ensalada)</td><td>${porc_tomate} porciones</td><td>${col(costo_tomate)}</td></tr>
+    <tr><td>🥬 Repollo (ensalada)</td><td>${porc_repollo} porciones</td><td>${col(costo_repollo)}</td></tr>
+    <tr><td>🫙 Aderezo (ensalada)</td><td>${porc_aderezo} porciones</td><td>${col(costo_aderezo)}</td></tr>
+    <tr><td colspan="2">🥗 Ensalada (total)</td><td>${col(costo_ensalada)}</td></tr>
+    <tr><td colspan="2">⚡ Costos indirectos</td><td>${col(indirectos)}</td></tr>
+    <tr class="total-row"><td colspan="2">TOTAL POR PLATO</td><td>${col(costo_total)}</td></tr>
+  `;
+  document.getElementById('breakdown-plato').style.display = 'block';
+
+  // Steps
+  const steps = document.getElementById('steps-plato');
+  steps.style.display = 'flex';
+  steps.innerHTML = `
+    <div class="step"><div class="step-num">a</div><div>Con <strong>${arroz_kg} kg</strong> de arroz y <strong>${arroz_porcion}g</strong> por porción: ${arroz_kg*1000}g ÷ ${arroz_porcion}g = <strong>${porc_arroz} porciones</strong></div></div>
+    <div class="step"><div class="step-num">b</div><div>Con <strong>${frijoles_kg} kg</strong> de frijoles y <strong>${frijoles_porcion}g</strong> por porción: ${frijoles_kg*1000}g ÷ ${frijoles_porcion}g = <strong>${porc_frijoles} porciones</strong></div></div>
+    <div class="step"><div class="step-num">c</div><div>Ensalada limitada por el ingrediente con menos porciones: tomate (${porc_tomate}), repollo (${porc_repollo}), aderezo (${porc_aderezo}) → <strong>${porc_ensalada} porciones</strong></div></div>
+    <div class="step"><div class="step-num">d</div><div>Costo arroz: <strong>₡${arroz_costo}</strong> ÷ ${porc_arroz} porciones = <strong>${col(costo_arroz)}</strong></div></div>
+    <div class="step"><div class="step-num">e</div><div>Costo frijoles: <strong>₡${frijoles_costo}</strong> ÷ ${porc_frijoles} porciones = <strong>${col(costo_frijoles)}</strong></div></div>
+    <div class="step"><div class="step-num">f</div><div>Costo ensalada: ${col(costo_tomate)} + ${col(costo_repollo)} + ${col(costo_aderezo)} = <strong>${col(costo_ensalada)}</strong></div></div>
+    <div class="step"><div class="step-num">g</div><div>Costo total: ${col(costo_arroz)} + ${col(costo_frijoles)} + ${col(costo_ensalada)} + ${col(indirectos)} = <strong>${col(costo_total)}</strong></div></div>
+    <div class="step"><div class="step-num">h</div><div>Precio de venta: ${col(costo_total)} × (1 + ${margen}/100) = <strong>${col(precio_venta)}</strong></div></div>
+    <div class="step"><div class="step-num">i</div><div>Costo para ${platos_dia} platos: ${col(costo_total)} × ${platos_dia} = <strong>${col(costo_100)}</strong></div></div>
+  `;
+}
+
+function calcularEquilibrio(){
+  const fijos = ['eq_alquiler','eq_salarios','eq_electricidad','eq_agua','eq_internet','eq_seguro','eq_permisos','eq_marketing'].reduce((s,id) => s+n(id), 0);
+  const cv = n('eq_costo_variable'), pv = n('eq_precio_venta'), dias = n('eq_dias'), actuales = n('eq_platos_actuales');
+
+  const margen_contrib = pv - cv;
+  const pe_unidades = fijos / margen_contrib;
+  const pe_colones = pe_unidades * pv;
+  const pe_diario = pe_unidades / dias;
+  const prod_actual_mes = actuales * dias;
+  const pct = Math.min((prod_actual_mes / pe_unidades) * 100, 150);
+  const superavit = prod_actual_mes > pe_unidades;
+
+  const grid = document.getElementById('eq-grid');
+  grid.innerHTML = `
+    <div class="result-item"><div class="r-label">Gastos fijos totales</div><div class="r-value">${col(fijos)}</div><div class="r-sub">por mes</div></div>
+    <div class="result-item"><div class="r-label">Margen de contribución</div><div class="r-value">${col(margen_contrib)}</div><div class="r-sub">por plato (${((margen_contrib/pv)*100).toFixed(1)}% del precio)</div></div>
+    <div class="result-item"><div class="r-label">Punto equilibrio (unidades)</div><div class="r-value highlight">${Math.ceil(pe_unidades)} platos/mes</div></div>
+    <div class="result-item"><div class="r-label">Punto equilibrio (colones)</div><div class="r-value highlight">${col(pe_colones)}</div><div class="r-sub">ingresos mínimos/mes</div></div>
+    <div class="result-item"><div class="r-label">Platos diarios necesarios</div><div class="r-value highlight">${Math.ceil(pe_diario)} platos/día</div><div class="r-sub">en ${dias} días</div></div>
+    <div class="result-item"><div class="r-label">Producción actual mensual</div><div class="r-value">${prod_actual_mes} platos</div><div class="r-sub">${actuales} × ${dias} días <span class="badge ${superavit ? 'success' : 'danger'}">${superavit ? 'SOBRE EQUILIBRIO' : 'BAJO EQUILIBRIO'}</span></div></div>
+  `;
+  document.getElementById('resultados-eq').style.display = 'block';
+
+  // Bar
+  document.getElementById('eq-bar-section').style.display = 'block';
+  const bar = document.getElementById('eq-bar');
+  setTimeout(() => { bar.style.width = Math.min(pct, 100) + '%'; }, 50);
+  bar.className = 'eq-bar-fill ' + (superavit ? 'over' : 'under');
+  bar.textContent = pct.toFixed(0) + '%';
+
+  const diff = Math.abs(prod_actual_mes - Math.ceil(pe_unidades));
+  document.getElementById('eq-note').innerHTML = superavit
+    ? `✅ La soda supera el punto de equilibrio por <strong>${diff} platos al mes</strong>. Cada plato adicional genera <strong>${col(margen_contrib)}</strong> de ganancia neta.`
+    : `⚠️ La soda necesita vender <strong>${diff} platos más al mes</strong> para alcanzar el equilibrio. Actualmente opera al <strong>${pct.toFixed(1)}%</strong> del objetivo.`;
+
+  const steps = document.getElementById('steps-eq');
+  steps.style.display = 'flex';
+  steps.innerHTML = `
+    <div class="step"><div class="step-num">1</div><div>Margen de contribución: ${col(pv)} - ${col(cv)} = <strong>${col(margen_contrib)}</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div>PE en unidades: ${col(fijos)} ÷ ${col(margen_contrib)} = <strong>${pe_unidades.toFixed(2)} platos/mes</strong></div></div>
+    <div class="step"><div class="step-num">3</div><div>PE en colones: ${pe_unidades.toFixed(2)} × ${col(pv)} = <strong>${col(pe_colones)}</strong></div></div>
+    <div class="step"><div class="step-num">4</div><div>Platos diarios: ${pe_unidades.toFixed(2)} ÷ ${dias} días = <strong>${pe_diario.toFixed(2)} ≈ ${Math.ceil(pe_diario)} platos/día</strong></div></div>
+  `;
+
+  // CHART
+  document.getElementById('eq-chart-section').style.display = 'block';
+  const maxX = Math.ceil(pe_unidades * 2 / 100) * 100;
+  const labels = [], ingresos = [], costos = [], costFijos = [];
+  const step = Math.max(1, Math.round(maxX / 20));
+  for (let u = 0; u <= maxX; u += step) {
+    labels.push(u);
+    ingresos.push(u * pv);
+    costos.push(fijos + u * cv);
+    costFijos.push(fijos);
+  }
+
+  const ctx = document.getElementById('eq-chart');
+  if (window._eqChart) window._eqChart.destroy();
+  window._eqChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Ingresos totales',
+          data: ingresos,
+          borderColor: '#3A6B35',
+          backgroundColor: 'rgba(58,107,53,0.08)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        },
+        {
+          label: 'Costos totales',
+          data: costos,
+          borderColor: '#C4522A',
+          backgroundColor: 'rgba(196,82,42,0.07)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        },
+        {
+          label: 'Costos fijos',
+          data: costFijos,
+          borderColor: '#D4A017',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1E1208',
+          titleColor: '#EAD9B5',
+          bodyColor: '#F5EDD8',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont: { family: 'DM Mono', size: 11 },
+          callbacks: {
+            title: (items) => `${items[0].label} platos`,
+            label: (item) => ` ${item.dataset.label}: ₡${Math.round(item.raw).toLocaleString('es-CR')}`
+          }
+        },
+        annotation: {}
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Unidades vendidas (platos/mes)', font: { family: 'DM Mono', size: 11 }, color: '#7A5C3A' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'DM Mono', size: 10 }, color: '#7A5C3A' }
+        },
+        y: {
+          title: { display: true, text: 'Colones (₡)', font: { family: 'DM Mono', size: 11 }, color: '#7A5C3A' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { family: 'DM Mono', size: 10 }, color: '#7A5C3A',
+            callback: v => '₡' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v)
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'peMarker',
+      afterDraw(chart) {
+        const { ctx: c, scales: { x, y } } = chart;
+        const xPos = x.getPixelForValue(pe_unidades);
+        const yPos = y.getPixelForValue(pe_unidades * pv);
+        const top = chart.chartArea.top;
+        const bottom = chart.chartArea.bottom;
+
+        // Vertical dashed line
+        c.save();
+        c.setLineDash([5, 4]);
+        c.strokeStyle = '#5C3D1E';
+        c.lineWidth = 1.5;
+        c.beginPath();
+        c.moveTo(xPos, top);
+        c.lineTo(xPos, bottom);
+        c.stroke();
+
+        // Horizontal dashed line
+        c.beginPath();
+        c.moveTo(chart.chartArea.left, yPos);
+        c.lineTo(xPos, yPos);
+        c.stroke();
+        c.setLineDash([]);
+
+        // Dot at intersection
+        c.beginPath();
+        c.arc(xPos, yPos, 7, 0, Math.PI * 2);
+        c.fillStyle = '#5C3D1E';
+        c.fill();
+        c.strokeStyle = '#F5EDD8';
+        c.lineWidth = 2.5;
+        c.stroke();
+
+        // Label box
+        const labelX = xPos + 10;
+        const labelY = yPos - 14;
+        const text1 = `PE: ${Math.ceil(pe_unidades)} platos`;
+        const text2 = col(Math.round(pe_colones));
+        c.font = '600 11px DM Mono, monospace';
+        const w = Math.max(c.measureText(text1).width, c.measureText(text2).width) + 16;
+        const h = 40;
+        const bx = labelX + w > chart.chartArea.right ? xPos - w - 10 : labelX;
+
+        c.fillStyle = '#5C3D1E';
+        c.beginPath();
+        c.roundRect(bx, labelY - 6, w, h, 4);
+        c.fill();
+
+        c.fillStyle = '#F5EDD8';
+        c.font = '500 10px DM Mono, monospace';
+        c.fillText(text1, bx + 8, labelY + 8);
+        c.fillStyle = '#D4A017';
+        c.font = '600 11px DM Mono, monospace';
+        c.fillText(text2, bx + 8, labelY + 24);
+
+        // Shade zones
+        const peX = xPos;
+        // Loss zone (left of PE)
+        c.fillStyle = 'rgba(196,82,42,0.06)';
+        c.fillRect(chart.chartArea.left, top, peX - chart.chartArea.left, bottom - top);
+        // Profit zone (right of PE)
+        c.fillStyle = 'rgba(58,107,53,0.06)';
+        c.fillRect(peX, top, chart.chartArea.right - peX, bottom - top);
+
+        // Zone labels
+        c.font = '500 10px DM Mono, monospace';
+        c.fillStyle = 'rgba(196,82,42,0.7)';
+        c.fillText('PÉRDIDA', chart.chartArea.left + 8, top + 16);
+        c.fillStyle = 'rgba(58,107,53,0.7)';
+        c.fillText('GANANCIA', peX + 8, top + 16);
+
+        // Current production marker
+        const curX = x.getPixelForValue(prod_actual_mes);
+        if (curX >= chart.chartArea.left && curX <= chart.chartArea.right) {
+          c.setLineDash([3, 3]);
+          c.strokeStyle = superavit ? '#3A6B35' : '#C4522A';
+          c.lineWidth = 1.5;
+          c.beginPath();
+          c.moveTo(curX, top);
+          c.lineTo(curX, bottom);
+          c.stroke();
+          c.setLineDash([]);
+
+          c.fillStyle = superavit ? '#3A6B35' : '#C4522A';
+          c.font = '500 9px DM Mono, monospace';
+          c.fillText('↑ actual', curX + 4, bottom - 6);
+        }
+
+        c.restore();
+      }
+    }]
+  });
+
+  // Tags
+  document.getElementById('eq-chart-tags').innerHTML = `
+    <span class="pe-tag eq">PE: ${Math.ceil(pe_unidades)} platos/mes</span>
+    <span class="pe-tag ingresos">Ingresos en PE: ${col(Math.round(pe_colones))}</span>
+    <span class="pe-tag costos">Costo variable/plato: ${col(cv)}</span>
+    <span class="pe-tag fijos">Gastos fijos: ${col(fijos)}/mes</span>
+  `;
+}
+
+function calcularCasado(){
+  const base = n('cs_base'), proteina = n('cs_proteina'), guarnicion = n('cs_guarnicion'), refresco = n('cs_refresco');
+  const precio = n('cs_precio'), fijos = n('cs_fijos'), dias = n('cs_dias');
+
+  const nuevos = proteina + guarnicion + refresco;
+  const costo_total = base + nuevos;
+  const margen_c = precio - costo_total;
+  const pe_u = fijos / margen_c;
+  const pe_col = pe_u * precio;
+  const pe_diario = pe_u / dias;
+  const pct_margen = ((margen_c / precio) * 100).toFixed(1);
+
+  const grid = document.getElementById('cs-grid');
+  grid.innerHTML = `
+    <div class="result-item"><div class="r-label">Costo plato básico</div><div class="r-value">${col(base)}</div></div>
+    <div class="result-item"><div class="r-label">Costo nuevos elementos</div><div class="r-value">${col(nuevos)}</div><div class="r-sub">proteína + guarnición + refresco</div></div>
+    <div class="result-item"><div class="r-label">Nuevo costo variable total</div><div class="r-value highlight">${col(costo_total)}</div></div>
+    <div class="result-item"><div class="r-label">Precio de venta</div><div class="r-value">${col(precio)}</div></div>
+    <div class="result-item"><div class="r-label">Margen de contribución</div><div class="r-value">${col(margen_c)}</div><div class="r-sub">${pct_margen}% del precio</div></div>
+    <div class="result-item"><div class="r-label">PE en unidades</div><div class="r-value highlight">${Math.ceil(pe_u)} platos/mes</div></div>
+    <div class="result-item"><div class="r-label">PE en colones</div><div class="r-value highlight">${col(pe_col)}</div></div>
+    <div class="result-item"><div class="r-label">PE diario</div><div class="r-value highlight">${Math.ceil(pe_diario)} platos/día</div><div class="r-sub">en ${dias} días</div></div>
+  `;
+  document.getElementById('resultados-casado').style.display = 'block';
+
+  const steps = document.getElementById('steps-casado');
+  steps.style.display = 'flex';
+  steps.innerHTML = `
+    <div class="step"><div class="step-num">1</div><div>Costo nuevos elementos: ${col(proteina)} + ${col(guarnicion)} + ${col(refresco)} = <strong>${col(nuevos)}</strong></div></div>
+    <div class="step"><div class="step-num">2</div><div>Nuevo costo variable total: ${col(base)} + ${col(nuevos)} = <strong>${col(costo_total)}</strong></div></div>
+    <div class="step"><div class="step-num">3</div><div>Margen de contribución: ${col(precio)} - ${col(costo_total)} = <strong>${col(margen_c)}</strong></div></div>
+    <div class="step"><div class="step-num">4</div><div>PE en unidades: ${col(fijos)} ÷ ${col(margen_c)} = <strong>${pe_u.toFixed(2)} ≈ ${Math.ceil(pe_u)} platos</strong></div></div>
+    <div class="step"><div class="step-num">5</div><div>PE en colones: ${pe_u.toFixed(2)} × ${col(precio)} = <strong>${col(pe_col)}</strong></div></div>
+    <div class="step"><div class="step-num">6</div><div>Platos diarios: ${pe_u.toFixed(2)} ÷ ${dias} = <strong>${pe_diario.toFixed(2)} ≈ ${Math.ceil(pe_diario)} platos/día</strong></div></div>
+  `;
+
+  // CHART — Casado
+  document.getElementById('cs-chart-section').style.display = 'block';
+  const maxX = Math.ceil(pe_u * 2 / 100) * 100;
+  const csLabels = [], csIngresos = [], csCostos = [], csFijos = [];
+  const stepX = Math.max(1, Math.round(maxX / 20));
+  for (let u = 0; u <= maxX; u += stepX) {
+    csLabels.push(u);
+    csIngresos.push(u * precio);
+    csCostos.push(fijos + u * costo_total);
+    csFijos.push(fijos);
+  }
+
+  const csCtx = document.getElementById('cs-chart');
+  if (window._csChart) window._csChart.destroy();
+  window._csChart = new Chart(csCtx, {
+    type: 'line',
+    data: {
+      labels: csLabels,
+      datasets: [
+        {
+          label: 'Ingresos totales',
+          data: csIngresos,
+          borderColor: '#3A6B35',
+          backgroundColor: 'rgba(58,107,53,0.08)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        },
+        {
+          label: 'Costos totales',
+          data: csCostos,
+          borderColor: '#C4522A',
+          backgroundColor: 'rgba(196,82,42,0.07)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        },
+        {
+          label: 'Costos fijos',
+          data: csFijos,
+          borderColor: '#D4A017',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          fill: false,
+          tension: 0
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#1E1208',
+          titleColor: '#EAD9B5',
+          bodyColor: '#F5EDD8',
+          titleFont: { family: 'DM Mono', size: 11 },
+          bodyFont: { family: 'DM Mono', size: 11 },
+          callbacks: {
+            title: (items) => `${items[0].label} platos`,
+            label: (item) => ` ${item.dataset.label}: ₡${Math.round(item.raw).toLocaleString('es-CR')}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Unidades vendidas (platos/mes)', font: { family: 'DM Mono', size: 11 }, color: '#7A5C3A' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: { font: { family: 'DM Mono', size: 10 }, color: '#7A5C3A' }
+        },
+        y: {
+          title: { display: true, text: 'Colones (₡)', font: { family: 'DM Mono', size: 11 }, color: '#7A5C3A' },
+          grid: { color: 'rgba(0,0,0,0.05)' },
+          ticks: {
+            font: { family: 'DM Mono', size: 10 }, color: '#7A5C3A',
+            callback: v => '₡' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v)
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'csPeMarker',
+      afterDraw(chart) {
+        const { ctx: c, scales: { x, y } } = chart;
+        const xPos = x.getPixelForValue(pe_u);
+        const yPos = y.getPixelForValue(pe_u * precio);
+        const top = chart.chartArea.top;
+        const bottom = chart.chartArea.bottom;
+
+        // Vertical dashed line
+        c.save();
+        c.setLineDash([5, 4]);
+        c.strokeStyle = '#5C3D1E';
+        c.lineWidth = 1.5;
+        c.beginPath();
+        c.moveTo(xPos, top);
+        c.lineTo(xPos, bottom);
+        c.stroke();
+
+        // Horizontal dashed line
+        c.beginPath();
+        c.moveTo(chart.chartArea.left, yPos);
+        c.lineTo(xPos, yPos);
+        c.stroke();
+        c.setLineDash([]);
+
+        // Dot at intersection
+        c.beginPath();
+        c.arc(xPos, yPos, 7, 0, Math.PI * 2);
+        c.fillStyle = '#5C3D1E';
+        c.fill();
+        c.strokeStyle = '#F5EDD8';
+        c.lineWidth = 2.5;
+        c.stroke();
+
+        // Label box
+        const text1 = `PE: ${Math.ceil(pe_u)} platos`;
+        const text2 = col(Math.round(pe_col));
+        c.font = '600 11px DM Mono, monospace';
+        const w = Math.max(c.measureText(text1).width, c.measureText(text2).width) + 16;
+        const h = 40;
+        const labelX = xPos + 10;
+        const labelY = yPos - 14;
+        const bx = labelX + w > chart.chartArea.right ? xPos - w - 10 : labelX;
+
+        c.fillStyle = '#5C3D1E';
+        c.beginPath();
+        c.roundRect(bx, labelY - 6, w, h, 4);
+        c.fill();
+
+        c.fillStyle = '#F5EDD8';
+        c.font = '500 10px DM Mono, monospace';
+        c.fillText(text1, bx + 8, labelY + 8);
+        c.fillStyle = '#D4A017';
+        c.font = '600 11px DM Mono, monospace';
+        c.fillText(text2, bx + 8, labelY + 24);
+
+        // Shade zones
+        c.fillStyle = 'rgba(196,82,42,0.06)';
+        c.fillRect(chart.chartArea.left, top, xPos - chart.chartArea.left, bottom - top);
+        c.fillStyle = 'rgba(58,107,53,0.06)';
+        c.fillRect(xPos, top, chart.chartArea.right - xPos, bottom - top);
+
+        // Zone labels
+        c.font = '500 10px DM Mono, monospace';
+        c.fillStyle = 'rgba(196,82,42,0.7)';
+        c.fillText('PÉRDIDA', chart.chartArea.left + 8, top + 16);
+        c.fillStyle = 'rgba(58,107,53,0.7)';
+        c.fillText('GANANCIA', xPos + 8, top + 16);
+
+        c.restore();
+      }
+    }]
+  });
+
+  // Tags
+  document.getElementById('cs-chart-tags').innerHTML = `
+    <span class="pe-tag eq">PE: ${Math.ceil(pe_u)} platos/mes</span>
+    <span class="pe-tag ingresos">Ingresos en PE: ${col(Math.round(pe_col))}</span>
+    <span class="pe-tag costos">Costo variable/plato: ${col(costo_total)}</span>
+    <span class="pe-tag fijos">Gastos fijos: ${col(fijos)}/mes</span>
+  `;
+}
+
+// Auto-calculate on load
+window.onload = () => { calcularPlato(); };
+</script>
+</body>
+</html>

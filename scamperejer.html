@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lienzo SCAMPER Interactivo</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Caveat:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --bg: #0f0e17;
+            --surface: #1a1928;
+            --surface2: #222136;
+            --border: #2e2c4a;
+            --text: #fffffe;
+            --text-muted: #a7a5c4;
+            --accent: #f4a261;
+            --accent2: #e76f51;
+
+            --s-color: #ff6b6b;
+            --c-color: #ffa94d;
+            --a-color: #ffe066;
+            --m-color: #69db7c;
+            --p-color: #4dabf7;
+            --e-color: #a78bfa;
+            --r-color: #f06595;
+
+            --note-yellow: #fff176;
+            --note-pink: #f8bbd0;
+            --note-green: #c8e6c9;
+            --note-blue: #bbdefb;
+            --note-purple: #e1bee7;
+            --note-orange: #ffe0b2;
+            --note-teal: #b2dfdb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            padding: 2rem 1rem 4rem;
+            background-image:
+                radial-gradient(ellipse 80% 50% at 20% -10%, rgba(244,162,97,0.08) 0%, transparent 60%),
+                radial-gradient(ellipse 60% 40% at 80% 110%, rgba(167,139,250,0.07) 0%, transparent 60%);
+        }
+
+        /* ── HEADER ── */
+        header {
+            text-align: center;
+            margin-bottom: 2.5rem;
+        }
+
+        .badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.7rem;
+            font-weight: 600;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            padding: 0.3rem 0.9rem;
+            border-radius: 100px;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-family: 'Syne', sans-serif;
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 800;
+            line-height: 1;
+            background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+        }
+
+        header p {
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+
+        /* ── CARD ── */
+        .card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-family: 'Syne', sans-serif;
+            font-size: 0.8rem;
+            font-weight: 700;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .card-title::before {
+            content: '';
+            display: block;
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        /* ── SELECT ── */
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            margin-bottom: 0.5rem;
+        }
+
+        select, input[type="text"] {
+            width: 100%;
+            background: var(--surface2);
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            -webkit-appearance: none;
+        }
+
+        select:focus, input[type="text"]:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(244,162,97,0.12);
+        }
+
+        select option { background: var(--surface2); }
+
+        #active-problem {
+            display: none;
+            margin-top: 0.75rem;
+            padding: 0.9rem 1rem;
+            background: linear-gradient(135deg, rgba(244,162,97,0.12), rgba(231,111,81,0.08));
+            border: 1px solid rgba(244,162,97,0.3);
+            border-radius: 10px;
+            font-size: 0.95rem;
+            color: var(--text);
+            line-height: 1.5;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── INPUT ROW ── */
+        .input-row {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.25rem;
+        }
+
+        @media (max-width: 600px) { .input-row { flex-direction: column; } }
+
+        .input-row input { flex: 1; }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #fff;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border: none;
+            border-radius: 10px;
+            padding: 0.8rem 1.5rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: opacity 0.2s, transform 0.15s;
+        }
+
+        .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+        .btn-primary:active { transform: translateY(0); }
+
+        /* ── SOURCE ZONE ── */
+        #source-zone {
+            min-height: 140px;
+            border: 2px dashed var(--border);
+            border-radius: 12px;
+            padding: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        #source-zone.drag-over { border-color: var(--accent); background: rgba(244,162,97,0.04); }
+
+        .source-inner {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            justify-content: center;
+            min-height: 100px;
+        }
+
+        .empty-msg {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            text-align: center;
+            padding: 1rem;
+            pointer-events: none;
+        }
+
+        /* ── POST-IT ── */
+        .post-it {
+            font-family: 'Caveat', cursive;
+            font-size: 1.1rem;
+            line-height: 1.25;
+            width: 9rem; height: 9rem;
+            padding: 1rem;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            cursor: grab;
+            position: relative;
+            user-select: none;
+            touch-action: none;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.35), 0 1px 3px rgba(0,0,0,0.2);
+            transition: transform 0.2s cubic-bezier(.34,1.56,.64,1), box-shadow 0.2s;
+            word-break: break-word;
+            color: #1a1a1a;
+        }
+
+        /* tape strip on top */
+        .post-it::before {
+            content: '';
+            position: absolute;
+            top: -8px; left: 50%; transform: translateX(-50%);
+            width: 40px; height: 16px;
+            background: rgba(255,255,255,0.45);
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .post-it:hover {
+            transform: rotate(0deg) scale(1.08) !important;
+            box-shadow: 6px 8px 20px rgba(0,0,0,0.4);
+            z-index: 20;
+        }
+
+        .post-it:active { cursor: grabbing; }
+
+        .delete-btn {
+            position: absolute;
+            top: 4px; right: 4px;
+            background: rgba(0,0,0,0.25);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 20px; height: 20px;
+            font-size: 14px;
+            line-height: 1;
+            cursor: pointer;
+            display: flex; align-items: center; justify-content: center;
+            opacity: 0;
+            transition: opacity 0.15s;
+        }
+
+        .post-it:hover .delete-btn { opacity: 1; }
+
+        /* zone post-it variant */
+        .post-it.in-zone {
+            width: 100%; height: auto;
+            min-height: 54px;
+            transform: rotate(0deg) !important;
+            border-radius: 4px;
+        }
+
+        /* ── SCAMPER GRID ── */
+        .scamper-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+
+        @media (max-width: 1200px) { .scamper-grid { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 700px) { .scamper-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        .scamper-col {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1.5px solid transparent;
+            display: flex;
+            flex-direction: column;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .scamper-col.drag-over {
+            box-shadow: 0 0 0 3px rgba(255,255,255,0.15);
+        }
+
+        .col-header {
+            padding: 0.6rem 0.5rem;
+            text-align: center;
+        }
+
+        .col-letter {
+            font-family: 'Syne', sans-serif;
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .col-name {
+            font-size: 0.65rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+            opacity: 0.9;
+            margin-top: 2px;
+        }
+
+        .col-hint {
+            font-size: 0.65rem;
+            padding: 0.4rem 0.5rem;
+            text-align: center;
+            line-height: 1.3;
+            font-style: italic;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .zone-content {
+            flex: 1;
+            padding: 0.6rem;
+            min-height: 130px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            overflow-y: auto;
+        }
+
+        .zone-content::-webkit-scrollbar { width: 3px; }
+        .zone-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 3px; }
+
+        .drop-placeholder {
+            border: 1.5px dashed rgba(255,255,255,0.15);
+            border-radius: 6px;
+            min-height: 50px;
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            color: rgba(255,255,255,0.2);
+            pointer-events: none;
+        }
+
+        /* Scamper color themes */
+        .col-s { --col: var(--s-color); background: rgba(255,107,107,0.08); border-color: rgba(255,107,107,0.25); }
+        .col-s .col-header { background: rgba(255,107,107,0.85); color: #fff; }
+        .col-s .col-hint { background: rgba(255,107,107,0.12); color: #ffb3b3; }
+
+        .col-c { --col: var(--c-color); background: rgba(255,169,77,0.08); border-color: rgba(255,169,77,0.25); }
+        .col-c .col-header { background: rgba(255,169,77,0.85); color: #fff; }
+        .col-c .col-hint { background: rgba(255,169,77,0.12); color: #ffd599; }
+
+        .col-a { --col: var(--a-color); background: rgba(255,224,102,0.08); border-color: rgba(255,224,102,0.25); }
+        .col-a .col-header { background: rgba(200,170,30,0.9); color: #fff; }
+        .col-a .col-hint { background: rgba(255,224,102,0.12); color: #ffe680; }
+
+        .col-m { --col: var(--m-color); background: rgba(105,219,124,0.08); border-color: rgba(105,219,124,0.25); }
+        .col-m .col-header { background: rgba(62,166,82,0.9); color: #fff; }
+        .col-m .col-hint { background: rgba(105,219,124,0.12); color: #a3f0b1; }
+
+        .col-p { --col: var(--p-color); background: rgba(77,171,247,0.08); border-color: rgba(77,171,247,0.25); }
+        .col-p .col-header { background: rgba(30,130,210,0.9); color: #fff; }
+        .col-p .col-hint { background: rgba(77,171,247,0.12); color: #99d4ff; }
+
+        .col-e { --col: var(--e-color); background: rgba(167,139,250,0.08); border-color: rgba(167,139,250,0.25); }
+        .col-e .col-header { background: rgba(120,87,220,0.9); color: #fff; }
+        .col-e .col-hint { background: rgba(167,139,250,0.12); color: #c9b8ff; }
+
+        .col-r { --col: var(--r-color); background: rgba(240,101,149,0.08); border-color: rgba(240,101,149,0.25); }
+        .col-r .col-header { background: rgba(200,60,110,0.9); color: #fff; }
+        .col-r .col-hint { background: rgba(240,101,149,0.12); color: #ffb3cc; }
+
+        /* ── COUNTER CHIP ── */
+        .count-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255,255,255,0.15);
+            border-radius: 100px;
+            min-width: 18px;
+            height: 18px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            padding: 0 4px;
+            margin-left: 4px;
+            vertical-align: middle;
+        }
+
+        /* ── BOTTOM ACTIONS ── */
+        .actions {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .btn-export {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: linear-gradient(135deg, #e63946, #c1121f);
+            color: #fff;
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: none;
+            border-radius: 100px;
+            padding: 0.75rem 2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(230,57,70,0.35);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .btn-export:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(230,57,70,0.45); }
+
+        .btn-reset {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: var(--surface2);
+            color: var(--text-muted);
+            font-family: 'Syne', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 700;
+            letter-spacing: 0.05em;
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 0.75rem 2rem;
+            cursor: pointer;
+            transition: background 0.2s, color 0.2s;
+        }
+        .btn-reset:hover { background: var(--border); color: var(--text); }
+
+        /* ── TOAST ── */
+        #toast {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(80px);
+            background: #1e1d2e;
+            color: var(--text);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 0.6rem 1.4rem;
+            font-size: 0.85rem;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.5);
+            transition: transform 0.3s cubic-bezier(.34,1.56,.64,1), opacity 0.3s;
+            opacity: 0;
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        #toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+        /* ── STATS BAR ── */
+        .stats-bar {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.25rem;
+        }
+
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 100px;
+            padding: 0.35rem 0.9rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .stat strong { color: var(--text); font-family: 'Syne', sans-serif; font-weight: 700; }
+
+        /* ── MODAL ── */
+        .modal-overlay {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .modal-overlay.open { display: flex; }
+        .modal {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 100%;
+            animation: fadeIn 0.25s ease;
+        }
+        .modal h3 { font-family: 'Syne', sans-serif; font-size: 1.2rem; font-weight: 800; margin-bottom: 0.5rem; }
+        .modal p { color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1.5rem; }
+        .modal-actions { display: flex; gap: 0.75rem; justify-content: flex-end; }
+        .btn-danger { background: linear-gradient(135deg,#e63946,#c1121f); color: #fff; border: none; border-radius: 8px; padding: 0.6rem 1.3rem; font-size: 0.85rem; font-weight: 600; cursor: pointer; }
+        .btn-cancel { background: var(--surface2); color: var(--text-muted); border: 1px solid var(--border); border-radius: 8px; padding: 0.6rem 1.3rem; font-size: 0.85rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div style="max-width:1400px; margin:0 auto;">
+
+    <div id="export-area">
+        <header>
+            <div class="badge">🧠 Herramienta de Creatividad</div>
+            <h1>Lienzo SCAMPER</h1>
+            <p>Selecciona el problema de tu grupo, añade ideas y arrástralas a la técnica SCAMPER correspondiente.</p>
+        </header>
+
+        <!-- Setup card -->
+        <div class="card">
+            <div class="card-title">Configuración del reto</div>
+            <div class="step-label">Paso 1 — Problema asignado</div>
+            <select id="problem-select">
+                <option value="">— Elige el problema de tu grupo —</option>
+                <option value="¿Qué sucedería si, en lugar de utilizar harina de trigo para hacer pan, se empleara harina de garbanzo para obtener una versión sin gluten?">1. Pan sin gluten con harina de garbanzo</option>
+                <option value="¿De qué manera se podría fusionar el concepto del sushi con el de las hamburguesas para crear un nuevo producto gastronómico?">2. Fusión gastronómica: Sushi + Hamburguesas</option>
+                <option value="¿Cómo podrían reinventarse las empanadas tradicionales para convertirlas en una opción más saludable y alineada con la alimentación 'fit'?">3. Empanadas tradicionales versión saludable/fit</option>
+                <option value="¿De qué forma sería posible reutilizar la cáscara de frutas para fabricar envases biodegradables comestibles en lugar de desecharlas?">4. Envases biodegradables comestibles con cáscara de frutas</option>
+                <option value="¿Cómo se podría desarrollar una versión extragrande o miniatura de la Salsa Inglesa para ajustarse a distintas necesidades y ocasiones de consumo?">5. Salsa Inglesa: Versiones extragrande o miniatura</option>
+            </select>
+            <div id="active-problem"></div>
+
+            <div style="height:1px; background:var(--border); margin:1.25rem 0;"></div>
+
+            <div class="step-label">Paso 2 — Nueva idea</div>
+            <div class="input-row">
+                <input type="text" id="idea-input" placeholder="Ej: Masa de espinaca rellena con proteína vegetal...">
+                <button id="btn-add-idea" class="btn-primary">+ Añadir Post-it</button>
+            </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="stats-bar">
+            <div class="stat">Post-its creados: <strong id="stat-total">0</strong></div>
+            <div class="stat">Clasificados: <strong id="stat-placed">0</strong></div>
+            <div class="stat">En bandeja: <strong id="stat-pending">0</strong></div>
+        </div>
+
+        <!-- Source zone -->
+        <div class="card" style="margin-bottom:1.5rem;">
+            <div class="card-title">Bandeja de ideas</div>
+            <div id="source-zone" class="drop-zone" data-category="source">
+                <div class="source-inner" id="source-inner">
+                    <div class="empty-msg" id="empty-msg">Las ideas que añadas aparecerán aquí. ¡Arrástralas al lienzo!</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SCAMPER Grid -->
+        <div class="scamper-grid">
+            <div class="scamper-col col-s drop-zone" data-category="S">
+                <div class="col-header"><div class="col-letter">S</div><div class="col-name">Sustituir</div></div>
+                <div class="col-hint">Cambiar un elemento, material o componente.</div>
+                <div class="zone-content" id="zone-S"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-c drop-zone" data-category="C">
+                <div class="col-header"><div class="col-letter">C</div><div class="col-name">Combinar</div></div>
+                <div class="col-hint">Mezclar ideas, productos o servicios.</div>
+                <div class="zone-content" id="zone-C"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-a drop-zone" data-category="A">
+                <div class="col-header"><div class="col-letter">A</div><div class="col-name">Adaptar</div></div>
+                <div class="col-hint">Copiar elementos de otro contexto.</div>
+                <div class="zone-content" id="zone-A"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-m drop-zone" data-category="M">
+                <div class="col-header"><div class="col-letter">M</div><div class="col-name">Modificar</div></div>
+                <div class="col-hint">Cambiar forma, tamaño, color o uso.</div>
+                <div class="zone-content" id="zone-M"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-p drop-zone" data-category="P">
+                <div class="col-header"><div class="col-letter">P</div><div class="col-name">Proponer usos</div></div>
+                <div class="col-hint">Darle un uso diferente al actual.</div>
+                <div class="zone-content" id="zone-P"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-e drop-zone" data-category="E">
+                <div class="col-header"><div class="col-letter">E</div><div class="col-name">Eliminar</div></div>
+                <div class="col-hint">Quitar partes para simplificar.</div>
+                <div class="zone-content" id="zone-E"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+            <div class="scamper-col col-r drop-zone" data-category="R">
+                <div class="col-header"><div class="col-letter">R</div><div class="col-name">Reordenar</div></div>
+                <div class="col-hint">Invertir el orden o el proceso.</div>
+                <div class="zone-content" id="zone-R"><div class="drop-placeholder">↓ suelta aquí</div></div>
+            </div>
+        </div>
+    </div> <!-- /export-area -->
+
+    <!-- Actions -->
+    <div class="actions">
+        <button id="btn-export-pdf" class="btn-export">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-8m0 8l-3-3m3 3l3-3M5 20h14a2 2 0 002-2V8l-6-6H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+            Exportar PDF
+        </button>
+        <button id="btn-reset" class="btn-reset">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V4a1 1 0 011-1h4a1 1 0 011 1v3M4 7h16"/></svg>
+            Limpiar lienzo
+        </button>
+    </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirm-modal">
+    <div class="modal">
+        <h3>¿Limpiar el lienzo?</h3>
+        <p>Se eliminarán todos los Post-its y la selección del problema. Esta acción no se puede deshacer.</p>
+        <div class="modal-actions">
+            <button class="btn-cancel" id="modal-cancel">Cancelar</button>
+            <button class="btn-danger" id="modal-confirm">Sí, limpiar todo</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const NOTE_COLORS = [
+        { bg: '#fff176', shadow: 'rgba(180,160,0,0.3)' },
+        { bg: '#f8bbd0', shadow: 'rgba(180,80,100,0.3)' },
+        { bg: '#c8e6c9', shadow: 'rgba(40,130,60,0.3)' },
+        { bg: '#bbdefb', shadow: 'rgba(30,80,160,0.3)' },
+        { bg: '#e1bee7', shadow: 'rgba(100,40,140,0.3)' },
+        { bg: '#ffe0b2', shadow: 'rgba(180,100,20,0.3)' },
+        { bg: '#b2dfdb', shadow: 'rgba(0,100,100,0.3)' },
+    ];
+
+    const STORAGE_KEY = 'scamper_state_v1';
+    let draggedItem = null;
+    let touchClone = null, touchOffsetX = 0, touchOffsetY = 0;
+    let ideaCounter = 0;
+    const sourceInner = document.getElementById('source-inner');
+
+    // ─── PERSISTENCE ─────────────────────────────────
+    function saveState() {
+        const ideas = [];
+        document.querySelectorAll('.post-it').forEach(el => {
+            const zone = el.closest('.drop-zone');
+            const category = zone ? (zone.id === 'source-zone' ? 'source' : zone.dataset.category) : 'source';
+            ideas.push({
+                id:       el.dataset.id,
+                text:     el.querySelector('span').textContent,
+                bg:       el.dataset.bg,
+                shadow:   el.dataset.shadow,
+                rot:      el.dataset.rot || '0',
+                category
+            });
+        });
+        const state = {
+            problem: document.getElementById('problem-select').value,
+            ideas,
+            counter: ideaCounter
+        };
+        try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+
+    function loadState() {
+        let state;
+        try { state = JSON.parse(localStorage.getItem(STORAGE_KEY)); } catch(e) {}
+        if (!state) return;
+
+        // Restore problem
+        if (state.problem) {
+            const sel = document.getElementById('problem-select');
+            sel.value = state.problem;
+            const el = document.getElementById('active-problem');
+            el.textContent = '📌 ' + state.problem;
+            el.style.display = 'block';
+        }
+
+        ideaCounter = state.counter || 0;
+
+        // Restore post-its
+        (state.ideas || []).forEach(data => {
+            const postIt = buildPostIt(data.text, data.bg, data.shadow, data.rot, data.id);
+            const isSource = data.category === 'source';
+            if (isSource) {
+                const msg = document.getElementById('empty-msg');
+                if (msg) msg.remove();
+                sourceInner.appendChild(postIt);
+            } else {
+                const zoneEl = document.querySelector(`.drop-zone[data-category="${data.category}"]`);
+                if (zoneEl) {
+                    const content = zoneEl.querySelector('.zone-content');
+                    const ph = content.querySelector('.drop-placeholder');
+                    if (ph) ph.remove();
+                    postIt.classList.add('in-zone');
+                    content.appendChild(postIt);
+                }
+            }
+        });
+
+        updateStats();
+        if (state.ideas && state.ideas.length > 0) {
+            showToast('💾 Sesión restaurada automáticamente');
+        }
+    }
+
+    // ─── PROBLEM SELECT ───────────────────────────────
+    document.getElementById('problem-select').addEventListener('change', function() {
+        const el = document.getElementById('active-problem');
+        if (this.value) {
+            el.textContent = '📌 ' + this.value;
+            el.style.display = 'block';
+        } else {
+            el.style.display = 'none';
+        }
+        saveState();
+    });
+
+    // ─── ADD IDEA ─────────────────────────────────────
+    document.getElementById('btn-add-idea').addEventListener('click', addIdea);
+    document.getElementById('idea-input').addEventListener('keypress', e => { if (e.key === 'Enter') addIdea(); });
+
+    function addIdea() {
+        const input = document.getElementById('idea-input');
+        const text = input.value.trim();
+        if (!text) return;
+
+        ideaCounter++;
+        const { bg, shadow } = NOTE_COLORS[Math.floor(Math.random() * NOTE_COLORS.length)];
+        const rot = (Math.random() * 10 - 5).toFixed(1);
+
+        const postIt = buildPostIt(text, bg, shadow, rot, ideaCounter);
+
+        const msg = document.getElementById('empty-msg');
+        if (msg) msg.remove();
+
+        postIt.style.opacity = '0';
+        postIt.style.scale = '0.7';
+        sourceInner.appendChild(postIt);
+        requestAnimationFrame(() => {
+            postIt.style.transition = 'opacity 0.25s, scale 0.25s cubic-bezier(.34,1.56,.64,1)';
+            postIt.style.opacity = '1';
+            postIt.style.scale = '1';
+        });
+
+        input.value = '';
+        input.focus();
+        updateStats();
+        saveState();
+        showToast('💡 Idea añadida a la bandeja');
+    }
+
+    function buildPostIt(text, bg, shadow, rot, id) {
+        const postIt = document.createElement('div');
+        postIt.className = 'post-it';
+        postIt.style.cssText = `background:${bg}; box-shadow:3px 5px 12px ${shadow},0 1px 3px rgba(0,0,0,0.2); transform:rotate(${rot}deg)`;
+        postIt.setAttribute('draggable', 'true');
+        postIt.setAttribute('data-id', id);
+        postIt.setAttribute('data-bg', bg);
+        postIt.setAttribute('data-shadow', shadow);
+        postIt.setAttribute('data-rot', rot);
+
+        const delBtn = document.createElement('button');
+        delBtn.className = 'delete-btn';
+        delBtn.innerHTML = '×';
+        delBtn.title = 'Eliminar';
+        delBtn.onclick = e => { e.stopPropagation(); postIt.remove(); updateStats(); saveState(); };
+
+        const span = document.createElement('span');
+        span.textContent = text;
+
+        postIt.appendChild(delBtn);
+        postIt.appendChild(span);
+        postIt.addEventListener('dragstart', handleDragStart);
+        postIt.addEventListener('dragend', handleDragEnd);
+        postIt.addEventListener('touchstart', handleTouchStart, { passive: false });
+        postIt.addEventListener('touchmove', handleTouchMove, { passive: false });
+        postIt.addEventListener('touchend', handleTouchEnd);
+        return postIt;
+    }
+
+    // ─── STATS ───────────────────────────────────────
+    function updateStats() {
+        const total = document.querySelectorAll('.post-it').length;
+        const inSource = sourceInner.querySelectorAll('.post-it').length;
+        const placed = total - inSource;
+        document.getElementById('stat-total').textContent = total;
+        document.getElementById('stat-placed').textContent = placed;
+        document.getElementById('stat-pending').textContent = inSource;
+    }
+
+    // ─── TOAST ───────────────────────────────────────
+    let toastTimer;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    // ─── DRAG (DESKTOP) ───────────────────────────────
+    function handleDragStart(e) {
+        draggedItem = this;
+        setTimeout(() => this.style.opacity = '0.35', 0);
+        e.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragEnd() {
+        this.style.opacity = '1';
+        draggedItem = null;
+    }
+
+    // ─── TOUCH ───────────────────────────────────────
+    function handleTouchStart(e) {
+        if (e.touches.length > 1) return;
+        e.preventDefault();
+        draggedItem = this;
+
+        const rect = this.getBoundingClientRect();
+        const t = e.touches[0];
+        touchOffsetX = t.clientX - rect.left;
+        touchOffsetY = t.clientY - rect.top;
+
+        touchClone = this.cloneNode(true);
+        Object.assign(touchClone.style, {
+            position: 'fixed',
+            left: rect.left + 'px', top: rect.top + 'px',
+            width: rect.width + 'px', height: rect.height + 'px',
+            opacity: '0.92', zIndex: '9999',
+            pointerEvents: 'none',
+            transform: 'scale(1.08) rotate(0deg)',
+            transition: 'none',
+            boxShadow: '0 16px 32px rgba(0,0,0,0.45)'
+        });
+        document.body.appendChild(touchClone);
+        this.style.opacity = '0.25';
+    }
+
+    function handleTouchMove(e) {
+        if (!touchClone) return;
+        e.preventDefault();
+        const t = e.touches[0];
+        touchClone.style.left = (t.clientX - touchOffsetX) + 'px';
+        touchClone.style.top = (t.clientY - touchOffsetY) + 'px';
+    }
+
+    function handleTouchEnd(e) {
+        if (!touchClone || !draggedItem) return;
+        const t = e.changedTouches[0];
+        const zone = document.elementFromPoint(t.clientX, t.clientY)?.closest('.drop-zone');
+        if (zone) placeInZone(draggedItem, zone);
+        touchClone.remove(); touchClone = null;
+        draggedItem.style.opacity = '1';
+        draggedItem = null;
+    }
+
+    // ─── DROP ZONES ───────────────────────────────────
+    function placeInZone(item, zone) {
+        const isSource = zone.id === 'source-zone';
+        const content = isSource ? sourceInner : zone.querySelector('.zone-content');
+
+        const ph = content.querySelector('.drop-placeholder');
+        if (ph) ph.remove();
+
+        if (isSource) {
+            const rot = (Math.random() * 10 - 5).toFixed(1);
+            item.classList.remove('in-zone');
+            item.style.transform = `rotate(${rot}deg)`;
+            item.style.width = '9rem'; item.style.height = '9rem';
+            item.setAttribute('data-rot', rot);
+        } else {
+            item.classList.add('in-zone');
+        }
+
+        content.appendChild(item);
+        updateStats();
+        saveState();
+
+        zone.style.transition = 'background 0.15s';
+        const orig = zone.style.background;
+        zone.style.background = 'rgba(255,255,255,0.06)';
+        setTimeout(() => { zone.style.background = orig; }, 200);
+    }
+
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+        zone.addEventListener('dragover', e => {
+            e.preventDefault();
+            zone.classList.add('drag-over');
+        });
+        zone.addEventListener('dragleave', e => {
+            if (!zone.contains(e.relatedTarget)) zone.classList.remove('drag-over');
+        });
+        zone.addEventListener('drop', e => {
+            e.preventDefault();
+            zone.classList.remove('drag-over');
+            if (draggedItem) placeInZone(draggedItem, zone);
+        });
+    });
+
+    // ─── EXPORT PDF (structured) ──────────────────────
+    document.getElementById('btn-export-pdf').addEventListener('click', function() {
+        const btn = this;
+        btn.textContent = 'Generando…';
+        btn.disabled = true;
+
+        try {
+            const { jsPDF } = window.jspdf;
+
+            // ── Gather data ──────────────────────────────
+            const problem = document.getElementById('problem-select').value || '(Sin problema seleccionado)';
+
+            const SCAMPER = [
+                { key: 'S', label: 'S — Sustituir',     hint: 'Cambiar un elemento, material o componente.',  header:[210,90,90],   colBg:[255,228,228], border:[245,190,190] },
+                { key: 'C', label: 'C — Combinar',       hint: 'Mezclar ideas, productos o servicios.',        header:[210,140,50],  colBg:[255,238,210], border:[250,205,145] },
+                { key: 'A', label: 'A — Adaptar',        hint: 'Copiar elementos de otro contexto.',           header:[165,148,20],  colBg:[255,251,200], border:[240,225,110] },
+                { key: 'M', label: 'M — Modificar',      hint: 'Cambiar forma, tamaño, color o uso.',          header:[55,148,80],   colBg:[218,251,228], border:[155,225,175] },
+                { key: 'P', label: 'P — Proponer usos',  hint: 'Darle un uso diferente al actual.',            header:[55,125,195],  colBg:[218,235,255], border:[150,195,250] },
+                { key: 'E', label: 'E — Eliminar',       hint: 'Quitar partes para simplificar.',              header:[118,85,200],  colBg:[238,233,255], border:[195,178,250] },
+                { key: 'R', label: 'R — Reordenar',      hint: 'Invertir el orden o el proceso.',              header:[195,65,118],  colBg:[255,225,242], border:[245,168,208] },
+            ];
+
+            const ideas = {};
+            SCAMPER.forEach(s => {
+                const zone = document.querySelector(`.drop-zone[data-category="${s.key}"] .zone-content`);
+                ideas[s.key] = zone
+                    ? [...zone.querySelectorAll('.post-it')].map(el => el.querySelector('span').textContent.trim())
+                    : [];
+            });
+
+            // ── PDF setup ────────────────────────────────
+            const pdf = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' });
+            const PW = pdf.internal.pageSize.getWidth();   // 841.89
+            const PH = pdf.internal.pageSize.getHeight();  // 595.28
+
+            const MARGIN = 28;
+            const BG     = [250, 248, 245];
+            const SURF   = [255, 255, 255];
+            const BORDER = [220, 215, 208];
+            const WHITE  = [45, 40, 55];      // dark text on light bg
+            const MUTED  = [140, 130, 150];
+            const ACCENT = [195, 100, 60];
+
+            // Background
+            pdf.setFillColor(...BG);
+            pdf.rect(0, 0, PW, PH, 'F');
+
+            // ── Header ───────────────────────────────────
+            let y = MARGIN;
+
+            // Badge
+            pdf.setFillColor(...ACCENT);
+            pdf.roundedRect(MARGIN, y, 140, 14, 3, 3, 'F');
+            pdf.setFontSize(7);
+            pdf.setTextColor(255, 255, 255);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('HERRAMIENTA DE CREATIVIDAD', MARGIN + 70, y + 9.5, { align: 'center' });
+
+            // Title
+            y += 22;
+            pdf.setFontSize(22);
+            pdf.setTextColor(...WHITE);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('Lienzo SCAMPER', MARGIN, y + 16);
+
+            // Date
+            pdf.setFontSize(8);
+            pdf.setTextColor(...MUTED);
+            pdf.setFont('helvetica', 'normal');
+            const dateStr = new Date().toLocaleDateString('es-ES', { day:'2-digit', month:'long', year:'numeric' });
+            pdf.text(dateStr, PW - MARGIN, y + 16, { align: 'right' });
+
+            y += 28;
+
+            // Problem box
+            pdf.setFillColor(...SURF);
+            pdf.setDrawColor(...BORDER);
+            pdf.setLineWidth(0.5);
+            pdf.roundedRect(MARGIN, y, PW - MARGIN * 2, 38, 4, 4, 'FD');
+
+            pdf.setFontSize(7);
+            pdf.setTextColor(...ACCENT);
+            pdf.setFont('helvetica', 'bold');
+            pdf.text('PROBLEMA ASIGNADO', MARGIN + 10, y + 11);
+
+            pdf.setFontSize(9.5);
+            pdf.setTextColor(...WHITE);
+            pdf.setFont('helvetica', 'normal');
+            const probLines = pdf.splitTextToSize(problem, PW - MARGIN * 2 - 20);
+            pdf.text(probLines[0], MARGIN + 10, y + 26);
+
+            y += 48;
+
+            // ── SCAMPER columns ──────────────────────────
+            const COL_COUNT = 7;
+            const GAP = 6;
+            const colW = (PW - MARGIN * 2 - GAP * (COL_COUNT - 1)) / COL_COUNT;
+            const colTop = y;
+            const colBottom = PH - MARGIN;
+            const colH = colBottom - colTop;
+
+            SCAMPER.forEach((s, i) => {
+                const x = MARGIN + i * (colW + GAP);
+
+                // Column background (soft pastel)
+                pdf.setFillColor(...s.colBg);
+                pdf.setDrawColor(...s.border);
+                pdf.setLineWidth(0.8);
+                pdf.roundedRect(x, colTop, colW, colH, 5, 5, 'FD');
+
+                // Header bar
+                pdf.setFillColor(...s.header);
+                pdf.roundedRect(x, colTop, colW, 28, 5, 5, 'F');
+                pdf.setFillColor(...s.header);
+                pdf.rect(x, colTop + 20, colW, 8, 'F');
+
+                // Letter
+                pdf.setFontSize(16);
+                pdf.setTextColor(255, 255, 255);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(s.key, x + colW / 2, colTop + 14, { align: 'center' });
+
+                // Label under letter
+                pdf.setFontSize(5.5);
+                pdf.setFont('helvetica', 'bold');
+                pdf.text(s.label.split('— ')[1].toUpperCase(), x + colW / 2, colTop + 23, { align: 'center' });
+
+                // Hint
+                pdf.setFontSize(6);
+                pdf.setTextColor(Math.max(0,s.header[0]-20), Math.max(0,s.header[1]-20), Math.max(0,s.header[2]-20));
+                pdf.setFont('helvetica', 'italic');
+                const hintLines = pdf.splitTextToSize(s.hint, colW - 8);
+                pdf.text(hintLines, x + colW / 2, colTop + 36, { align: 'center' });
+
+                // Ideas
+                const NOTE_BG_COLORS = [
+                    [255, 253, 205], [255, 214, 230], [210, 245, 218],
+                    [210, 232, 255], [235, 225, 255], [255, 232, 205], [210, 242, 240]
+                ];
+
+                let noteY = colTop + 50;
+                const noteList = ideas[s.key];
+
+                if (noteList.length === 0) {
+                    pdf.setFontSize(6.5);
+                    pdf.setTextColor(...MUTED);
+                    pdf.setFont('helvetica', 'italic');
+                    pdf.text('Sin ideas aún', x + colW / 2, noteY + 14, { align: 'center' });
+                } else {
+                    noteList.forEach((text, ni) => {
+                        if (noteY + 10 > colBottom - 4) return; // clip if no space
+
+                        const noteBg = NOTE_BG_COLORS[ni % NOTE_BG_COLORS.length];
+                        const noteLines = pdf.splitTextToSize(text, colW - 12);
+                        const noteH = Math.max(22, noteLines.length * 8 + 10);
+
+                        if (noteY + noteH > colBottom - 4) return;
+
+                        // Note card
+                        pdf.setFillColor(...noteBg);
+                        pdf.setDrawColor(noteBg[0] - 30, noteBg[1] - 30, noteBg[2] - 30);
+                        pdf.setLineWidth(0.3);
+                        pdf.roundedRect(x + 4, noteY, colW - 8, noteH, 2, 2, 'FD');
+
+                        // Tape strip
+                        pdf.setFillColor(230, 230, 230);
+                        pdf.setDrawColor(210, 210, 210);
+                        pdf.setLineWidth(0.2);
+                        pdf.rect(x + colW / 2 - 10, noteY - 3, 20, 7, 'FD');
+
+                        // Text
+                        pdf.setFontSize(7.5);
+                        pdf.setTextColor(30, 30, 30);
+                        pdf.setFont('helvetica', 'normal');
+                        pdf.text(noteLines, x + colW / 2, noteY + 9, { align: 'center', lineHeightFactor: 1.3 });
+
+                        noteY += noteH + 5;
+                    });
+                }
+            });
+
+            // ── Footer ───────────────────────────────────
+            pdf.setFontSize(6.5);
+            pdf.setTextColor(...MUTED);
+            pdf.setFont('helvetica', 'normal');
+            pdf.text('Generado con Lienzo SCAMPER Interactivo', PW / 2, PH - 10, { align: 'center' });
+
+            pdf.save('Lienzo_SCAMPER.pdf');
+            showToast('✅ PDF descargado');
+
+        } catch (err) {
+            console.error(err);
+            showToast('❌ Error al generar el PDF');
+        } finally {
+            btn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 16v-8m0 8l-3-3m3 3l3-3M5 20h14a2 2 0 002-2V8l-6-6H5a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg> Exportar PDF';
+            btn.disabled = false;
+        }
+    });
+
+    // ─── RESET ────────────────────────────────────────
+    document.getElementById('btn-reset').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.add('open');
+    });
+
+    document.getElementById('modal-cancel').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.remove('open');
+    });
+
+    document.getElementById('modal-confirm').addEventListener('click', () => {
+        document.getElementById('confirm-modal').classList.remove('open');
+        resetCanvas();
+    });
+
+    function resetCanvas() {
+        sourceInner.innerHTML = '<div class="empty-msg" id="empty-msg">Las ideas que añadas aparecerán aquí. ¡Arrástralas al lienzo!</div>';
+        document.querySelectorAll('.zone-content').forEach(z => {
+            z.innerHTML = '<div class="drop-placeholder">↓ suelta aquí</div>';
+        });
+        document.getElementById('problem-select').value = '';
+        document.getElementById('active-problem').style.display = 'none';
+        document.getElementById('idea-input').value = '';
+        ideaCounter = 0;
+        try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+        updateStats();
+        showToast('🧹 Lienzo limpiado');
+    }
+
+    // ─── INIT ─────────────────────────────────────────
+    loadState();
+    updateStats();
+</script>
+</body>
+</html>

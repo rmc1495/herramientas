@@ -1,0 +1,1430 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora Universal de Costos</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+:root {
+  --bg: #F7F0F8;
+  --surface: #FFFFFF;
+  --surface2: #F0EAF5;
+  --border: #E2D4EC;
+  --border2: #D0BCDF;
+  --text: #2D1F3D;
+  --muted: #9B87AE;
+  --accent: #C084D8;
+  --accent2: #F4A7B9;
+  --green: #7EC8A4;
+  --red: #F4A7A7;
+  --blue: #93C5E8;
+  --yellow: #F9D98F;
+  --peach: #F4B8A0;
+  --mint: #A8DCC9;
+  --lavender: #C5B8F0;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(ellipse at 10% 10%, rgba(192,132,216,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 90% 80%, rgba(147,197,232,0.12) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 50%, rgba(168,220,201,0.08) 0%, transparent 60%);
+  color: var(--text);
+  font-family: 'Instrument Sans', sans-serif;
+  min-height: 100vh;
+}
+
+/* HEADER */
+.header {
+  border-bottom: 2px solid var(--border);
+  padding: 32px 40px 28px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
+  background: white;
+}
+
+.header-left h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -1.5px;
+  line-height: 1;
+  color: var(--text);
+}
+
+.header-left h1 span { color: var(--accent); }
+
+.header-left p {
+  margin-top: 8px;
+  font-size: 0.82rem;
+  color: var(--muted);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.5px;
+}
+
+.product-name-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.product-name-wrap input {
+  background: var(--surface2);
+  border: 2px solid var(--border2);
+  border-radius: 10px;
+  padding: 10px 14px;
+  color: var(--text);
+  font-family: 'Syne', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  width: 220px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.product-name-wrap input:focus { border-color: var(--accent); }
+.product-name-wrap label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+/* LAYOUT */
+.main {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  min-height: calc(100vh - 100px);
+}
+
+@media (max-width: 860px) {
+  .main { grid-template-columns: 1fr; }
+  .sidebar { border-right: none; border-bottom: 1px solid var(--border); }
+}
+
+/* SIDEBAR */
+.sidebar {
+  border-right: 2px solid var(--border);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  overflow-y: auto;
+  background: white;
+}
+
+.section-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.section-label::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+/* INGREDIENTS */
+.ingredients-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ingredient-row {
+  display: grid;
+  grid-template-columns: 1fr 90px 70px 28px;
+  gap: 6px;
+  align-items: center;
+  animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+
+.ingredient-row input, .ingredient-row select {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.ingredient-row input:focus,
+.ingredient-row select:focus { border-color: var(--accent); background: white; }
+
+.ingredient-row select {
+  padding: 8px 6px;
+  cursor: pointer;
+}
+
+.del-btn {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+  width: 28px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.del-btn:hover { background: #fde8e8; border-color: #f4a7a7; color: #c0505050; }
+
+.col-headers {
+  display: grid;
+  grid-template-columns: 1fr 90px 70px 28px;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.col-headers span {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: var(--muted);
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 0 2px;
+}
+
+.add-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  border: 1.5px dashed var(--border2);
+  border-radius: 8px;
+  color: var(--muted);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  padding: 9px 12px;
+  width: 100%;
+  transition: all 0.15s;
+  margin-top: 6px;
+}
+
+.add-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(192,132,216,0.07); }
+
+/* PARAM ROWS */
+.param-row {
+  display: grid;
+  grid-template-columns: 1fr 120px;
+  gap: 8px;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.param-row label {
+  font-size: 0.82rem;
+  color: var(--text);
+  opacity: 0.75;
+}
+
+.param-row input {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 9px 12px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+  outline: none;
+  text-align: right;
+  transition: border-color 0.15s;
+}
+
+.param-row input:focus { border-color: var(--accent); background: white; }
+
+/* FIXED COSTS */
+.fixed-costs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.fixed-row {
+  display: grid;
+  grid-template-columns: 1fr 110px 28px;
+  gap: 6px;
+  align-items: center;
+  animation: fadeIn 0.2s ease;
+}
+
+.fixed-row input {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 10px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.15s;
+}
+
+.fixed-row input:focus { border-color: var(--accent); background: white; }
+
+/* CALC BUTTON */
+.calc-btn {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, #C084D8, #A78BFA);
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 16px rgba(192,132,216,0.3);
+}
+
+.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(192,132,216,0.4); }
+.calc-btn:active { transform: none; box-shadow: none; }
+
+/* RIGHT PANEL */
+.panel {
+  padding: 28px 32px;
+  overflow-y: auto;
+}
+
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 400px;
+  gap: 12px;
+  color: var(--muted);
+}
+
+.empty-state .big { font-size: 3rem; }
+.empty-state p { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+
+/* RESULT CARDS */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 12px;
+  margin-bottom: 28px;
+}
+
+.kpi {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 18px 16px;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.kpi:hover { transform: translateY(-2px); box-shadow: 0 6px 18px rgba(0,0,0,0.07); }
+
+.kpi::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 4px;
+  border-radius: 14px 14px 0 0;
+}
+
+.kpi.yellow::before { background: var(--yellow); }
+.kpi.orange::before { background: var(--peach); }
+.kpi.green::before  { background: var(--mint); }
+.kpi.blue::before   { background: var(--blue); }
+.kpi.red::before    { background: var(--red); }
+.kpi.lavender::before { background: var(--lavender); }
+
+.kpi-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 8px;
+}
+
+.kpi-value {
+  font-family: 'Syne', sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.kpi-value.accent { color: var(--accent); }
+.kpi-value.green  { color: #5aaa83; }
+.kpi-value.orange { color: #d07060; }
+
+.kpi-sub {
+  font-size: 0.72rem;
+  color: var(--muted);
+  margin-top: 4px;
+}
+
+/* BREAKDOWN TABLE */
+.table-wrap {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  overflow: hidden;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.table-title {
+  padding: 14px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  border-bottom: 1.5px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  background: var(--surface2);
+  font-weight: 600;
+}
+
+table { width: 100%; border-collapse: collapse; }
+
+th {
+  padding: 10px 18px;
+  text-align: left;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--muted);
+  background: #faf7fd;
+  border-bottom: 1.5px solid var(--border);
+}
+
+td {
+  padding: 11px 18px;
+  font-size: 0.85rem;
+  border-bottom: 1px solid var(--border);
+  transition: background 0.1s;
+  color: var(--text);
+}
+
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: #f9f4ff; }
+
+td.mono { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+td.right { text-align: right; }
+td.accent { color: var(--accent); font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+td.green-t { color: #5aaa83; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; }
+td.total { font-weight: 600; background: #f5effe; }
+td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.9rem; }
+
+/* CHART */
+.chart-wrap {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 20px 18px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.chart-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.chart-subtitle {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+  margin-top: 3px;
+}
+
+.legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.leg-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+
+.leg-dot { width: 20px; height: 3px; border-radius: 2px; }
+
+/* TAGS */
+.tags {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 12px;
+}
+
+.tag {
+  padding: 4px 12px;
+  border-radius: 100px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  border: 1.5px solid;
+}
+
+.tag.y { background: rgba(249,217,143,0.3); color: #a07820; border-color: rgba(249,217,143,0.8); }
+.tag.g { background: rgba(168,220,201,0.3); color: #3a7a5f; border-color: rgba(168,220,201,0.8); }
+.tag.r { background: rgba(244,167,167,0.3); color: #a04040; border-color: rgba(244,167,167,0.8); }
+.tag.o { background: rgba(244,184,160,0.3); color: #a05030; border-color: rgba(244,184,160,0.8); }
+.tag.lav { background: rgba(197,184,240,0.3); color: #5040a0; border-color: rgba(197,184,240,0.8); }
+
+/* PROFIT/LOSS BAR */
+.profit-bar-wrap {
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+}
+
+.pb-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.pb-track {
+  background: var(--surface2);
+  border-radius: 100px;
+  height: 22px;
+  overflow: hidden;
+  position: relative;
+}
+
+.pb-fill {
+  height: 100%;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: white;
+  transition: width 0.7s cubic-bezier(.4,0,.2,1);
+  min-width: 40px;
+}
+
+.pb-note {
+  margin-top: 10px;
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.pb-note strong { color: var(--text); }
+
+/* EXPORT BUTTON */
+.export-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background: white;
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: 10px;
+  font-family: 'Syne', sans-serif;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 20px;
+}
+.export-btn:hover { background: var(--accent); color: white; }
+
+/* ── PRINT STYLES ─────────────────────────────────────────────── */
+@media print {
+  @page { size: A4; margin: 14mm 14mm 14mm 14mm; }
+
+  body { background: white !important; color: #1a1a2e !important; font-size: 11px; }
+
+  .header, .main, .sidebar, .panel { all: unset; display: block; }
+
+  /* Hide everything except print report */
+  .header, .main { display: none !important; }
+  #print-report { display: block !important; }
+
+  #print-report * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+
+/* PRINT REPORT (hidden on screen, shown on print) */
+#print-report {
+  display: none;
+  font-family: 'Instrument Sans', sans-serif;
+  color: #2D1F3D;
+}
+
+.pr-header {
+  border-bottom: 3px solid #C084D8;
+  padding-bottom: 14px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+
+.pr-header h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 800;
+  color: #2D1F3D;
+  letter-spacing: -0.5px;
+}
+
+.pr-header h1 span { color: #C084D8; }
+.pr-header .pr-meta { font-size: 9px; color: #9B87AE; text-align: right; font-family: 'JetBrains Mono', monospace; line-height: 1.7; }
+.pr-product { font-size: 15px; font-weight: 700; color: #C084D8; margin-top: 3px; font-family: 'Syne', sans-serif; }
+
+.pr-section-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: #C084D8;
+  margin: 16px 0 8px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #E2D4EC;
+}
+
+.pr-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.pr-kpi {
+  background: #F7F0F8;
+  border: 1.5px solid #E2D4EC;
+  border-radius: 8px;
+  padding: 10px 12px;
+  border-top: 3px solid #C084D8;
+}
+
+.pr-kpi.green  { border-top-color: #7EC8A4; }
+.pr-kpi.blue   { border-top-color: #93C5E8; }
+.pr-kpi.peach  { border-top-color: #F4A7B9; }
+.pr-kpi.yellow { border-top-color: #F9D98F; }
+.pr-kpi.lav    { border-top-color: #C5B8F0; }
+
+.pr-kpi-label { font-size: 7.5px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 4px; }
+.pr-kpi-value { font-size: 13px; font-weight: 800; font-family: 'Syne', sans-serif; color: #2D1F3D; }
+.pr-kpi-sub   { font-size: 7.5px; color: #9B87AE; margin-top: 2px; font-family: 'JetBrains Mono', monospace; }
+
+.pr-table { width: 100%; border-collapse: collapse; margin-bottom: 14px; font-size: 10px; }
+.pr-table th { background: #F0EAF5; padding: 7px 10px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 7.5px; letter-spacing: 1px; text-transform: uppercase; color: #9B87AE; border-bottom: 1.5px solid #E2D4EC; }
+.pr-table td { padding: 7px 10px; border-bottom: 1px solid #E2D4EC; color: #2D1F3D; }
+.pr-table tr:last-child td { border-bottom: none; }
+.pr-table .total-row td { background: #F0EAF5; font-weight: 700; }
+.pr-table .right { text-align: right; font-family: 'JetBrains Mono', monospace; }
+.pr-table .accent-col { color: #C084D8; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+.pr-table .green-col { color: #5aaa83; font-family: 'JetBrains Mono', monospace; font-weight: 600; }
+
+.pr-chart-img { width: 100%; border-radius: 8px; border: 1.5px solid #E2D4EC; margin-bottom: 14px; }
+
+.pr-bar-wrap { background: #F7F0F8; border: 1.5px solid #E2D4EC; border-radius: 8px; padding: 12px; margin-bottom: 14px; }
+.pr-bar-label { font-size: 7.5px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 6px; }
+.pr-bar-track { background: #E2D4EC; border-radius: 100px; height: 14px; overflow: hidden; }
+.pr-bar-fill  { height: 100%; border-radius: 100px; display: flex; align-items: center; justify-content: flex-end; padding-right: 8px; font-size: 7.5px; font-family: 'JetBrains Mono', monospace; color: white; font-weight: 600; }
+.pr-bar-note  { font-size: 8.5px; color: #5a4a6a; margin-top: 6px; }
+
+.pr-two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.pr-footer { margin-top: 20px; padding-top: 10px; border-top: 1px solid #E2D4EC; display: flex; justify-content: space-between; font-size: 8px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-left">
+    <h1>Calc<span>uladora</span> Universal</h1>
+    <p>// estructura de costos · punto de equilibrio · precio de venta</p>
+  </div>
+  <div class="product-name-wrap">
+    <label>Producto</label>
+    <input type="text" id="product_name" placeholder="Ej: Pastel de chocolate" value="">
+  </div>
+</div>
+
+<div class="main">
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+
+    <!-- INGREDIENTS -->
+    <div>
+      <div class="section-label">Insumos / Ingredientes</div>
+      <div class="col-headers">
+        <span>Nombre</span>
+        <span>Costo (₡)</span>
+        <span>Cantidad</span>
+        <span></span>
+      </div>
+      <div class="ingredients-list" id="ing-list"></div>
+      <button class="add-btn" onclick="addIngredient()">＋ Agregar insumo</button>
+    </div>
+
+    <!-- PORTION PARAMS -->
+    <div>
+      <div class="section-label">Parámetros de Producción</div>
+      <div class="param-row">
+        <label>Unidades producidas por lote</label>
+        <input type="number" id="p_unidades" value="10" min="1">
+      </div>
+      <div class="param-row">
+        <label>Costos indirectos por unidad (₡)</label>
+        <input type="number" id="p_indirectos" value="50" min="0">
+      </div>
+      <div class="param-row">
+        <label>Margen de ganancia (%)</label>
+        <input type="number" id="p_margen" value="50" min="0">
+      </div>
+      <div class="param-row">
+        <label>Unidades producidas por día</label>
+        <input type="number" id="p_dia" value="30" min="1">
+      </div>
+      <div class="param-row">
+        <label>Días de operación al mes</label>
+        <input type="number" id="p_dias_mes" value="26" min="1">
+      </div>
+    </div>
+
+    <!-- FIXED COSTS -->
+    <div>
+      <div class="section-label">Gastos Fijos Mensuales</div>
+      <div class="fixed-costs-list" id="fixed-list"></div>
+      <button class="add-btn" onclick="addFixed()">＋ Agregar gasto fijo</button>
+    </div>
+
+    <button class="calc-btn" onclick="calcular()">▶ Calcular</button>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="panel" id="panel">
+    <div class="empty-state" id="empty-state">
+      <div class="big">⚡</div>
+      <p>Ingresá los datos y presioná Calcular</p>
+    </div>
+    <div id="results" style="display:none"></div>
+  </div>
+</div>
+
+<!-- HIDDEN PRINT REPORT -->
+<div id="print-report"></div>
+
+<script>
+// ── Default data ─────────────────────────────────────────────────────────────
+const defaultIngredients = [
+  { name: 'Harina', cost: 800, qty: 500, unit: 'g' },
+  { name: 'Azúcar', cost: 600, qty: 300, unit: 'g' },
+  { name: 'Huevos', cost: 1200, qty: 6, unit: 'und' },
+  { name: 'Mantequilla', cost: 1500, qty: 250, unit: 'g' },
+];
+
+const defaultFixed = [
+  { name: 'Alquiler', value: 150000 },
+  { name: 'Salarios', value: 400000 },
+  { name: 'Electricidad', value: 60000 },
+  { name: 'Agua', value: 20000 },
+  { name: 'Marketing', value: 30000 },
+];
+
+let ingId = 0, fixId = 0;
+
+function col(v) {
+  return '₡' + Number(v).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function n(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
+
+// ── Ingredient rows ───────────────────────────────────────────────────────────
+function addIngredient(name='', cost='', qty='') {
+  const id = ingId++;
+  const li = document.createElement('div');
+  li.className = 'ingredient-row';
+  li.id = 'ing-' + id;
+  li.innerHTML = `
+    <input type="text" placeholder="Nombre" value="${name}" class="ing-name">
+    <input type="number" placeholder="Costo ₡" value="${cost}" min="0" class="ing-cost">
+    <input type="number" placeholder="Cant." value="${qty}" min="0" class="ing-qty">
+    <button class="del-btn" onclick="removeRow('ing-${id}')">×</button>
+  `;
+  document.getElementById('ing-list').appendChild(li);
+}
+
+function addFixed(name='', val='') {
+  const id = fixId++;
+  const row = document.createElement('div');
+  row.className = 'fixed-row';
+  row.id = 'fix-' + id;
+  row.innerHTML = `
+    <input type="text" placeholder="Ej: Alquiler" value="${name}" class="fix-name">
+    <input type="number" placeholder="Monto ₡" value="${val}" min="0" class="fix-val">
+    <button class="del-btn" onclick="removeRow('fix-${id}')">×</button>
+  `;
+  document.getElementById('fixed-list').appendChild(row);
+}
+
+function removeRow(id) { document.getElementById(id)?.remove(); }
+
+// ── Read inputs ───────────────────────────────────────────────────────────────
+function getIngredients() {
+  return [...document.querySelectorAll('.ingredient-row')].map(row => ({
+    name: row.querySelector('.ing-name').value || 'Sin nombre',
+    cost: parseFloat(row.querySelector('.ing-cost').value) || 0,
+    qty:  parseFloat(row.querySelector('.ing-qty').value) || 1,
+  }));
+}
+
+function getFixed() {
+  return [...document.querySelectorAll('.fixed-row')].map(row => ({
+    name: row.querySelector('.fix-name').value || 'Gasto',
+    value: parseFloat(row.querySelector('.fix-val').value) || 0,
+  }));
+}
+
+// ── Main calculation ──────────────────────────────────────────────────────────
+function calcular() {
+  const product  = document.getElementById('product_name').value || 'Producto';
+  const unidades = Math.max(1, n('p_unidades'));
+  const indir    = n('p_indirectos');
+  const margen   = n('p_margen');
+  const porDia   = Math.max(1, n('p_dia'));
+  const diasMes  = Math.max(1, n('p_dias_mes'));
+
+  const ings   = getIngredients();
+  const fixed  = getFixed();
+
+  // Costs
+  const costoInsumos = ings.reduce((s, i) => s + i.cost, 0);
+  const costoPorUnidad = costoInsumos / unidades;
+  const costoTotal = costoPorUnidad + indir;
+  const precioVenta = costoTotal * (1 + margen / 100);
+  const gananciaUnit = precioVenta - costoTotal;
+  const costoDia = costoTotal * porDia;
+  const costoMes = costoTotal * porDia * diasMes;
+
+  // Break-even
+  const totalFijos = fixed.reduce((s, f) => s + f.value, 0);
+  const margenContrib = precioVenta - costoTotal;
+  const peUnidades = margenContrib > 0 ? totalFijos / margenContrib : 0;
+  const peColones  = peUnidades * precioVenta;
+  const peDiario   = peUnidades / diasMes;
+  const prodMensual = porDia * diasMes;
+  const superavit  = prodMensual >= peUnidades;
+  const pct = peUnidades > 0 ? Math.min((prodMensual / peUnidades) * 100, 160) : 100;
+
+  // Build HTML
+  document.getElementById('empty-state').style.display = 'none';
+  const res = document.getElementById('results');
+  res.style.display = 'block';
+
+  res.innerHTML = `
+    <button class="export-btn" onclick="exportarPDF()">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar Reporte PDF
+    </button>
+    <!-- KPIs -->
+    <div class="kpi-grid">
+      <div class="kpi yellow">
+        <div class="kpi-label">Costo por unidad</div>
+        <div class="kpi-value accent">${col(costoPorUnidad)}</div>
+        <div class="kpi-sub">sin indirectos</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">Costo total / unidad</div>
+        <div class="kpi-value">${col(costoTotal)}</div>
+        <div class="kpi-sub">con ₡${indir} indirectos</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">Precio de venta</div>
+        <div class="kpi-value green">${col(precioVenta)}</div>
+        <div class="kpi-sub">${margen}% margen</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">Ganancia por unidad</div>
+        <div class="kpi-value">${col(gananciaUnit)}</div>
+        <div class="kpi-sub">${((gananciaUnit/precioVenta)*100).toFixed(1)}% del precio</div>
+      </div>
+      <div class="kpi yellow">
+        <div class="kpi-label">Costo diario</div>
+        <div class="kpi-value accent">${col(costoDia)}</div>
+        <div class="kpi-sub">${porDia} unidades</div>
+      </div>
+      <div class="kpi lavender">
+        <div class="kpi-label">PE — unidades/mes</div>
+        <div class="kpi-value orange">${Math.ceil(peUnidades)}</div>
+        <div class="kpi-sub">${Math.ceil(peDiario)} por día</div>
+      </div>
+      <div class="kpi ${superavit ? 'green' : 'red'}">
+        <div class="kpi-label">Producción mensual</div>
+        <div class="kpi-value ${superavit ? 'green' : 'orange'}">${prodMensual}</div>
+        <div class="kpi-sub">${superavit ? '✓ Sobre PE' : '✗ Bajo PE'}</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">PE — en colones</div>
+        <div class="kpi-value">${col(peColones)}</div>
+        <div class="kpi-sub">ingresos mínimos/mes</div>
+      </div>
+    </div>
+
+    <!-- Profit bar -->
+    <div class="profit-bar-wrap">
+      <div class="pb-label">Producción actual vs punto de equilibrio</div>
+      <div class="pb-track">
+        <div class="pb-fill" id="pb-fill" style="width:0%">
+          ${pct.toFixed(0)}%
+        </div>
+      </div>
+      <div class="pb-note" id="pb-note"></div>
+    </div>
+
+    <!-- Breakdown table -->
+    <div class="table-wrap">
+      <div class="table-title">
+        <span>Desglose de insumos — ${product}</span>
+        <span>${unidades} unidades por lote</span>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Insumo</th>
+            <th>Costo total</th>
+            <th>Costo por unidad</th>
+            <th>% del costo</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${ings.map(i => {
+            const cpu = i.cost / unidades;
+            const pct = costoInsumos > 0 ? ((i.cost / costoInsumos) * 100).toFixed(1) : 0;
+            return `<tr>
+              <td>${i.name}</td>
+              <td class="mono right">${col(i.cost)}</td>
+              <td class="accent right">${col(cpu)}</td>
+              <td class="mono right green-t">${pct}%</td>
+            </tr>`;
+          }).join('')}
+          <tr>
+            <td class="total">Subtotal insumos</td>
+            <td class="total mono right">${col(costoInsumos)}</td>
+            <td class="total accent right">${col(costoPorUnidad)}</td>
+            <td class="total mono right">100%</td>
+          </tr>
+          <tr>
+            <td>Costos indirectos</td>
+            <td class="mono right">—</td>
+            <td class="accent right">${col(indir)}</td>
+            <td class="mono right">—</td>
+          </tr>
+          <tr>
+            <td class="total">COSTO TOTAL</td>
+            <td class="total mono right">—</td>
+            <td class="total accent right">${col(costoTotal)}</td>
+            <td class="total mono right">—</td>
+          </tr>
+          <tr>
+            <td class="total green-t">PRECIO DE VENTA</td>
+            <td class="total mono right">—</td>
+            <td class="total right" style="color:var(--green); font-family:'JetBrains Mono',monospace; font-size:0.9rem; font-weight:700">${col(precioVenta)}</td>
+            <td class="total mono right">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Fixed costs table -->
+    <div class="table-wrap">
+      <div class="table-title">
+        <span>Gastos fijos mensuales</span>
+        <span>Total: ${col(totalFijos)}</span>
+      </div>
+      <table>
+        <thead>
+          <tr><th>Concepto</th><th>Monto mensual</th><th>% del total fijo</th></tr>
+        </thead>
+        <tbody>
+          ${fixed.map(f => {
+            const pct = totalFijos > 0 ? ((f.value / totalFijos) * 100).toFixed(1) : 0;
+            return `<tr>
+              <td>${f.name}</td>
+              <td class="mono right">${col(f.value)}</td>
+              <td class="mono right green-t">${pct}%</td>
+            </tr>`;
+          }).join('')}
+          <tr>
+            <td class="total">TOTAL FIJOS</td>
+            <td class="total accent right">${col(totalFijos)}</td>
+            <td class="total mono right">100%</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Chart -->
+    <div class="chart-wrap">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Punto de Equilibrio — ${product}</div>
+          <div class="chart-subtitle">Ingresos vs Costos Totales por unidades vendidas/mes</div>
+        </div>
+        <div class="legend">
+          <div class="leg-item"><div class="leg-dot" style="background:var(--green)"></div>Ingresos</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--red)"></div>Costos totales</div>
+          <div class="leg-item"><div class="leg-dot" style="background:var(--accent); opacity:0.6"></div>Costos fijos</div>
+        </div>
+      </div>
+      <canvas id="pe-chart" height="280"></canvas>
+      <div class="tags" id="chart-tags"></div>
+    </div>
+  `;
+
+  // Animate bar
+  setTimeout(() => {
+    const fill = document.getElementById('pb-fill');
+    fill.style.background = superavit
+      ? 'linear-gradient(90deg, #A8DCC9, #7EC8A4)'
+      : 'linear-gradient(90deg, #F4C5C5, #F4A7A7)';
+    fill.style.width = Math.min(pct, 100) + '%';
+    const diff = Math.abs(prodMensual - Math.ceil(peUnidades));
+    document.getElementById('pb-note').innerHTML = superavit
+      ? `<strong style="color:#5aaa83">✓ Superavit:</strong> se producen ${diff} unidades más que el mínimo necesario. Ganancia neta por unidad adicional: <strong>${col(gananciaUnit)}</strong>`
+      : `<strong style="color:#c07070">✗ Déficit:</strong> faltan ${diff} unidades/mes para cubrir todos los costos. Producción actual al <strong>${pct.toFixed(1)}%</strong> del punto de equilibrio.`;
+  }, 80);
+
+  // Chart
+  drawChart(peUnidades, precioVenta, costoTotal, totalFijos, prodMensual, superavit, margenContrib, peColones, col);
+}
+
+// ── Chart ─────────────────────────────────────────────────────────────────────
+function drawChart(peU, pv, cv, fijos, prodActual, superavit, mc, peCol, col) {
+  const maxX = Math.ceil(peU * 2.2 / 10) * 10 || 100;
+  const labels = [], ingresos = [], costos = [], costFijos = [];
+  const step = Math.max(1, Math.round(maxX / 22));
+  for (let u = 0; u <= maxX; u += step) {
+    labels.push(u);
+    ingresos.push(u * pv);
+    costos.push(fijos + u * cv);
+    costFijos.push(fijos);
+  }
+
+  const canvas = document.getElementById('pe-chart');
+  if (window._uChart) window._uChart.destroy();
+  window._uChart = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        { label: 'Ingresos', data: ingresos, borderColor: '#7EC8A4', backgroundColor: 'rgba(126,200,164,0.08)', borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0 },
+        { label: 'Costos totales', data: costos, borderColor: '#F4A7A7', backgroundColor: 'rgba(244,167,167,0.08)', borderWidth: 2.5, pointRadius: 0, fill: false, tension: 0 },
+        { label: 'Costos fijos', data: costFijos, borderColor: '#F9D98F', borderWidth: 1.5, borderDash: [5, 4], pointRadius: 0, fill: false, tension: 0 }
+      ]
+    },
+    options: {
+      responsive: true,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: '#fff',
+          borderColor: '#E2D4EC',
+          borderWidth: 1.5,
+          titleColor: '#9B87AE',
+          bodyColor: '#2D1F3D',
+          titleFont: { family: 'JetBrains Mono', size: 10 },
+          bodyFont: { family: 'JetBrains Mono', size: 10 },
+          callbacks: {
+            title: i => `${i[0].label} unidades`,
+            label: i => ` ${i.dataset.label}: ₡${Math.round(i.raw).toLocaleString('es-CR')}`
+          }
+        }
+      },
+      scales: {
+        x: {
+          title: { display: true, text: 'Unidades / mes', font: { family: 'JetBrains Mono', size: 10 }, color: '#9B87AE' },
+          grid: { color: 'rgba(162,130,190,0.1)' },
+          ticks: { font: { family: 'JetBrains Mono', size: 9 }, color: '#9B87AE' }
+        },
+        y: {
+          title: { display: true, text: 'Colones (₡)', font: { family: 'JetBrains Mono', size: 10 }, color: '#9B87AE' },
+          grid: { color: 'rgba(162,130,190,0.1)' },
+          ticks: {
+            font: { family: 'JetBrains Mono', size: 9 }, color: '#9B87AE',
+            callback: v => '₡' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v)
+          }
+        }
+      }
+    },
+    plugins: [{
+      id: 'peViz',
+      afterDraw(chart) {
+        const { ctx: c, scales: { x, y } } = chart;
+        const { top, bottom, left, right } = chart.chartArea;
+        const xPE = x.getPixelForValue(peU);
+        const yPE = y.getPixelForValue(peU * pv);
+
+        c.save();
+
+        // Shade zones
+        c.fillStyle = 'rgba(244,167,167,0.08)';
+        c.fillRect(left, top, Math.max(0, xPE - left), bottom - top);
+        c.fillStyle = 'rgba(126,200,164,0.08)';
+        c.fillRect(Math.min(xPE, right), top, Math.max(0, right - xPE), bottom - top);
+
+        // Zone text
+        c.font = '500 9px JetBrains Mono, monospace';
+        c.fillStyle = 'rgba(200,100,100,0.5)';
+        if (xPE - left > 50) c.fillText('PÉRDIDA', left + 8, top + 14);
+        c.fillStyle = 'rgba(80,160,120,0.5)';
+        if (right - xPE > 60) c.fillText('GANANCIA', Math.min(xPE, right) + 8, top + 14);
+
+        // PE vertical line
+        c.setLineDash([4, 4]);
+        c.strokeStyle = 'rgba(192,132,216,0.5)';
+        c.lineWidth = 1.5;
+        c.beginPath(); c.moveTo(xPE, top); c.lineTo(xPE, bottom); c.stroke();
+
+        // PE horizontal line
+        c.beginPath(); c.moveTo(left, yPE); c.lineTo(xPE, yPE); c.stroke();
+        c.setLineDash([]);
+
+        // PE dot
+        c.beginPath();
+        c.arc(xPE, yPE, 7, 0, Math.PI * 2);
+        c.fillStyle = '#C084D8';
+        c.fill();
+        c.strokeStyle = '#fff';
+        c.lineWidth = 2.5;
+        c.stroke();
+
+        // PE label box
+        c.font = '500 10px JetBrains Mono, monospace';
+        const t1 = `PE: ${Math.ceil(peU)} uds`;
+        const t2 = col(Math.round(peCol));
+        const bw = Math.max(c.measureText(t1).width, c.measureText(t2).width) + 16;
+        const bh = 38;
+        const bx = (xPE + 10 + bw > right) ? xPE - bw - 10 : xPE + 10;
+        const by = yPE - bh / 2;
+        c.fillStyle = '#fff';
+        c.strokeStyle = '#C084D8';
+        c.lineWidth = 1.5;
+        c.shadowColor = 'rgba(192,132,216,0.2)';
+        c.shadowBlur = 8;
+        c.beginPath(); c.roundRect(bx, by, bw, bh, 6); c.fill(); c.stroke();
+        c.shadowBlur = 0;
+        c.fillStyle = '#9B87AE';
+        c.font = '400 9px JetBrains Mono, monospace';
+        c.fillText(t1, bx + 8, by + 14);
+        c.fillStyle = '#C084D8';
+        c.font = '600 10px JetBrains Mono, monospace';
+        c.fillText(t2, bx + 8, by + 28);
+
+        // Current production marker
+        if (prodActual > 0 && prodActual <= maxX) {
+          const xAct = x.getPixelForValue(prodActual);
+          if (xAct >= left && xAct <= right) {
+            c.setLineDash([3, 3]);
+            c.strokeStyle = superavit ? 'rgba(126,200,164,0.8)' : 'rgba(244,167,167,0.8)';
+            c.lineWidth = 1.5;
+            c.beginPath(); c.moveTo(xAct, top); c.lineTo(xAct, bottom); c.stroke();
+            c.setLineDash([]);
+            c.fillStyle = superavit ? '#5aaa83' : '#c07070';
+            c.font = '500 9px JetBrains Mono, monospace';
+            c.fillText('↑ actual', xAct + 4, bottom - 6);
+          }
+        }
+
+        c.restore();
+      }
+    }]
+  });
+
+  // Tags
+  document.getElementById('chart-tags').innerHTML = `
+    <span class="tag lav">PE: ${Math.ceil(peU)} uds/mes</span>
+    <span class="tag g">Ingreso PE: ${col(Math.round(peCol))}</span>
+    <span class="tag o">Margen contrib: ${col(mc)}/ud</span>
+    <span class="tag r">Gastos fijos: ${col(fijos)}/mes</span>
+  `;
+}
+
+// ── Init ──────────────────────────────────────────────────────────────────────
+defaultIngredients.forEach(i => addIngredient(i.name, i.cost, i.qty));
+defaultFixed.forEach(f => addFixed(f.name, f.value));
+
+// ── Store last calculation for PDF export ─────────────────────────────────────
+let _lastCalc = null;
+
+// Patch calcular to save state
+const _origCalcular = calcular;
+window.calcular = function() {
+  _origCalcular();
+  // save after render
+  setTimeout(() => { _lastCalc = _captureCalcState(); }, 200);
+};
+
+function _captureCalcState() {
+  const product  = document.getElementById('product_name').value || 'Producto';
+  const unidades = Math.max(1, n('p_unidades'));
+  const indir    = n('p_indirectos');
+  const margen   = n('p_margen');
+  const porDia   = Math.max(1, n('p_dia'));
+  const diasMes  = Math.max(1, n('p_dias_mes'));
+  const ings     = getIngredients();
+  const fixed    = getFixed();
+
+  const costoInsumos   = ings.reduce((s, i) => s + i.cost, 0);
+  const costoPorUnidad = costoInsumos / unidades;
+  const costoTotal     = costoPorUnidad + indir;
+  const precioVenta    = costoTotal * (1 + margen / 100);
+  const gananciaUnit   = precioVenta - costoTotal;
+  const costoDia       = costoTotal * porDia;
+  const totalFijos     = fixed.reduce((s, f) => s + f.value, 0);
+  const margenContrib  = precioVenta - costoTotal;
+  const peUnidades     = margenContrib > 0 ? totalFijos / margenContrib : 0;
+  const peColones      = peUnidades * precioVenta;
+  const peDiario       = peUnidades / diasMes;
+  const prodMensual    = porDia * diasMes;
+  const superavit      = prodMensual >= peUnidades;
+  const pct            = peUnidades > 0 ? Math.min((prodMensual / peUnidades) * 100, 160) : 100;
+  const diff           = Math.abs(prodMensual - Math.ceil(peUnidades));
+
+  // capture chart as image
+  const chartImg = window._uChart ? window._uChart.toBase64Image('image/png', 1.0) : null;
+
+  return { product, unidades, indir, margen, porDia, diasMes, ings, fixed,
+           costoInsumos, costoPorUnidad, costoTotal, precioVenta, gananciaUnit,
+           costoDia, totalFijos, margenContrib, peUnidades, peColones, peDiario,
+           prodMensual, superavit, pct, diff };
+}
+
+// ── Export to PDF ─────────────────────────────────────────────────────────────
+function exportarPDF() {
+  // Capture fresh state + chart image
+  const d = _captureCalcState();
+  const chartImg = window._uChart ? window._uChart.toBase64Image('image/png', 1.0) : null;
+  const now = new Date();
+  const fecha = now.toLocaleDateString('es-CR', { day:'2-digit', month:'long', year:'numeric' });
+  const hora  = now.toLocaleTimeString('es-CR', { hour:'2-digit', minute:'2-digit' });
+
+  const barW = Math.min(d.pct, 100).toFixed(0);
+  const barColor = d.superavit
+    ? 'background: linear-gradient(90deg,#A8DCC9,#7EC8A4)'
+    : 'background: linear-gradient(90deg,#F4C5C5,#F4A7A7)';
+
+  const ingsRows = d.ings.map(i => {
+    const cpu = i.cost / d.unidades;
+    const pct = d.costoInsumos > 0 ? ((i.cost / d.costoInsumos) * 100).toFixed(1) : 0;
+    return `<tr>
+      <td>${i.name}</td>
+      <td class="right">${col(i.cost)}</td>
+      <td class="right accent-col">${col(cpu)}</td>
+      <td class="right green-col">${pct}%</td>
+    </tr>`;
+  }).join('');
+
+  const fixedRows = d.fixed.map(f => {
+    const pct = d.totalFijos > 0 ? ((f.value / d.totalFijos) * 100).toFixed(1) : 0;
+    return `<tr>
+      <td>${f.name}</td>
+      <td class="right accent-col">${col(f.value)}</td>
+      <td class="right green-col">${pct}%</td>
+    </tr>`;
+  }).join('');
+
+  const chartHTML = chartImg
+    ? `<img src="${chartImg}" class="pr-chart-img" alt="Gráfico PE">`
+    : '<p style="color:#9B87AE;font-size:9px;text-align:center;padding:20px">Gráfico no disponible</p>';
+
+  const diffNote = d.superavit
+    ? `✓ Superávit: se producen <strong>${d.diff} unidades</strong> más que el mínimo necesario. Ganancia neta adicional: <strong>${col(d.gananciaUnit)}</strong> por unidad.`
+    : `✗ Déficit: faltan <strong>${d.diff} unidades/mes</strong> para cubrir todos los costos. Producción actual al <strong>${d.pct.toFixed(1)}%</strong> del punto de equilibrio.`;
+
+  document.getElementById('print-report').innerHTML = `
+    <div class="pr-header">
+      <div>
+        <div style="font-size:9px;color:#9B87AE;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:4px">Reporte de Costos</div>
+        <h1>Calc<span>uladora</span> Universal</h1>
+        <div class="pr-product">📦 ${d.product}</div>
+      </div>
+      <div class="pr-meta">
+        Generado: ${fecha}<br>
+        Hora: ${hora}<br>
+        Lote: ${d.unidades} unidades<br>
+        Margen: ${d.margen}%
+      </div>
+    </div>
+
+    <div class="pr-section-title">Resumen Ejecutivo</div>
+    <div class="pr-kpi-grid">
+      <div class="pr-kpi yellow">
+        <div class="pr-kpi-label">Costo insumos / ud</div>
+        <div class="pr-kpi-value">${col(d.costoPorUnidad)}</div>
+        <div class="pr-kpi-sub">sin indirectos</div>
+      </div>
+      <div class="pr-kpi peach">
+        <div class="pr-kpi-label">Costo total / ud</div>
+        <div class="pr-kpi-value">${col(d.costoTotal)}</div>
+        <div class="pr-kpi-sub">+ ₡${d.indir} indirectos</div>
+      </div>
+      <div class="pr-kpi green">
+        <div class="pr-kpi-label">Precio de venta</div>
+        <div class="pr-kpi-value">${col(d.precioVenta)}</div>
+        <div class="pr-kpi-sub">${d.margen}% margen</div>
+      </div>
+      <div class="pr-kpi blue">
+        <div class="pr-kpi-label">Ganancia / unidad</div>
+        <div class="pr-kpi-value">${col(d.gananciaUnit)}</div>
+        <div class="pr-kpi-sub">${((d.gananciaUnit/d.precioVenta)*100).toFixed(1)}% del precio</div>
+      </div>
+      <div class="pr-kpi lav">
+        <div class="pr-kpi-label">PE — unidades/mes</div>
+        <div class="pr-kpi-value">${Math.ceil(d.peUnidades)}</div>
+        <div class="pr-kpi-sub">${Math.ceil(d.peDiario)} por día</div>
+      </div>
+      <div class="pr-kpi ${d.superavit ? 'green' : 'peach'}">
+        <div class="pr-kpi-label">Producción mensual</div>
+        <div class="pr-kpi-value">${d.prodMensual}</div>
+        <div class="pr-kpi-sub">${d.superavit ? '✓ Sobre PE' : '✗ Bajo PE'}</div>
+      </div>
+      <div class="pr-kpi blue">
+        <div class="pr-kpi-label">Ingreso PE (₡)</div>
+        <div class="pr-kpi-value">${col(d.peColones)}</div>
+        <div class="pr-kpi-sub">mínimo mensual</div>
+      </div>
+      <div class="pr-kpi yellow">
+        <div class="pr-kpi-label">Costo diario</div>
+        <div class="pr-kpi-value">${col(d.costoDia)}</div>
+        <div class="pr-kpi-sub">${d.porDia} uds × ${d.diasMes} días</div>
+      </div>
+    </div>
+
+    <div class="pr-section-title">Producción vs Punto de Equilibrio</div>
+    <div class="pr-bar-wrap">
+      <div class="pr-bar-label">Producción actual como % del punto de equilibrio</div>
+      <div class="pr-bar-track">
+        <div class="pr-bar-fill" style="width:${barW}%; ${barColor}">${barW}%</div>
+      </div>
+      <div class="pr-bar-note">${diffNote}</div>
+    </div>
+
+    <div class="pr-two-col">
+      <div>
+        <div class="pr-section-title">Desglose de Insumos</div>
+        <table class="pr-table">
+          <thead><tr><th>Insumo</th><th>Costo total</th><th>Costo/ud</th><th>%</th></tr></thead>
+          <tbody>
+            ${ingsRows}
+            <tr class="total-row">
+              <td>Subtotal</td>
+              <td class="right">${col(d.costoInsumos)}</td>
+              <td class="right accent-col">${col(d.costoPorUnidad)}</td>
+              <td class="right">100%</td>
+            </tr>
+            <tr><td>Indirectos</td><td class="right">—</td><td class="right accent-col">${col(d.indir)}</td><td class="right">—</td></tr>
+            <tr class="total-row"><td><strong>TOTAL</strong></td><td class="right">—</td><td class="right accent-col"><strong>${col(d.costoTotal)}</strong></td><td class="right">—</td></tr>
+            <tr><td style="color:#5aaa83"><strong>PRECIO VENTA</strong></td><td>—</td><td class="right green-col"><strong>${col(d.precioVenta)}</strong></td><td>—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div class="pr-section-title">Gastos Fijos Mensuales</div>
+        <table class="pr-table">
+          <thead><tr><th>Concepto</th><th>Monto</th><th>%</th></tr></thead>
+          <tbody>
+            ${fixedRows}
+            <tr class="total-row">
+              <td><strong>TOTAL FIJOS</strong></td>
+              <td class="right accent-col"><strong>${col(d.totalFijos)}</strong></td>
+              <td class="right">100%</td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="pr-section-title" style="margin-top:12px">Cálculo del Punto de Equilibrio</div>
+        <table class="pr-table">
+          <tbody>
+            <tr><td>Margen de contribución</td><td class="right accent-col">${col(d.margenContrib)}/ud</td></tr>
+            <tr><td>PE en unidades</td><td class="right accent-col">${d.peUnidades.toFixed(2)} ≈ ${Math.ceil(d.peUnidades)} uds</td></tr>
+            <tr><td>PE en colones</td><td class="right accent-col">${col(d.peColones)}</td></tr>
+            <tr><td>PE diario (${d.diasMes} días)</td><td class="right accent-col">${d.peDiario.toFixed(2)} ≈ ${Math.ceil(d.peDiario)} uds</td></tr>
+            <tr><td>Producción mensual</td><td class="right ${d.superavit ? 'green-col' : 'accent-col'}">${d.prodMensual} uds</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="pr-section-title">Gráfico de Punto de Equilibrio</div>
+    ${chartHTML}
+
+    <div class="pr-footer">
+      <span>Calculadora Universal de Costos · Emprendimiento e Innovación</span>
+      <span>${fecha} ${hora}</span>
+    </div>
+  `;
+
+  setTimeout(() => window.print(), 100);
+}
+</script>
+</body>
+</html>

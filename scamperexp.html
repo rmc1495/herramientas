@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Juego: Lienzo SCAMPER</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Inter:wght@400;600;700&display=swap');
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+
+        .post-it {
+            font-family: 'Caveat', cursive;
+            font-size: 1.25rem;
+            line-height: 1.2;
+            cursor: grab;
+            transition: transform 0.2s, box-shadow 0.2s;
+            user-select: none;
+            touch-action: none; /* Para evitar scroll en móviles al tocar */
+        }
+
+        .post-it:active {
+            cursor: grabbing;
+        }
+
+        .post-it:hover {
+            transform: scale(1.05) rotate(0deg) !important;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+        }
+        
+        /* Ocultar barra de scroll en las zonas */
+        .zone-content::-webkit-scrollbar {
+            width: 4px;
+        }
+        .zone-content::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center py-8 px-4">
+
+    <div class="max-w-7xl w-full">
+        <header class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-800 mb-2">Lienzo SCAMPER Interactivo</h1>
+            <p class="text-gray-600 max-w-2xl mx-auto">Arrastra cada Post-it con el ejemplo correspondiente hacia la casilla de la técnica SCAMPER que está aplicando. Al terminar, presiona "Validar" para ver tu puntuación.</p>
+        </header>
+
+        <!-- Zona de Origen (Post-its mezclados) -->
+        <div class="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-200">
+            <h2 class="text-xl font-semibold text-gray-700 mb-4 border-b pb-2">Ideas / Ejemplos a clasificar</h2>
+            <div id="source-zone" class="drop-zone min-h-[120px] flex flex-wrap gap-4 items-center justify-center p-2" data-category="source">
+                <div class="zone-content flex flex-wrap gap-4 items-center justify-center w-full min-h-full">
+                    <!-- Los post-its se inyectan con JS -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Lienzo SCAMPER (Zonas de destino) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-4 mb-8">
+            <!-- S -->
+            <div class="drop-zone bg-red-50 rounded-lg shadow-sm border-2 border-dashed border-red-300 flex flex-col" data-category="S">
+                <div class="bg-red-500 text-white font-bold text-center py-2 rounded-t-md">S - Sustituir</div>
+                <div class="bg-red-100 text-red-800 text-xs text-center p-1.5 border-b border-red-200">Cambiar elementos, materiales o reglas.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- C -->
+            <div class="drop-zone bg-orange-50 rounded-lg shadow-sm border-2 border-dashed border-orange-300 flex flex-col" data-category="C">
+                <div class="bg-orange-500 text-white font-bold text-center py-2 rounded-t-md">C - Combinar</div>
+                <div class="bg-orange-100 text-orange-800 text-xs text-center p-1.5 border-b border-orange-200">Mezclar ideas, productos o servicios.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- A -->
+            <div class="drop-zone bg-yellow-50 rounded-lg shadow-sm border-2 border-dashed border-yellow-300 flex flex-col" data-category="A">
+                <div class="bg-yellow-500 text-white font-bold text-center py-2 rounded-t-md">A - Adaptar</div>
+                <div class="bg-yellow-100 text-yellow-800 text-xs text-center p-1.5 border-b border-yellow-200">Copiar elementos de otro contexto.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- M -->
+            <div class="drop-zone bg-green-50 rounded-lg shadow-sm border-2 border-dashed border-green-300 flex flex-col" data-category="M">
+                <div class="bg-green-500 text-white font-bold text-center py-2 rounded-t-md">M - Modificar</div>
+                <div class="bg-green-100 text-green-800 text-xs text-center p-1.5 border-b border-green-200">Cambiar forma, tamaño o color.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- P -->
+            <div class="drop-zone bg-blue-50 rounded-lg shadow-sm border-2 border-dashed border-blue-300 flex flex-col" data-category="P">
+                <div class="bg-blue-500 text-white font-bold text-center py-2 rounded-t-md">P - Proponer usos</div>
+                <div class="bg-blue-100 text-blue-800 text-xs text-center p-1.5 border-b border-blue-200">Darle un uso diferente al actual.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- E -->
+            <div class="drop-zone bg-indigo-50 rounded-lg shadow-sm border-2 border-dashed border-indigo-300 flex flex-col" data-category="E">
+                <div class="bg-indigo-500 text-white font-bold text-center py-2 rounded-t-md">E - Eliminar</div>
+                <div class="bg-indigo-100 text-indigo-800 text-xs text-center p-1.5 border-b border-indigo-200">Quitar partes para simplificar.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+            <!-- R -->
+            <div class="drop-zone bg-purple-50 rounded-lg shadow-sm border-2 border-dashed border-purple-300 flex flex-col" data-category="R">
+                <div class="bg-purple-500 text-white font-bold text-center py-2 rounded-t-md">R - Reordenar</div>
+                <div class="bg-purple-100 text-purple-800 text-xs text-center p-1.5 border-b border-purple-200">Invertir el orden o el proceso.</div>
+                <div class="zone-content flex-1 p-3 flex flex-col gap-3 min-h-[150px] overflow-y-auto"></div>
+            </div>
+        </div>
+
+        <!-- Controles -->
+        <div class="flex justify-center gap-4">
+            <button id="btn-validate" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-transform transform hover:scale-105">
+                Validar Respuestas
+            </button>
+            <button id="btn-reset" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-8 rounded-full shadow-md transition-transform transform hover:scale-105">
+                Reiniciar
+            </button>
+        </div>
+
+        <!-- Mensaje de Resultado -->
+        <div id="result-message" class="hidden mt-6 text-center text-xl font-bold p-4 rounded-lg">
+            <!-- Texto inyectado por JS -->
+        </div>
+
+    </div>
+
+    <script>
+        const examples = [
+            { id: 1, text: "Usar envases de plástico biodegradable en lugar de plástico normal.", target: "S", color: "bg-yellow-200" },
+            { id: 2, text: "Crear un reloj inteligente que funcione como monitor de salud y billetera.", target: "C", color: "bg-pink-200" },
+            { id: 3, text: "Usar el sistema de radar de los murciélagos para guiar autos autónomos.", target: "A", color: "bg-green-200" },
+            { id: 4, text: "Vender el producto en tamaño familiar o galón gigante.", target: "M", color: "bg-blue-200" },
+            { id: 5, text: "Utilizar llantas viejas de camiones para hacer columpios infantiles.", target: "P", color: "bg-purple-200" },
+            { id: 6, text: "Hacer auriculares que no necesiten cables para conectarse.", target: "E", color: "bg-orange-200" },
+            { id: 7, text: "Cobrar el servicio antes de entregarlo en lugar de hacerlo al final.", target: "R", color: "bg-teal-200" }
+        ];
+
+        const sourceZone = document.querySelector('#source-zone .zone-content');
+        let draggedItem = null;
+        let touchClone = null;
+        let touchOffsetX = 0;
+        let touchOffsetY = 0;
+
+        // Inicializar juego
+        function initGame() {
+            sourceZone.innerHTML = '';
+            document.querySelectorAll('.drop-zone:not(#source-zone) .zone-content').forEach(z => z.innerHTML = '');
+            document.getElementById('result-message').classList.add('hidden');
+            
+            // Barajar ejemplos
+            const shuffled = [...examples].sort(() => Math.random() - 0.5);
+
+            shuffled.forEach(ex => {
+                const rotation = Math.floor(Math.random() * 10) - 5; // -5 a 5 grados
+                const postIt = document.createElement('div');
+                postIt.className = `post-it ${ex.color} p-4 w-40 h-40 rounded-sm shadow-md flex items-center justify-center text-center`;
+                postIt.style.transform = `rotate(${rotation}deg)`;
+                postIt.setAttribute('draggable', 'true');
+                postIt.setAttribute('data-id', ex.id);
+                postIt.setAttribute('data-target', ex.target);
+                postIt.textContent = ex.text;
+
+                // Eventos Mouse (Desktop)
+                postIt.addEventListener('dragstart', handleDragStart);
+                postIt.addEventListener('dragend', handleDragEnd);
+
+                // Eventos Touch (Móviles)
+                postIt.addEventListener('touchstart', handleTouchStart, { passive: false });
+                postIt.addEventListener('touchmove', handleTouchMove, { passive: false });
+                postIt.addEventListener('touchend', handleTouchEnd);
+
+                sourceZone.appendChild(postIt);
+            });
+        }
+
+        // --- LÓGICA DRAG & DROP PARA ESCRITORIO ---
+        function handleDragStart(e) {
+            draggedItem = this;
+            setTimeout(() => this.style.opacity = '0.4', 0);
+            e.dataTransfer.effectAllowed = 'move';
+        }
+
+        function handleDragEnd() {
+            this.style.opacity = '1';
+            draggedItem = null;
+        }
+
+        // --- LÓGICA DRAG & DROP PARA MÓVILES ---
+        function handleTouchStart(e) {
+            if(e.touches.length > 1) return; // Ignorar multi-touch
+            draggedItem = this;
+            
+            // Prevenir scroll de pantalla
+            e.preventDefault();
+
+            const rect = this.getBoundingClientRect();
+            const touch = e.touches[0];
+
+            touchOffsetX = touch.clientX - rect.left;
+            touchOffsetY = touch.clientY - rect.top;
+
+            // Crear un clon visual para seguir el dedo
+            touchClone = this.cloneNode(true);
+            touchClone.style.position = 'fixed';
+            touchClone.style.left = rect.left + 'px';
+            touchClone.style.top = rect.top + 'px';
+            touchClone.style.width = rect.width + 'px';
+            touchClone.style.height = rect.height + 'px';
+            touchClone.style.opacity = '0.9';
+            touchClone.style.zIndex = '9999';
+            touchClone.style.pointerEvents = 'none'; // Clave para que elementFromPoint funcione
+            touchClone.style.transform = 'scale(1.05) rotate(0deg)';
+            touchClone.style.boxShadow = '0 20px 25px -5px rgba(0, 0, 0, 0.2)';
+
+            document.body.appendChild(touchClone);
+            this.style.opacity = '0.3';
+        }
+
+        function handleTouchMove(e) {
+            if (!touchClone) return;
+            e.preventDefault(); // Detener scroll
+            const touch = e.touches[0];
+            touchClone.style.left = (touch.clientX - touchOffsetX) + 'px';
+            touchClone.style.top = (touch.clientY - touchOffsetY) + 'px';
+        }
+
+        function handleTouchEnd(e) {
+            if (!touchClone || !draggedItem) return;
+
+            const touch = e.changedTouches[0];
+            // Encontrar el elemento debajo del dedo al soltar
+            const dropTarget = document.elementFromPoint(touch.clientX, touch.clientY);
+            
+            const zone = dropTarget ? dropTarget.closest('.drop-zone') : null;
+
+            if (zone) {
+                const zoneContent = zone.querySelector('.zone-content');
+                // Remover rotación al ponerlo en las casillas (opcional, pero se ve más ordenado)
+                if(zone.id !== 'source-zone') {
+                    draggedItem.style.transform = 'rotate(0deg)';
+                    draggedItem.style.width = '100%';
+                    draggedItem.style.height = 'auto';
+                    draggedItem.style.minHeight = '60px';
+                } else {
+                    const rotation = Math.floor(Math.random() * 10) - 5;
+                    draggedItem.style.transform = `rotate(${rotation}deg)`;
+                    draggedItem.style.width = '10rem';
+                    draggedItem.style.height = '10rem';
+                }
+                zoneContent.appendChild(draggedItem);
+                
+                // Efecto visual de soltado exitoso
+                zone.classList.add('bg-gray-200');
+                setTimeout(() => zone.classList.remove('bg-gray-200'), 200);
+            }
+
+            touchClone.remove();
+            touchClone = null;
+            draggedItem.style.opacity = '1';
+            draggedItem = null;
+        }
+
+        // --- ZONAS DE SOLTADO (Mouse) ---
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                e.dataTransfer.dropEffect = 'move';
+                zone.classList.add('ring-4', 'ring-indigo-300', 'ring-opacity-50');
+            });
+
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('ring-4', 'ring-indigo-300', 'ring-opacity-50');
+            });
+
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('ring-4', 'ring-indigo-300', 'ring-opacity-50');
+                if (draggedItem) {
+                    const zoneContent = zone.querySelector('.zone-content');
+                    if(zone.id !== 'source-zone') {
+                        draggedItem.style.transform = 'rotate(0deg)';
+                        draggedItem.style.width = '100%';
+                        draggedItem.style.height = 'auto';
+                        draggedItem.style.minHeight = '60px';
+                    } else {
+                        const rotation = Math.floor(Math.random() * 10) - 5;
+                        draggedItem.style.transform = `rotate(${rotation}deg)`;
+                        draggedItem.style.width = '10rem';
+                        draggedItem.style.height = '10rem';
+                    }
+                    zoneContent.appendChild(draggedItem);
+                }
+            });
+        });
+
+        // --- VALIDACIÓN DEL JUEGO ---
+        document.getElementById('btn-validate').addEventListener('click', () => {
+            let correctCount = 0;
+            let totalPlaced = 0;
+
+            document.querySelectorAll('.drop-zone:not(#source-zone)').forEach(zone => {
+                const category = zone.getAttribute('data-category');
+                const items = zone.querySelectorAll('.post-it');
+                
+                items.forEach(item => {
+                    totalPlaced++;
+                    if (item.getAttribute('data-target') === category) {
+                        item.classList.add('border-4', 'border-green-500');
+                        item.classList.remove('border-red-500');
+                        correctCount++;
+                    } else {
+                        item.classList.add('border-4', 'border-red-500');
+                        item.classList.remove('border-green-500');
+                    }
+                });
+            });
+
+            const resultMsg = document.getElementById('result-message');
+            resultMsg.classList.remove('hidden', 'bg-green-100', 'text-green-800', 'bg-yellow-100', 'text-yellow-800', 'bg-red-100', 'text-red-800');
+
+            if (totalPlaced < examples.length) {
+                resultMsg.textContent = "¡Aún te faltan post-its por acomodar!";
+                resultMsg.classList.add('bg-yellow-100', 'text-yellow-800');
+            } else if (correctCount === examples.length) {
+                resultMsg.textContent = "¡Excelente! Has dominado la técnica SCAMPER. 🚀";
+                resultMsg.classList.add('bg-green-100', 'text-green-800');
+            } else {
+                resultMsg.textContent = `Tienes ${correctCount} de ${examples.length} correctos. Revisa los que están en rojo e inténtalo de nuevo.`;
+                resultMsg.classList.add('bg-red-100', 'text-red-800');
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', initGame);
+
+        // Iniciar
+        initGame();
+    </script>
+</body>
+</html>

@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Ruleta de Participantes</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #0a0a14;
+    --surface: #12121f;
+    --accent: #f5c518;
+    --accent2: #e8473f;
+    --text: #f0eefc;
+    --muted: #6b6a8a;
+    --radius: 16px;
+  }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+    background-image: radial-gradient(ellipse at 20% 20%, #1a1040 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 80%, #1a0f2e 0%, transparent 60%);
+  }
+
+  header {
+    text-align: center;
+    padding: 2rem 1rem 0;
+  }
+
+  h1 {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(2.5rem, 6vw, 4rem);
+    letter-spacing: 0.1em;
+    background: linear-gradient(135deg, var(--accent), #ff9d00, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    text-shadow: none;
+  }
+
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.9rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-top: 0.25rem;
+  }
+
+  /* SETUP PANEL */
+  #setup {
+    width: min(480px, 90vw);
+    background: var(--surface);
+    border: 1px solid #ffffff12;
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 8px 40px #00000080;
+  }
+
+  .field-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    margin-bottom: 1.2rem;
+  }
+
+  label {
+    font-size: 0.8rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    font-weight: 600;
+  }
+
+  input[type="number"], input[type="text"] {
+    background: #0d0d1a;
+    border: 1px solid #ffffff18;
+    border-radius: 10px;
+    color: var(--text);
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    outline: none;
+    transition: border-color 0.2s;
+    width: 100%;
+  }
+
+  input:focus { border-color: var(--accent); }
+
+  #names-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    max-height: 260px;
+    overflow-y: auto;
+    padding-right: 4px;
+    margin-bottom: 1.2rem;
+  }
+
+  #names-container::-webkit-scrollbar { width: 4px; }
+  #names-container::-webkit-scrollbar-thumb { background: #ffffff22; border-radius: 99px; }
+
+  .name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .name-row span {
+    font-size: 0.75rem;
+    color: var(--muted);
+    min-width: 20px;
+    text-align: right;
+  }
+
+  button {
+    cursor: pointer;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    border: none;
+    border-radius: 10px;
+    transition: all 0.2s;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--accent), #ff9d00);
+    color: #111;
+    font-size: 1rem;
+    letter-spacing: 0.05em;
+    padding: 0.9rem 2rem;
+    width: 100%;
+    text-transform: uppercase;
+  }
+
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px #f5c51850; }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* WHEEL SECTION */
+  #wheel-section {
+    display: none;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1rem 1rem 3rem;
+    width: 100%;
+  }
+
+  .wheel-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .pointer {
+    position: absolute;
+    right: -20px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-top: 18px solid transparent;
+    border-bottom: 18px solid transparent;
+    border-right: 36px solid var(--accent);
+    filter: drop-shadow(0 0 8px var(--accent));
+    z-index: 10;
+  }
+
+  canvas {
+    border-radius: 50%;
+    box-shadow: 0 0 60px #f5c51830, 0 0 0 4px #ffffff0a;
+  }
+
+  .center-btn {
+    position: absolute;
+    background: var(--bg);
+    border: 3px solid var(--accent);
+    color: var(--accent);
+    font-family: 'Bebas Neue', cursive;
+    font-size: 1.1rem;
+    letter-spacing: 0.1em;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    z-index: 5;
+    box-shadow: 0 0 20px #f5c51840;
+    transition: all 0.2s;
+  }
+
+  .center-btn:hover { background: var(--accent); color: #111; transform: scale(1.08); }
+
+  .btn-reset {
+    background: transparent;
+    border: 1px solid #ffffff20;
+    color: var(--muted);
+    font-size: 0.85rem;
+    padding: 0.6rem 1.5rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  .btn-reset:hover { border-color: var(--accent2); color: var(--accent2); }
+
+  /* WINNER OVERLAY */
+  #winner-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #000000cc;
+    backdrop-filter: blur(8px);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  #winner-overlay.show {
+    display: flex;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .winner-label {
+    font-size: 1rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+    animation: slideUp 0.5s 0.2s both;
+  }
+
+  #winner-name {
+    font-family: 'Bebas Neue', cursive;
+    font-size: clamp(3.5rem, 12vw, 8rem);
+    letter-spacing: 0.05em;
+    background: linear-gradient(135deg, var(--accent), #ff9d00, var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    line-height: 1;
+    text-align: center;
+    padding: 0 1rem;
+    animation: zoomIn 0.6s 0.3s cubic-bezier(0.34,1.56,0.64,1) both;
+  }
+
+  .confetti-emoji {
+    font-size: 3rem;
+    animation: bounce 0.8s 0.5s ease both;
+  }
+
+  .btn-close-winner {
+    margin-top: 1rem;
+    background: transparent;
+    border: 1px solid #ffffff30;
+    color: #ffffff80;
+    padding: 0.6rem 2rem;
+    border-radius: 99px;
+    font-size: 0.85rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    animation: slideUp 0.5s 0.7s both;
+  }
+
+  .btn-close-winner:hover { border-color: var(--text); color: var(--text); }
+
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes zoomIn { from { opacity: 0; transform: scale(0.3); } to { opacity: 1; transform: scale(1); } }
+  @keyframes bounce { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+
+  .particles {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 99;
+  }
+
+  .particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    animation: fall linear forwards;
+  }
+
+  @keyframes fall {
+    0% { transform: translateY(-20px) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(105vh) rotate(720deg); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Ruleta</h1>
+  <p class="subtitle">¿Quién será el elegido?</p>
+</header>
+
+<!-- SETUP -->
+<div id="setup">
+  <div class="field-group">
+    <label for="count-input">Número de participantes</label>
+    <input type="number" id="count-input" min="2" max="30" placeholder="Ej: 6" value="">
+  </div>
+  <button class="btn-primary" id="gen-btn" onclick="generateFields()">Generar campos</button>
+  <br><br>
+  <div id="names-container"></div>
+  <button class="btn-primary" id="start-btn" style="display:none" onclick="startWheel()">Crear ruleta</button>
+</div>
+
+<!-- WHEEL -->
+<div id="wheel-section">
+  <div class="wheel-wrapper">
+    <div class="pointer"></div>
+    <canvas id="wheel" width="420" height="420"></canvas>
+    <button class="center-btn" id="spin-btn" onclick="spin()">GIRAR</button>
+  </div>
+  <button class="btn-reset" onclick="resetApp()">↩ Reiniciar</button>
+</div>
+
+<!-- WINNER -->
+<div id="winner-overlay">
+  <div class="particles" id="particles"></div>
+  <span class="confetti-emoji">🎉</span>
+  <div class="winner-label">¡El ganador es!</div>
+  <div id="winner-name"></div>
+  <button class="btn-close-winner" onclick="closeWinner()">Continuar</button>
+</div>
+
+<script>
+const COLORS = [
+  '#e8473f','#f5c518','#3b82f6','#10b981','#f97316',
+  '#8b5cf6','#ec4899','#06b6d4','#84cc16','#ef4444',
+  '#a855f7','#14b8a6','#fb923c','#6366f1','#22c55e',
+  '#f43f5e','#0ea5e9','#d97706','#7c3aed','#059669',
+  '#dc2626','#2563eb','#16a34a','#d946ef','#ea580c',
+  '#0284c7','#65a30d','#9333ea','#e11d48','#0d9488'
+];
+
+let names = [];
+let spinning = false;
+let currentAngle = 0;
+let animFrame;
+let audioCtx;
+
+function getAudioCtx() {
+  if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  return audioCtx;
+}
+
+function playTick() {
+  try {
+    const ctx = getAudioCtx();
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.frequency.value = 800 + Math.random() * 400;
+    osc.type = 'triangle';
+    gain.gain.setValueAtTime(0.15, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.05);
+    osc.start(ctx.currentTime);
+    osc.stop(ctx.currentTime + 0.05);
+  } catch(e) {}
+}
+
+function playWin() {
+  try {
+    const ctx = getAudioCtx();
+    const notes = [523.25, 659.25, 783.99, 1046.50, 783.99, 1046.50];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.05);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
+      osc.start(t);
+      osc.stop(t + 0.3);
+    });
+  } catch(e) {}
+}
+
+function generateFields() {
+  const count = parseInt(document.getElementById('count-input').value);
+  if (!count || count < 2 || count > 30) {
+    alert('Por favor ingresa un número entre 2 y 30.');
+    return;
+  }
+  const container = document.getElementById('names-container');
+  container.innerHTML = '';
+  for (let i = 1; i <= count; i++) {
+    const row = document.createElement('div');
+    row.className = 'name-row';
+    row.innerHTML = `<span>${i}.</span><input type="text" placeholder="Participante ${i}" id="name-${i}">`;
+    container.appendChild(row);
+  }
+  document.getElementById('start-btn').style.display = 'block';
+}
+
+function startWheel() {
+  const count = parseInt(document.getElementById('count-input').value);
+  names = [];
+  for (let i = 1; i <= count; i++) {
+    const val = document.getElementById(`name-${i}`).value.trim();
+    names.push(val || `P${i}`);
+  }
+  document.getElementById('setup').style.display = 'none';
+  const ws = document.getElementById('wheel-section');
+  ws.style.display = 'flex';
+  drawWheel();
+}
+
+function drawWheel(highlight = -1) {
+  const canvas = document.getElementById('wheel');
+  const ctx = canvas.getContext('2d');
+  const W = canvas.width, H = canvas.height;
+  const cx = W / 2, cy = H / 2;
+  const R = cx - 8;
+  const slice = (2 * Math.PI) / names.length;
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Glow ring
+  const grd = ctx.createRadialGradient(cx, cy, R - 10, cx, cy, R + 5);
+  grd.addColorStop(0, 'rgba(245,197,24,0.15)');
+  grd.addColorStop(1, 'transparent');
+  ctx.fillStyle = grd;
+  ctx.beginPath();
+  ctx.arc(cx, cy, R + 5, 0, Math.PI * 2);
+  ctx.fill();
+
+  for (let i = 0; i < names.length; i++) {
+    const start = currentAngle + i * slice;
+    const end = start + slice;
+    const color = COLORS[i % COLORS.length];
+
+    // Slice
+    ctx.beginPath();
+    ctx.moveTo(cx, cy);
+    ctx.arc(cx, cy, R, start, end);
+    ctx.closePath();
+    ctx.fillStyle = highlight === i ? '#ffffff' : color;
+    ctx.fill();
+    ctx.strokeStyle = '#00000033';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Text
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(start + slice / 2);
+    ctx.textAlign = 'right';
+    ctx.fillStyle = highlight === i ? '#111' : '#fff';
+    ctx.font = `bold ${Math.min(18, 260 / names.length + 4)}px Outfit`;
+    ctx.shadowColor = '#00000080';
+    ctx.shadowBlur = 4;
+    const txt = names[i].length > 14 ? names[i].slice(0, 13) + '…' : names[i];
+    ctx.fillText(txt, R - 12, 5);
+    ctx.restore();
+  }
+
+  // Center cap
+  ctx.beginPath();
+  ctx.arc(cx, cy, 38, 0, Math.PI * 2);
+  ctx.fillStyle = '#0a0a14';
+  ctx.fill();
+  ctx.strokeStyle = 'rgba(245,197,24,0.6)';
+  ctx.lineWidth = 3;
+  ctx.stroke();
+}
+
+function spin() {
+  if (spinning) return;
+  spinning = true;
+  document.getElementById('spin-btn').textContent = '…';
+
+  const totalRotation = (8 + Math.random() * 8) * Math.PI * 2; // 8-16 full rotations
+  const duration = 4000 + Math.random() * 2000;
+  const startAngle = currentAngle;
+  const startTime = performance.now();
+  let lastTickAngle = currentAngle;
+  const slice = (2 * Math.PI) / names.length;
+
+  function ease(t) {
+    return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+  }
+
+  function frame(now) {
+    const elapsed = now - startTime;
+    const progress = Math.min(elapsed / duration, 1);
+    const eased = ease(progress);
+    currentAngle = startAngle + totalRotation * eased;
+
+    // Tick sound
+    const normalizedAngle = currentAngle % (2 * Math.PI);
+    const tickDiff = Math.abs(normalizedAngle - (lastTickAngle % (2 * Math.PI)));
+    if (tickDiff > slice || (normalizedAngle < lastTickAngle % (2 * Math.PI))) {
+      playTick();
+      lastTickAngle = currentAngle;
+    }
+
+    drawWheel();
+
+    if (progress < 1) {
+      animFrame = requestAnimationFrame(frame);
+    } else {
+      spinning = false;
+      document.getElementById('spin-btn').textContent = 'GIRAR';
+      showWinner();
+    }
+  }
+
+  requestAnimationFrame(frame);
+}
+
+function getWinnerIndex() {
+  // The pointer is on the RIGHT side of the canvas = angle 0 in canvas coords.
+  // Slices are drawn starting at currentAngle.
+  // We need to find which slice covers angle 0.
+  // Slice i spans: [currentAngle + i*slice, currentAngle + (i+1)*slice]
+  // Normalize angle 0 relative to currentAngle:
+  const slice = (2 * Math.PI) / names.length;
+  // How far is angle 0 from the start of the wheel rotation?
+  const normalized = ((-currentAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+  return Math.floor(normalized / slice) % names.length;
+}
+
+function showWinner() {
+  const idx = getWinnerIndex();
+  drawWheel(idx);
+  playWin();
+  spawnParticles();
+
+  document.getElementById('winner-name').textContent = names[idx];
+  document.getElementById('winner-overlay').classList.add('show');
+}
+
+function spawnParticles() {
+  const container = document.getElementById('particles');
+  container.innerHTML = '';
+  const colors = ['#f5c518','#e8473f','#3b82f6','#10b981','#8b5cf6','#ec4899'];
+  for (let i = 0; i < 80; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    p.style.cssText = `
+      left: ${Math.random() * 100}%;
+      background: ${colors[Math.floor(Math.random() * colors.length)]};
+      width: ${4 + Math.random() * 8}px;
+      height: ${4 + Math.random() * 8}px;
+      border-radius: ${Math.random() > 0.5 ? '50%' : '2px'};
+      animation-duration: ${1.5 + Math.random() * 2}s;
+      animation-delay: ${Math.random() * 0.5}s;
+    `;
+    container.appendChild(p);
+  }
+}
+
+function closeWinner() {
+  document.getElementById('winner-overlay').classList.remove('show');
+}
+
+function resetApp() {
+  cancelAnimationFrame(animFrame);
+  spinning = false;
+  currentAngle = 0;
+  names = [];
+  document.getElementById('wheel-section').style.display = 'none';
+  document.getElementById('setup').style.display = 'block';
+  document.getElementById('names-container').innerHTML = '';
+  document.getElementById('start-btn').style.display = 'none';
+  document.getElementById('count-input').value = '';
+  document.getElementById('spin-btn').textContent = 'GIRAR';
+}
+
+// Resize canvas for mobile
+function resizeCanvas() {
+  const canvas = document.getElementById('wheel');
+  const max = Math.min(window.innerWidth - 80, 420);
+  canvas.width = max;
+  canvas.height = max;
+  if (names.length > 0) drawWheel();
+}
+
+window.addEventListener('resize', resizeCanvas);
+resizeCanvas();
+</script>
+</body>
+</html>

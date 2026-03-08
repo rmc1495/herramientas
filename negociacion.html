@@ -1,0 +1,653 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz – Capacidades de Negociación</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0d14;
+    --surface: #15151f;
+    --card: #1c1c2a;
+    --accent: #f5c842;
+    --accent2: #e84393;
+    --green: #2ecc71;
+    --red: #e74c3c;
+    --text: #eee;
+    --muted: #888;
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'DM Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 24px 16px 48px;
+    background-image: radial-gradient(ellipse at 20% 0%, #1e1040 0%, transparent 60%),
+                      radial-gradient(ellipse at 80% 100%, #0f2040 0%, transparent 60%);
+  }
+  h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(2rem, 6vw, 3.8rem);
+    letter-spacing: 3px;
+    color: var(--accent);
+    text-align: center;
+    margin-bottom: 4px;
+    text-shadow: 0 0 30px rgba(245,200,66,0.4);
+  }
+  .subtitle {
+    color: var(--muted);
+    font-size: 0.85rem;
+    text-align: center;
+    margin-bottom: 32px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  /* ─── SCREENS ─── */
+  .screen { width: 100%; max-width: 820px; }
+  .screen.hidden { display: none !important; }
+
+  /* ─── SETUP SCREEN ─── */
+  #setup-screen { animation: fadeUp .5s ease both; }
+  .setup-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 28px;
+    border: 1px solid #2e2e45;
+  }
+  .setup-box h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.5rem;
+    letter-spacing: 2px;
+    color: var(--accent);
+    margin-bottom: 20px;
+  }
+  .teams-grid { display: flex; flex-direction: column; gap: 12px; }
+  .team-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border-radius: 10px; padding: 10px 14px;
+    border: 1px solid #2a2a3d;
+    transition: border-color .2s;
+  }
+  .team-row:hover { border-color: var(--accent); }
+  .team-color-dot { width: 18px; height: 18px; border-radius: 50%; flex-shrink: 0; }
+  .team-row input {
+    background: transparent; border: none; outline: none;
+    color: var(--text); font-family: 'DM Sans', sans-serif;
+    font-size: 1rem; flex: 1;
+  }
+  .remove-btn {
+    background: none; border: none; color: var(--muted); cursor: pointer;
+    font-size: 1.2rem; transition: color .2s; padding: 4px;
+  }
+  .remove-btn:hover { color: var(--red); }
+  .add-team-btn {
+    margin-top: 14px; width: 100%; padding: 10px;
+    background: transparent; border: 2px dashed #3a3a55;
+    border-radius: 10px; color: var(--muted); cursor: pointer;
+    font-family: 'DM Sans', sans-serif; font-size: 0.95rem;
+    transition: all .2s;
+  }
+  .add-team-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-primary {
+    display: block; width: 100%; margin-top: 24px; padding: 14px;
+    background: var(--accent); color: #0d0d14;
+    border: none; border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px;
+    cursor: pointer; transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.3);
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(245,200,66,0.45); }
+  .btn-primary:active { transform: translateY(0); }
+
+  /* ─── GAME SCREEN ─── */
+  #game-screen { animation: fadeUp .4s ease both; }
+  .game-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 20px; flex-wrap: wrap; gap: 10px;
+  }
+  .question-counter {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 2px; color: var(--muted);
+  }
+  .turn-badge {
+    background: var(--surface); border-radius: 30px;
+    padding: 6px 16px; font-size: 0.85rem; font-weight: 600;
+    border: 1px solid #2a2a3d; display: flex; align-items: center; gap: 8px;
+  }
+  .turn-dot { width: 10px; height: 10px; border-radius: 50%; }
+
+  .progress-bar { height: 4px; background: #2a2a3d; border-radius: 99px; margin-bottom: 20px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--accent); border-radius: 99px; transition: width .5s ease; }
+
+  /* ─── TIMER ─── */
+  .timer-row {
+    display: flex; align-items: center; gap: 14px; margin-bottom: 18px;
+  }
+  .timer-ring-wrap { position: relative; width: 52px; height: 52px; flex-shrink: 0; }
+  .timer-ring-wrap svg { transform: rotate(-90deg); }
+  .timer-track { fill: none; stroke: #2a2a3d; stroke-width: 4; }
+  .timer-arc   { fill: none; stroke-width: 4; stroke-linecap: round;
+                 transition: stroke-dashoffset .9s linear, stroke .3s; }
+  .timer-num {
+    position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px;
+  }
+  .timer-label { font-size: 0.78rem; color: var(--muted); }
+  .timer-label strong { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 1rem; letter-spacing: 1px; }
+  .pts-badge {
+    margin-left: auto; background: var(--surface); border: 1px solid #3a3a55;
+    border-radius: 30px; padding: 5px 14px;
+    font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 1px;
+    color: var(--accent);
+  }
+
+  .question-card {
+    background: var(--card); border-radius: var(--radius);
+    padding: 28px 28px 22px; border: 1px solid #2e2e45;
+    margin-bottom: 20px;
+  }
+  .q-category {
+    font-size: 0.7rem; text-transform: uppercase; letter-spacing: 2px;
+    color: var(--accent); font-weight: 700; margin-bottom: 12px;
+  }
+  .q-text { font-size: 1.15rem; line-height: 1.65; font-weight: 400; }
+
+  .answer-row { display: flex; gap: 12px; margin-bottom: 20px; }
+  .ans-btn {
+    flex: 1; padding: 16px 10px;
+    border-radius: var(--radius); border: 2px solid transparent;
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; letter-spacing: 2px;
+    cursor: pointer; transition: all .2s; position: relative; overflow: hidden;
+  }
+  .ans-btn.true { background: rgba(46,204,113,0.1); border-color: var(--green); color: var(--green); }
+  .ans-btn.false { background: rgba(231,76,60,0.1); border-color: var(--red); color: var(--red); }
+  .ans-btn:hover { transform: scale(1.03); filter: brightness(1.2); }
+  .ans-btn:disabled { cursor: default; transform: none; }
+  .ans-btn.correct { animation: pulse-green .4s ease; background: rgba(46,204,113,0.25); }
+  .ans-btn.wrong   { animation: shake .35s ease; }
+
+  .feedback-bar {
+    border-radius: var(--radius); padding: 14px 18px;
+    font-size: 0.9rem; line-height: 1.5; display: none;
+    margin-bottom: 16px;
+    animation: fadeUp .3s ease both;
+  }
+  .feedback-bar.show { display: block; }
+  .feedback-bar.correct-fb { background: rgba(46,204,113,0.12); border: 1px solid var(--green); color: #a8f5c8; }
+  .feedback-bar.wrong-fb   { background: rgba(231,76,60,0.12);  border: 1px solid var(--red);   color: #f5a8a8; }
+  .feedback-bar strong { display: block; margin-bottom: 4px; font-size: 1rem; }
+
+  .next-btn {
+    width: 100%; padding: 13px; background: var(--surface);
+    border: 1px solid #3a3a55; border-radius: var(--radius);
+    color: var(--text); font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.1rem; letter-spacing: 2px; cursor: pointer;
+    display: none; transition: all .2s;
+  }
+  .next-btn.show { display: block; }
+  .next-btn:hover { background: #252535; border-color: var(--accent); color: var(--accent); }
+
+  /* ─── SCOREBOARD ─── */
+  .scoreboard {
+    background: var(--card); border-radius: var(--radius);
+    padding: 20px; border: 1px solid #2e2e45; margin-top: 20px;
+  }
+  .scoreboard h3 {
+    font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px;
+    color: var(--muted); font-size: 0.95rem; margin-bottom: 14px;
+  }
+  .score-rows { display: flex; flex-direction: column; gap: 8px; }
+  .score-row {
+    display: flex; align-items: center; gap: 10px;
+    background: var(--surface); border-radius: 8px; padding: 8px 12px;
+  }
+  .score-name { flex: 1; font-size: 0.9rem; font-weight: 600; }
+  .score-pts {
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem;
+    letter-spacing: 1px; color: var(--accent);
+  }
+  .score-bar-wrap { flex: 2; height: 6px; background: #252535; border-radius: 99px; overflow: hidden; }
+  .score-bar-fill { height: 100%; border-radius: 99px; transition: width .6s ease; }
+
+  /* ─── RESULTS SCREEN ─── */
+  #results-screen { animation: fadeUp .5s ease both; }
+  .winner-section {
+    text-align: center; padding: 36px 24px 28px;
+    background: var(--card); border-radius: var(--radius);
+    border: 1px solid #2e2e45; margin-bottom: 20px; position: relative; overflow: hidden;
+  }
+  .winner-section::before {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% -20%, rgba(245,200,66,0.15), transparent 70%);
+    pointer-events: none;
+  }
+  .trophy { font-size: 4rem; margin-bottom: 12px; }
+  .winner-label {
+    font-family: 'Bebas Neue', sans-serif; letter-spacing: 3px;
+    color: var(--muted); font-size: 1rem; margin-bottom: 8px;
+  }
+  .winner-name {
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 8vw, 3.5rem);
+    letter-spacing: 3px; color: var(--accent);
+    text-shadow: 0 0 40px rgba(245,200,66,0.5);
+  }
+  .winner-pts { color: var(--muted); font-size: 0.9rem; margin-top: 6px; }
+  .final-table { background: var(--card); border-radius: var(--radius); padding: 20px; border: 1px solid #2e2e45; }
+  .final-table h3 { font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; color: var(--muted); margin-bottom: 14px; }
+  .final-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 12px; border-radius: 8px; margin-bottom: 6px;
+    background: var(--surface); border: 1px solid #2a2a3d;
+  }
+  .final-pos { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; color: var(--muted); width: 28px; }
+  .final-row.rank-1 { border-color: var(--accent); background: rgba(245,200,66,0.07); }
+  .final-row.rank-1 .final-pos { color: var(--accent); }
+  .final-name { flex: 1; font-weight: 600; }
+  .final-pts { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: var(--accent); }
+  .final-correct { color: var(--muted); font-size: 0.8rem; }
+  .restart-btn {
+    display: block; width: 100%; margin-top: 20px; padding: 14px;
+    background: var(--accent2); color: #fff;
+    border: none; border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px;
+    cursor: pointer; transition: all .2s;
+    box-shadow: 0 4px 20px rgba(232,67,147,0.3);
+  }
+  .restart-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(232,67,147,0.45); }
+
+  /* ─── TRANSITION SCREEN ─── */
+  #transition-screen { animation: fadeUp .3s ease both; }
+  .transition-box {
+    background: var(--card); border-radius: var(--radius);
+    padding: 48px 28px; border: 1px solid #2e2e45;
+    text-align: center;
+  }
+  .transition-label {
+    font-size: 0.75rem; text-transform: uppercase; letter-spacing: 3px;
+    color: var(--muted); margin-bottom: 14px;
+  }
+  .transition-team {
+    font-family: 'Bebas Neue', sans-serif; font-size: clamp(2.2rem, 8vw, 3.4rem);
+    letter-spacing: 3px; margin-bottom: 6px;
+    text-shadow: 0 0 30px currentColor;
+  }
+  .transition-sub { color: var(--muted); font-size: 0.9rem; margin-bottom: 32px; }
+  .ready-btn {
+    padding: 14px 40px; background: var(--accent); color: #0d0d14;
+    border: none; border-radius: var(--radius);
+    font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 2px;
+    cursor: pointer; transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 4px 20px rgba(245,200,66,0.35);
+  }
+  .ready-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 28px rgba(245,200,66,0.5); }
+
+  @keyframes fadeUp { from { opacity:0; transform: translateY(20px); } to { opacity:1; transform: translateY(0); } }
+  @keyframes pulse-green { 0%,100%{transform:scale(1)} 50%{transform:scale(1.06)} }
+  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-6px)} 75%{transform:translateX(6px)} }
+  @keyframes confetti-fall { from{transform:translateY(-20px) rotate(0)} to{transform:translateY(110vh) rotate(720deg)} }
+
+  .confetti-piece {
+    position: fixed; top: 0; width: 10px; height: 10px; border-radius: 2px;
+    animation: confetti-fall linear both;
+    pointer-events: none; z-index: 999;
+  }
+
+  @media(max-width: 500px) {
+    .answer-row { flex-direction: column; }
+    .score-bar-wrap { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Negociación Quiz</h1>
+<p class="subtitle">Capacidades de Negociación · Modelo de Negocios RA4</p>
+
+<!-- ══════════════ SETUP ══════════════ -->
+<div id="setup-screen" class="screen">
+  <div class="setup-box">
+    <h2>⚡ Configura los Grupos</h2>
+    <div class="teams-grid" id="teams-grid"></div>
+    <button class="add-team-btn" id="add-team-btn">+ Agregar grupo (máx. 5)</button>
+    <button class="btn-primary" id="start-btn">INICIAR JUEGO</button>
+  </div>
+</div>
+
+<!-- ══════════════ GAME ══════════════ -->
+<div id="game-screen" class="screen hidden">
+  <div class="game-header">
+    <span class="question-counter" id="q-counter">Pregunta 1 / 20</span>
+    <div class="turn-badge">
+      <div class="turn-dot" id="turn-dot"></div>
+      <span id="turn-name">Grupo 1</span>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+
+  <div class="timer-row">
+    <div class="timer-ring-wrap">
+      <svg width="52" height="52" viewBox="0 0 52 52">
+        <circle class="timer-track" cx="26" cy="26" r="22"/>
+        <circle class="timer-arc" id="timer-arc" cx="26" cy="26" r="22"
+          stroke-dasharray="138.2" stroke-dashoffset="0"/>
+      </svg>
+      <div class="timer-num" id="timer-num">15</div>
+    </div>
+    <div class="timer-label">Tiempo restante<strong id="pts-preview">+10 pts</strong></div>
+    <div class="pts-badge">⚡ Velocidad activa</div>
+  </div>
+
+  <div class="question-card">
+    <div class="q-category" id="q-category">Negociación Distributiva</div>
+    <div class="q-text" id="q-text">Enunciado de la pregunta...</div>
+  </div>
+
+  <div class="answer-row">
+    <button class="ans-btn true"  id="btn-true"  onclick="answer(true)">✓ VERDADERO</button>
+    <button class="ans-btn false" id="btn-false" onclick="answer(false)">✗ FALSO</button>
+  </div>
+
+  <div class="feedback-bar" id="feedback-bar"></div>
+  <button class="next-btn" id="next-btn" onclick="nextQuestion()">SIGUIENTE PREGUNTA →</button>
+
+  <div class="scoreboard" id="scoreboard">
+    <h3>📊 Marcador</h3>
+    <div class="score-rows" id="score-rows"></div>
+  </div>
+</div>
+
+<!-- ══════════════ TRANSITION ══════════════ -->
+<div id="transition-screen" class="screen hidden">
+  <div class="transition-box">
+    <div class="transition-label">📢 Siguiente turno</div>
+    <div class="transition-team" id="transition-team-name">Grupo 2</div>
+    <div class="transition-sub" id="transition-sub">Prepárense para la pregunta <span id="transition-q-num">2</span></div>
+    <button class="ready-btn" onclick="goToQuestion()">¡LISTOS! →</button>
+  </div>
+</div>
+
+<!-- ══════════════ RESULTS ══════════════ -->
+<div id="results-screen" class="screen hidden">
+  <div class="winner-section">
+    <div class="trophy">🏆</div>
+    <div class="winner-label">GRUPO GANADOR</div>
+    <div class="winner-name" id="winner-name">—</div>
+    <div class="winner-pts" id="winner-pts">0 puntos</div>
+  </div>
+  <div class="final-table">
+    <h3>📋 Clasificación Final</h3>
+    <div id="final-rows"></div>
+  </div>
+  <button class="restart-btn" onclick="restart()">↩ JUGAR DE NUEVO</button>
+</div>
+
+<script>
+// ── QUESTIONS ──────────────────────────────────────────────────────────────
+const QUESTIONS = [
+  // Distributiva
+  { cat:"Negociación Distributiva", text:"En la negociación distributiva, ambas partes buscan maximizar sus beneficios individuales a expensas de la otra.", answer:true, explanation:"Correcto. La negociación distributiva es ganar-perder: cada parte intenta obtener la mayor parte del 'pastel' a costa de la otra." },
+  { cat:"Negociación Distributiva", text:"La negociación distributiva es ideal para construir relaciones comerciales a largo plazo.", answer:false, explanation:"Falso. La negociación distributiva es orientada al corto plazo y no fomenta relaciones futuras. Es común cuando no se espera una relación duradera." },
+  { cat:"Negociación Distributiva", text:"Un ejemplo de negociación distributiva es regatear el precio de un producto en un mercado.", answer:true, explanation:"Correcto. Regatear un precio es un caso clásico de distribución de recursos limitados (dinero) donde lo que gana uno lo pierde el otro." },
+  { cat:"Negociación Distributiva", text:"La negociación distributiva implica alta colaboración entre las partes.", answer:false, explanation:"Falso. La negociación distributiva tiene poca o nula colaboración. Las partes compiten por el recurso disponible, no cooperan." },
+
+  // Integrativa
+  { cat:"Negociación Integrativa", text:"El objetivo de la negociación integrativa es ampliar el 'pastel' para que ambas partes obtengan beneficios.", answer:true, explanation:"Correcto. La negociación integrativa o ganar-ganar busca crear valor adicional para que ambas partes salgan satisfechas." },
+  { cat:"Negociación Integrativa", text:"La negociación integrativa se centra en las posiciones de cada parte, no en sus intereses.", answer:false, explanation:"Falso. La negociación integrativa se enfoca en los intereses comunes, no en las posiciones. Compartir información y buscar soluciones creativas es clave." },
+  { cat:"Negociación Integrativa", text:"Las alianzas estratégicas y acuerdos de cooperación son contextos donde se aplica la negociación integrativa.", answer:true, explanation:"Correcto. Cuando los intereses de las partes se complementan, como en alianzas o acuerdos de cooperación, la negociación integrativa es la más adecuada." },
+  { cat:"Negociación Integrativa", text:"La negociación integrativa requiere poca comunicación y confianza entre las partes.", answer:false, explanation:"Falso. La negociación integrativa implica confianza y comunicación abierta como pilares fundamentales para encontrar soluciones que beneficien a todos." },
+
+  // Colaborativa
+  { cat:"Negociación Colaborativa", text:"La negociación colaborativa se basa en la construcción conjunta de valor entre las partes.", answer:true, explanation:"Correcto. En la negociación colaborativa, las partes cooperan activamente para encontrar soluciones mutuamente beneficiosas, con alto nivel de confianza." },
+  { cat:"Negociación Colaborativa", text:"La negociación colaborativa es rápida porque no requiere explorar alternativas.", answer:false, explanation:"Falso. La negociación colaborativa requiere tiempo y disposición para explorar alternativas. No se enfoca solo en la rapidez, sino en la calidad del acuerdo." },
+  { cat:"Negociación Colaborativa", text:"Un contexto ideal para la negociación colaborativa es la relación entre proveedores y distribuidores clave.", answer:true, explanation:"Correcto. Las relaciones comerciales a largo plazo, como entre proveedores y distribuidores, son el escenario ideal para la negociación colaborativa." },
+
+  // Competitiva
+  { cat:"Negociación Competitiva", text:"En la negociación competitiva, una parte busca imponer su posición para obtener ventaja significativa.", answer:true, explanation:"Correcto. La negociación competitiva se da cuando una parte busca dominar el resultado usando tácticas de presión o persuasión, priorizando el resultado sobre la relación." },
+  { cat:"Negociación Competitiva", text:"La negociación competitiva prioriza la relación entre las partes sobre el resultado obtenido.", answer:false, explanation:"Falso. Es exactamente al contrario. La negociación competitiva prioriza el resultado sobre la relación, con un enfoque agresivo o firme." },
+  { cat:"Negociación Competitiva", text:"Las subastas y licitaciones son escenarios típicos de la negociación competitiva.", answer:true, explanation:"Correcto. En subastas y licitaciones, las empresas compiten para dominar el contrato, lo cual es propio de la negociación competitiva." },
+
+  // Acomodativa
+  { cat:"Negociación Acomodativa", text:"En la negociación acomodativa, una de las partes cede voluntariamente para mantener la relación.", answer:true, explanation:"Correcto. La negociación acomodativa implica ceder de forma estratégica para preservar la relación o ganar beneficios a largo plazo." },
+  { cat:"Negociación Acomodativa", text:"La negociación acomodativa se usa cuando el resultado inmediato es más importante que la relación.", answer:false, explanation:"Falso. En la negociación acomodativa se prioriza la relación sobre el resultado inmediato. Puede usarse para fidelizar clientes clave." },
+
+  // Por Compromiso
+  { cat:"Negociación por Compromiso", text:"En la negociación por compromiso, ambas partes ceden en algunos aspectos para llegar a un punto medio.", answer:true, explanation:"Correcto. La negociación por compromiso es una estrategia rápida y práctica donde cada parte sacrifica algo para alcanzar un acuerdo mutuamente aceptable." },
+  { cat:"Negociación por Compromiso", text:"La negociación por compromiso garantiza que ambas partes queden completamente satisfechas.", answer:false, explanation:"Falso. Al contrario, puede dejar a ambas partes parcialmente insatisfechas, ya que nadie obtiene todo lo que quiere." },
+
+  // Por Imposición
+  { cat:"Negociación por Imposición", text:"En la negociación por imposición, la parte más poderosa dicta condiciones que la otra debe aceptar.", answer:true, explanation:"Correcto. La negociación por imposición ocurre cuando existe una gran diferencia de poder y la parte dominante impone sus condiciones sin espacio real para negociar." },
+  { cat:"Negociación por Imposición", text:"La negociación por imposición implica una relación equilibrada entre las partes.", answer:false, explanation:"Falso. Se caracteriza precisamente por una relación desequilibrada donde el más débil acepta condiciones para acceder a oportunidades o entrar al mercado." },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+const TEAM_COLORS = ['#f5c842','#e84393','#3ae8b0','#e86b3a','#8b5cf6'];
+const TIMER_MAX = 15; // seconds per question
+const CIRC = 138.2;   // 2*PI*22
+let teams = [], questionOrder = [], currentQ = 0, currentTeamIdx = 0, answered = false;
+let timerInterval = null, timeLeft = TIMER_MAX, questionStart = 0;
+
+function calcPoints(elapsed){
+  // 10 pts at 0s → 1 pt at 15s, linear
+  const pts = Math.round(10 - (elapsed / TIMER_MAX) * 9);
+  return Math.max(1, pts);
+}
+
+// ── SETUP ──────────────────────────────────────────────────────────────────
+function addTeamRow(name='') {
+  const grid = document.getElementById('teams-grid');
+  if(grid.children.length >= 5) return;
+  const idx = grid.children.length;
+  const row = document.createElement('div');
+  row.className = 'team-row';
+  row.innerHTML = `
+    <div class="team-color-dot" style="background:${TEAM_COLORS[idx]}"></div>
+    <input type="text" placeholder="Nombre del grupo ${idx+1}" value="${name}" maxlength="20">
+    <button class="remove-btn" onclick="this.parentElement.remove(); updateAddBtn()">✕</button>`;
+  grid.appendChild(row);
+  updateAddBtn();
+}
+function updateAddBtn(){
+  const grid = document.getElementById('teams-grid');
+  document.getElementById('add-team-btn').style.display = grid.children.length>=5?'none':'block';
+}
+document.getElementById('add-team-btn').onclick = () => addTeamRow();
+addTeamRow('Grupo 1'); addTeamRow('Grupo 2');
+
+document.getElementById('start-btn').onclick = () => {
+  const rows = document.querySelectorAll('#teams-grid .team-row');
+  if(rows.length < 2){ alert('Necesitas al menos 2 grupos.'); return; }
+  teams = Array.from(rows).map((r,i)=>{
+    const name = r.querySelector('input').value.trim() || `Grupo ${i+1}`;
+    return { name, color: TEAM_COLORS[i], score: 0, correct: 0 };
+  });
+  questionOrder = shuffle([...Array(QUESTIONS.length).keys()]).slice(0, 20);
+  currentQ = 0; currentTeamIdx = 0;
+  show('game-screen');
+  renderQuestion();
+  renderScoreboard();
+};
+
+// ── TIMER ─────────────────────────────────────────────────────────────────
+function startTimer(){
+  clearInterval(timerInterval);
+  timeLeft = TIMER_MAX;
+  questionStart = Date.now();
+  updateTimerUI(timeLeft);
+  timerInterval = setInterval(()=>{
+    timeLeft = Math.max(0, TIMER_MAX - (Date.now() - questionStart)/1000);
+    updateTimerUI(timeLeft);
+    if(timeLeft <= 0){ clearInterval(timerInterval); timeOut(); }
+  }, 100);
+}
+function stopTimer(){ clearInterval(timerInterval); }
+
+function updateTimerUI(t){
+  const frac = t / TIMER_MAX;
+  const offset = CIRC * (1 - frac);
+  const arc = document.getElementById('timer-arc');
+  const num = document.getElementById('timer-num');
+  const preview = document.getElementById('pts-preview');
+  arc.style.strokeDashoffset = offset;
+  // colour: green → yellow → red
+  const hue = Math.round(frac * 120);
+  arc.style.stroke = `hsl(${hue},90%,55%)`;
+  num.style.color  = `hsl(${hue},90%,65%)`;
+  num.textContent  = Math.ceil(t);
+  const elapsed = TIMER_MAX - t;
+  preview.textContent = `+${calcPoints(elapsed)} pts si acierta`;
+}
+
+function timeOut(){
+  if(answered) return;
+  answered = true;
+  document.getElementById('btn-true').disabled  = true;
+  document.getElementById('btn-false').disabled = true;
+  showFeedback(false, '⏱ ¡Se acabó el tiempo! ' + QUESTIONS[questionOrder[currentQ]].explanation);
+  renderScoreboard();
+  document.getElementById('next-btn').className = 'next-btn show';
+}
+
+// ── GAME ──────────────────────────────────────────────────────────────────
+function renderQuestion(){
+  answered = false;
+  const qi = questionOrder[currentQ];
+  const q  = QUESTIONS[qi];
+  const total = questionOrder.length;
+  document.getElementById('q-counter').textContent = `Pregunta ${currentQ+1} / ${total}`;
+  document.getElementById('q-category').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.text;
+  document.getElementById('progress-fill').style.width = `${(currentQ/total)*100}%`;
+
+  const team = teams[currentTeamIdx];
+  document.getElementById('turn-name').textContent = team.name;
+  document.getElementById('turn-dot').style.background = team.color;
+
+  document.getElementById('btn-true').disabled  = false;
+  document.getElementById('btn-false').disabled = false;
+  document.getElementById('btn-true').className  = 'ans-btn true';
+  document.getElementById('btn-false').className = 'ans-btn false';
+  const fb = document.getElementById('feedback-bar');
+  fb.className = 'feedback-bar'; fb.innerHTML = '';
+  document.getElementById('next-btn').className = 'next-btn';
+  startTimer();
+}
+
+function answer(val){
+  if(answered) return;
+  answered = true;
+  stopTimer();
+  const elapsed = (Date.now() - questionStart) / 1000;
+  const qi = questionOrder[currentQ];
+  const q  = QUESTIONS[qi];
+  const correct = (val === q.answer);
+  const team = teams[currentTeamIdx];
+
+  document.getElementById('btn-true').disabled  = true;
+  document.getElementById('btn-false').disabled = true;
+
+  if(correct){
+    const pts = calcPoints(elapsed);
+    team.score  += pts;
+    team.correct += 1;
+    const btn = val ? document.getElementById('btn-true') : document.getElementById('btn-false');
+    btn.className += ' correct';
+    showFeedback(true, q.explanation, pts);
+  } else {
+    const wrong = val ? document.getElementById('btn-true') : document.getElementById('btn-false');
+    wrong.className += ' wrong';
+    showFeedback(false, q.explanation, 0);
+  }
+  renderScoreboard();
+  document.getElementById('next-btn').className = 'next-btn show';
+}
+
+function showFeedback(correct, text, pts){
+  const fb = document.getElementById('feedback-bar');
+  fb.className = `feedback-bar show ${correct?'correct-fb':'wrong-fb'}`;
+  const ptsLabel = correct ? `✅ ¡Correcto! <b>+${pts} pts</b>${pts===10?' ⚡ ¡Máxima velocidad!':pts>=7?' 🔥 ¡Muy rápido!':''}` : '❌ Incorrecto';
+  fb.innerHTML = `<strong>${ptsLabel}</strong>${text}`;
+}
+
+function nextQuestion(){
+  currentTeamIdx = (currentTeamIdx + 1) % teams.length;
+  currentQ++;
+  if(currentQ >= questionOrder.length){ showResults(); return; }
+  // Show transition screen
+  const next = teams[currentTeamIdx];
+  document.getElementById('transition-team-name').textContent = next.name;
+  document.getElementById('transition-team-name').style.color = next.color;
+  document.getElementById('transition-sub').innerHTML = `Prepárense para la pregunta <strong>${currentQ+1}</strong> de ${questionOrder.length}`;
+  show('transition-screen');
+}
+
+function goToQuestion(){
+  show('game-screen');
+  renderQuestion();
+}
+
+function renderScoreboard(){
+  const max = Math.max(...teams.map(t=>t.score), 1);
+  document.getElementById('score-rows').innerHTML = teams.map(t=>`
+    <div class="score-row">
+      <div class="team-color-dot" style="background:${t.color}"></div>
+      <div class="score-name">${t.name}</div>
+      <div class="score-bar-wrap"><div class="score-bar-fill" style="width:${(t.score/max)*100}%;background:${t.color}"></div></div>
+      <div class="score-pts">${t.score}</div>
+    </div>`).join('');
+}
+
+// ── RESULTS ──────────────────────────────────────────────────────────────
+function showResults(){
+  stopTimer();
+  const sorted = [...teams].sort((a,b)=>b.score-a.score);
+  const winner = sorted[0];
+  document.getElementById('winner-name').textContent = winner.name;
+  document.getElementById('winner-name').style.color = winner.color;
+  document.getElementById('winner-pts').textContent  = `${winner.score} puntos · ${winner.correct} respuestas correctas`;
+
+  document.getElementById('final-rows').innerHTML = sorted.map((t,i)=>`
+    <div class="final-row ${i===0?'rank-1':''}">
+      <div class="final-pos">${i===0?'🥇':i===1?'🥈':i===2?'🥉':`${i+1}.`}</div>
+      <div class="team-color-dot" style="background:${t.color}"></div>
+      <div class="final-name">${t.name}</div>
+      <div class="final-correct">${t.correct}/${questionOrder.length} correctas</div>
+      <div class="final-pts">${t.score} pts</div>
+    </div>`).join('');
+
+  show('results-screen');
+  spawnConfetti(winner.color);
+}
+
+// ── UTILS ─────────────────────────────────────────────────────────────────
+function show(id){
+  ['setup-screen','game-screen','transition-screen','results-screen'].forEach(s=>{
+    document.getElementById(s).classList.toggle('hidden', s!==id);
+  });
+}
+function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1));[arr[i],arr[j]]=[arr[j],arr[i]];} return arr; }
+function restart(){ stopTimer(); show('setup-screen'); }
+
+function spawnConfetti(color){
+  const colors = [color,'#f5c842','#fff','#e84393','#3ae8b0'];
+  for(let i=0;i<60;i++){
+    const p = document.createElement('div');
+    p.className = 'confetti-piece';
+    p.style.cssText = `left:${Math.random()*100}vw;background:${colors[i%colors.length]};
+      animation-duration:${1.5+Math.random()*2}s;animation-delay:${Math.random()*1}s;
+      width:${6+Math.random()*8}px;height:${6+Math.random()*8}px;
+      border-radius:${Math.random()>0.5?'50%':'2px'};`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 4000);
+  }
+}
+</script>
+</body>
+</html>
