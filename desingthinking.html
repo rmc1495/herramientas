@@ -38,18 +38,63 @@
         }
         .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
         
-        /* Estilos para el PDF */
+        /* Estilos estrictos para forzar el PDF perfecto sin recortes */
         .pdf-exporting .no-print { display: none !important; }
-        /* Forzamos un ancho de 1500px y usamos flex: 1 para que las columnas se ajusten perfecto */
-        .pdf-exporting #board-container { overflow: visible !important; height: auto !important; padding: 20px !important; background-color: #f8fafc !important; width: 1500px !important; }
-        /* Flex sin wrap para obligar a que se mantengan horizontales */
-        .pdf-exporting #board-columns { display: flex !important; flex-direction: row !important; flex-wrap: nowrap !important; justify-content: space-between !important; width: 100% !important; gap: 20px !important; height: auto !important; }
-        .pdf-exporting .board-column { flex: 1 !important; min-width: 0 !important; width: auto !important; height: auto !important; page-break-inside: avoid; }
-        .pdf-exporting .overflow-y-auto { overflow: visible !important; max-height: none !important; }
+        
+        html.pdf-exporting, body.pdf-exporting, .pdf-exporting #root, .pdf-exporting .min-h-screen { 
+            width: 1600px !important; 
+            min-width: 1600px !important; 
+            height: auto !important;
+            min-height: max-content !important;
+            overflow: visible !important; 
+        }
+        
+        .pdf-exporting #board-container { 
+            width: 1600px !important; 
+            min-width: 1600px !important; 
+            max-width: 1600px !important; 
+            height: max-content !important;
+            overflow: visible !important; 
+            padding: 40px !important; 
+            background-color: #f8fafc !important; 
+            display: block !important;
+        }
+        
+        /* Flex estricto en fila, sin saltos de línea y con anchos fijos */
+        .pdf-exporting #board-columns { 
+            display: flex !important; 
+            flex-direction: row !important; 
+            flex-wrap: nowrap !important; 
+            width: 1520px !important; 
+            gap: 20px !important; 
+            justify-content: flex-start !important;
+            height: max-content !important;
+            align-items: flex-start !important;
+        }
+        
+        .pdf-exporting .board-column { 
+            flex: 0 0 288px !important; 
+            width: 288px !important; 
+            min-width: 288px !important; 
+            max-width: 288px !important; 
+            height: max-content !important; 
+            page-break-inside: avoid !important; /* Ya no saltará a otra página */
+        }
+        
+        .pdf-exporting .shadow-postit {
+            page-break-inside: avoid !important; /* Evita que un post-it se parta a la mitad */
+            break-inside: avoid !important;
+        }
+        
+        .pdf-exporting .overflow-y-auto { 
+            overflow: visible !important; 
+            max-height: none !important; 
+            height: auto !important;
+        }
         
         /* Mostrar el texto dinámico y ocultar el textarea para evitar cortes de texto en PDF */
         .pdf-exporting textarea { display: none !important; }
-        .pdf-exporting .print-text { visibility: visible !important; }
+        .pdf-exporting .print-text { visibility: visible !important; display: block !important; }
         textarea { resize: none; overflow: hidden; }
         
         /* Scrollbar personalizada */
@@ -382,42 +427,126 @@
         const POSTIT_COLORS = ['bg-yellow-200', 'bg-pink-200', 'bg-blue-200', 'bg-green-200', 'bg-purple-200'];
 
         function BoardView({ goHome }) {
-            const [notes, setNotes] = useState([
+            const defaultNotes = [
                 { id: 1, phase: 'empatizar', text: 'Los usuarios sienten que falta tiempo...', color: 'bg-yellow-200' },
                 { id: 2, phase: 'idear', text: '¡Crear una app móvil interactiva!', color: 'bg-pink-200' }
-            ]);
+            ];
+            
+            const [notes, setNotes] = useState([]); // Inicia vacío temporalmente
             const [isExporting, setIsExporting] = useState(false);
+            const [saveStatus, setSaveStatus] = useState('');
             const boardRef = useRef(null);
 
-            const addNote = (phaseId) => {
-                setNotes([...notes, { id: Date.now(), phase: phaseId, text: '', color: POSTIT_COLORS[Math.floor(Math.random() * POSTIT_COLORS.length)] }]);
+            // 1. Cargar notas desde el Local Storage al abrir la herramienta
+            useEffect(() => {
+                const savedNotes = localStorage.getItem('design_thinking_notes');
+                if (savedNotes) {
+                    try {
+                        setNotes(JSON.parse(savedNotes));
+                        setSaveStatus('Guardado en navegador ✅');
+                    } catch (e) {
+                        console.error("Error al leer datos locales", e);
+                        setNotes(defaultNotes);
+                    }
+                } else {
+                    setNotes(defaultNotes);
+                }
+            }, []);
+
+            // 2. Función para guardar en el Local Storage
+            const saveToLocal = (newNotes) => {
+                setSaveStatus('Guardando...');
+                try {
+                    localStorage.setItem('design_thinking_notes', JSON.stringify(newNotes));
+                    // Pequeño retraso visual para que el usuario note que se guardó
+                    setTimeout(() => setSaveStatus('Guardado en navegador ✅'), 300);
+                } catch (error) {
+                    console.error("Error guardando localmente:", error);
+                    setSaveStatus('Error al guardar ⚠️');
+                }
             };
-            const updateNoteText = (id, newText) => setNotes(notes.map(n => n.id === id ? { ...n, text: newText } : n));
-            const changeNoteColor = (id, newColor) => setNotes(notes.map(n => n.id === id ? { ...n, color: newColor } : n));
-            const deleteNote = (id) => setNotes(notes.filter(n => n.id !== id));
+
+            const addNote = (phaseId) => {
+                const newNotes = [...notes, { id: Date.now(), phase: phaseId, text: '', color: POSTIT_COLORS[Math.floor(Math.random() * POSTIT_COLORS.length)] }];
+                setNotes(newNotes);
+                saveToLocal(newNotes);
+            };
+            const updateNoteText = (id, newText) => {
+                const newNotes = notes.map(n => n.id === id ? { ...n, text: newText } : n);
+                setNotes(newNotes);
+                saveToLocal(newNotes);
+            };
+            const changeNoteColor = (id, newColor) => {
+                const newNotes = notes.map(n => n.id === id ? { ...n, color: newColor } : n);
+                setNotes(newNotes);
+                saveToLocal(newNotes);
+            };
+            const deleteNote = (id) => {
+                const newNotes = notes.filter(n => n.id !== id);
+                setNotes(newNotes);
+                saveToLocal(newNotes);
+            };
 
             const handleExportPDF = () => {
                 setIsExporting(true);
+                
+                // 1. Guardar scroll original y resetear a 0 para evitar que la foto se tome desplazada
+                const container = boardRef.current;
+                const originalScrollLeft = container.scrollLeft;
+                const originalScrollTop = container.scrollTop;
+                container.scrollLeft = 0;
+                container.scrollTop = 0;
+                window.scrollTo(0, 0);
+
+                // 2. Aplicar las clases que fuerzan el diseño panorámico en TODA la página
+                document.documentElement.classList.add('pdf-exporting');
                 document.body.classList.add('pdf-exporting');
                 
-                // Un pequeño retraso para permitir que el CSS flex-wrap reorganice las columnas antes del PDF
+                // 3. Darle tiempo al navegador para repintar
                 setTimeout(() => {
+                    // Encontrar la columna más alta para determinar el alto total de la hoja
+                    const columns = container.querySelectorAll('.board-column');
+                    let maxColHeight = 0;
+                    columns.forEach(col => {
+                        if(col.scrollHeight > maxColHeight) maxColHeight = col.scrollHeight;
+                    });
+
+                    // Dimensiones exactas del documento (1600px de ancho y altura dinámica)
+                    const contentWidth = 1600;
+                    const contentHeight = maxColHeight + 150; // Agregamos 150px de margen inferior
+
                     const opt = {
-                        margin: 10, filename: 'Mi_Pizarra_Design_Thinking.pdf', image: { type: 'jpeg', quality: 0.98 },
+                        margin: 0, // El margen ya lo da el padding de CSS
+                        filename: 'Pizarra_Design_Thinking.pdf', 
+                        image: { type: 'jpeg', quality: 1 },
                         html2canvas: { 
                             scale: 2, 
                             useCORS: true, 
                             logging: false,
-                            windowWidth: 1550, // Fuerza a leer toda el área sin importar si tu pantalla es más pequeña
-                            width: 1550
+                            scrollX: 0,
+                            scrollY: 0,
+                            windowWidth: contentWidth, 
+                            width: contentWidth,
+                            windowHeight: contentHeight, 
+                            height: contentHeight
                         }, 
-                        jsPDF: { unit: 'mm', format: 'a3', orientation: 'landscape' }
+                        // AQUÍ ESTÁ LA MAGIA: Formato personalizado exacto en píxeles. Todo en 1 hoja.
+                        jsPDF: { 
+                            unit: 'px', 
+                            format: [contentWidth, contentHeight], 
+                            orientation: contentWidth > contentHeight ? 'landscape' : 'portrait' 
+                        }
                     };
-                    html2pdf().set(opt).from(boardRef.current).save().then(() => {
+                    
+                    html2pdf().set(opt).from(container).save().then(() => {
+                        // 4. Restaurar todo a la normalidad para el usuario
+                        document.documentElement.classList.remove('pdf-exporting');
                         document.body.classList.remove('pdf-exporting');
+                        container.scrollLeft = originalScrollLeft;
+                        container.scrollTop = originalScrollTop;
                         setIsExporting(false);
                     });
-                }, 500);
+                }, 800);
             };
 
             return (
@@ -429,7 +558,10 @@
                             </button>
                             <div>
                                 <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-400">Pizarra Colaborativa</h1>
-                                <p className="text-slate-400 text-sm">Design Thinking</p>
+                                <p className="text-slate-400 text-sm flex items-center gap-2 mt-0.5">
+                                    Design Thinking
+                                    {saveStatus && <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-xs font-medium border border-slate-700">{saveStatus}</span>}
+                                </p>
                             </div>
                         </div>
                         <button onClick={handleExportPDF} disabled={isExporting} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm ${isExporting ? 'bg-slate-700 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100 hover:-translate-y-0.5'}`}>
