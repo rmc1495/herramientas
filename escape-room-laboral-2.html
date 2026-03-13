@@ -1,0 +1,761 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EXPEDIENTE LABORAL — Escape Room</title>
+<link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:ital,wght@0,400;0,700;1,400&family=Oswald:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #f0e8d0;
+  --paper2: #e8dfc4;
+  --ink: #1a1208;
+  --red-stamp: #8b1a1a;
+  --green-stamp: #1a4a1a;
+  --blue-ink: #1a2a4a;
+  --amber: #c8820a;
+  --rust: #8b3a0a;
+  --shadow: rgba(26,18,8,0.3);
+  --desk: #2a1a08;
+  --desk2: #3a2510;
+  --neon: #00ff88;
+  --neon2: #00cc66;
+  --danger: #ff3333;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--desk);
+  background-image:
+    repeating-linear-gradient(0deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px),
+    repeating-linear-gradient(90deg, transparent, transparent 40px, rgba(255,255,255,0.01) 40px, rgba(255,255,255,0.01) 41px);
+  font-family: 'Courier Prime', monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+  color: var(--ink);
+}
+.screen { display: none; min-height: 100vh; }
+.screen.active { display: flex; flex-direction: column; }
+
+/* ── INTRO ── */
+#screen-intro { align-items: center; justify-content: center; padding: 2rem 1rem; position: relative; overflow: hidden; }
+.intro-bg { position: absolute; inset: 0; background: radial-gradient(ellipse at 20% 50%, rgba(200,130,10,0.08) 0%, transparent 60%), radial-gradient(ellipse at 80% 20%, rgba(139,26,26,0.06) 0%, transparent 50%); }
+.intro-card {
+  background: var(--paper); max-width: 680px; width: 100%; position: relative;
+  box-shadow: 0 0 0 3px var(--desk2), 8px 8px 40px rgba(0,0,0,0.7), inset 0 0 0 1px rgba(200,150,80,0.2);
+  overflow: hidden; animation: cardDrop 0.7s cubic-bezier(0.22,1,0.36,1) both;
+}
+@keyframes cardDrop { from{opacity:0;transform:translateY(-40px) rotate(-1deg)} to{opacity:1;transform:translateY(0) rotate(0deg)} }
+.intro-header { background: var(--ink); padding: 2rem 2.5rem 1.8rem; position: relative; overflow: hidden; }
+.intro-header::after { content:''; position:absolute; bottom:0; left:0; right:0; height:4px; background: repeating-linear-gradient(90deg, var(--amber) 0px, var(--amber) 12px, transparent 12px, transparent 18px); }
+.intro-classified { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.4em; color:var(--amber); text-transform:uppercase; margin-bottom:1rem; opacity:0.8; }
+.intro-title { font-family:'Special Elite',serif; font-size:clamp(2rem,6vw,3.2rem); color:var(--paper); line-height:1.1; }
+.intro-title span { color:var(--amber); }
+.intro-subtitle { font-size:0.8rem; color:rgba(240,232,208,0.5); margin-top:0.5rem; font-style:italic; }
+.intro-body { padding:2rem 2.5rem; }
+.case-file-number { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.2em; color:var(--rust); text-transform:uppercase; margin-bottom:0.75rem; }
+.intro-brief { font-size:0.88rem; line-height:1.8; color:#2a1a08; margin-bottom:1.5rem; border-left:3px solid var(--amber); padding:0.5rem 0 0.5rem 1rem; font-style:italic; }
+.intro-rooms { display:flex; gap:0.75rem; margin-bottom:2rem; flex-wrap:wrap; }
+.room-badge { flex:1; min-width:120px; background:var(--paper2); border:1px solid rgba(26,18,8,0.2); padding:0.75rem; border-radius:2px; text-align:center; position:relative; }
+.room-badge::before { content:attr(data-num); font-family:'Oswald',sans-serif; font-size:2rem; font-weight:700; color:rgba(26,18,8,0.08); position:absolute; top:0.2rem; right:0.5rem; line-height:1; }
+.room-badge-icon { font-size:1.5rem; margin-bottom:0.3rem; }
+.room-badge-label { font-family:'Oswald',sans-serif; font-size:0.72rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--ink); font-weight:600; }
+.room-badge-diff { font-size:0.65rem; color:var(--rust); margin-top:0.2rem; }
+.intro-stats { display:flex; gap:1.5rem; margin-bottom:2rem; padding:1rem; background:rgba(26,18,8,0.05); border:1px dashed rgba(26,18,8,0.2); border-radius:2px; }
+.stat { text-align:center; flex:1; }
+.stat-val { font-family:'Oswald',sans-serif; font-size:1.4rem; font-weight:700; color:var(--amber); }
+.stat-label { font-size:0.65rem; color:#666; text-transform:uppercase; letter-spacing:0.1em; margin-top:2px; }
+.start-btn { width:100%; background:var(--ink); color:var(--paper); border:none; padding:1.1rem; font-family:'Oswald',sans-serif; font-size:1.1rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden; }
+.start-btn::before { content:''; position:absolute; inset:0; background:var(--amber); transform:translateX(-100%); transition:transform 0.3s; z-index:0; }
+.start-btn:hover::before { transform:translateX(0); }
+.start-btn span { position:relative; z-index:1; }
+.start-btn:hover { color:var(--ink); }
+
+/* ── GAME ── */
+#screen-game { flex-direction:column; }
+.hud { background:var(--ink); padding:0.6rem 1.5rem; display:flex; align-items:center; gap:1.5rem; border-bottom:3px solid var(--amber); position:sticky; top:0; z-index:100; flex-wrap:wrap; }
+.hud-room { font-family:'Oswald',sans-serif; font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--amber); flex:1; }
+.hud-score { font-family:'Oswald',sans-serif; font-size:1.1rem; font-weight:700; color:var(--paper); display:flex; align-items:center; gap:0.4rem; }
+.timer-wrap { display:flex; align-items:center; gap:0.5rem; }
+.timer { font-family:'Oswald',sans-serif; font-size:1.3rem; font-weight:700; color:var(--neon); letter-spacing:0.05em; min-width:52px; text-align:right; transition:color 0.3s; }
+.timer.warning { color:var(--amber); }
+.timer.danger  { color:var(--danger); animation:blink 0.5s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.4} }
+.timer-bar-wrap { width:80px; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden; }
+.timer-bar { height:100%; background:var(--neon); border-radius:3px; transition:width 1s linear, background 0.3s; }
+.lives { display:flex; gap:3px; }
+.life { font-size:0.9rem; transition:all 0.3s; }
+.life.lost { opacity:0.15; filter:grayscale(1); }
+
+.game-area { flex:1; padding:2rem 1rem 5rem; display:flex; flex-direction:column; align-items:center; gap:1.5rem; }
+.room-header { max-width:720px; width:100%; text-align:center; animation:fadeSlide 0.5s ease both; }
+@keyframes fadeSlide { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.room-tag { display:inline-block; font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.3em; text-transform:uppercase; color:var(--amber); border:1px solid var(--amber); padding:0.2rem 0.8rem; margin-bottom:0.75rem; border-radius:1px; }
+.room-title { font-family:'Special Elite',serif; font-size:clamp(1.4rem,4vw,2rem); color:var(--paper); line-height:1.2; }
+.progress-stamps { max-width:720px; width:100%; display:flex; gap:0.5rem; flex-wrap:wrap; }
+.stamp { width:32px; height:32px; border-radius:50%; border:2px solid rgba(240,232,208,0.2); display:flex; align-items:center; justify-content:center; color:rgba(240,232,208,0.3); font-family:'Oswald',sans-serif; font-weight:700; font-size:0.7rem; transition:all 0.4s; flex-shrink:0; }
+.stamp.done-ok    { background:var(--green-stamp); border-color:var(--green-stamp); color:white; }
+.stamp.done-wrong { background:var(--red-stamp); border-color:var(--red-stamp); color:white; }
+.stamp.current    { border-color:var(--amber); color:var(--amber); }
+
+.q-container { max-width:720px; width:100%; }
+.case-card { background:var(--paper); border-radius:2px; overflow:hidden; box-shadow:4px 4px 0 rgba(0,0,0,0.4), inset 0 0 0 1px rgba(200,150,80,0.15); animation:cardIn 0.4s cubic-bezier(0.22,1,0.36,1) both; position:relative; }
+@keyframes cardIn { from{opacity:0;transform:scale(0.96) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+.card-tape { width:60px; height:16px; background:rgba(200,130,10,0.35); position:absolute; top:-5px; left:50%; transform:translateX(-50%) rotate(-1deg); border-radius:1px; z-index:5; }
+.card-top { background:rgba(26,18,8,0.06); border-bottom:1px solid rgba(26,18,8,0.12); padding:1rem 1.5rem 0.8rem; display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; }
+.card-case-num { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--rust); }
+.card-diff { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.1em; padding:0.2rem 0.5rem; border-radius:1px; text-transform:uppercase; font-weight:600; }
+.diff-easy   { background:rgba(26,74,26,0.15); color:var(--green-stamp); border:1px solid rgba(26,74,26,0.3); }
+.diff-medium { background:rgba(200,130,10,0.12); color:var(--rust); border:1px solid rgba(200,130,10,0.3); }
+.diff-hard   { background:rgba(139,26,26,0.12); color:var(--red-stamp); border:1px solid rgba(139,26,26,0.3); }
+.card-body { padding:1.5rem; }
+.scenario-label { font-size:0.62rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--rust); font-weight:700; margin-bottom:0.6rem; }
+.scenario-text { font-size:0.92rem; line-height:1.85; color:#1a1208; margin-bottom:1.2rem; border-left:3px solid var(--amber); padding:0.5rem 0 0.5rem 1rem; background:rgba(200,130,10,0.04); font-style:italic; }
+.question-label { font-family:'Oswald',sans-serif; font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--blue-ink); font-weight:600; margin-bottom:0.5rem; }
+.question-text { font-family:'Special Elite',serif; font-size:clamp(1rem,2.5vw,1.25rem); line-height:1.4; color:var(--ink); margin-bottom:1.4rem; }
+.options-grid { display:flex; flex-direction:column; gap:0.65rem; }
+.opt { background:var(--paper2); border:1.5px solid rgba(26,18,8,0.15); border-radius:2px; padding:0.9rem 1.1rem; cursor:pointer; transition:all 0.2s; display:flex; align-items:flex-start; gap:0.75rem; font-family:'Courier Prime',monospace; font-size:0.84rem; line-height:1.5; color:var(--ink); position:relative; overflow:hidden; }
+.opt::before { content:''; position:absolute; left:0; top:0; bottom:0; width:3px; background:transparent; transition:background 0.2s; }
+.opt:hover { border-color:var(--ink); background:#ede0c0; transform:translateX(3px); }
+.opt:hover::before { background:var(--amber); }
+.opt-letter { font-family:'Oswald',sans-serif; font-weight:700; font-size:0.9rem; color:var(--amber); flex-shrink:0; width:20px; padding-top:1px; }
+.opt.correct { background:rgba(26,74,26,0.12); border-color:var(--green-stamp); transform:translateX(0); }
+.opt.correct::before { background:var(--green-stamp); }
+.opt.wrong { background:rgba(139,26,26,0.1); border-color:var(--red-stamp); }
+.opt.wrong::before { background:var(--red-stamp); }
+.opt.disabled { cursor:default; opacity:0.55; }
+.opt.disabled:hover { transform:none; border-color:rgba(26,18,8,0.15); background:var(--paper2); }
+.opt.disabled:hover::before { background:transparent; }
+.feedback { display:none; margin-top:1rem; padding:1rem 1.2rem; border-radius:2px; font-size:0.84rem; line-height:1.65; animation:feedIn 0.3s ease both; border-left:4px solid; }
+@keyframes feedIn { from{opacity:0;transform:translateY(8px)} to{opacity:1;transform:translateY(0)} }
+.feedback.correct-fb { background:rgba(26,74,26,0.1); border-color:var(--green-stamp); color:#1a3a1a; }
+.feedback.wrong-fb   { background:rgba(139,26,26,0.08); border-color:var(--red-stamp); color:#3a0a0a; }
+.feedback-title { font-family:'Oswald',sans-serif; font-weight:700; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:0.4rem; }
+.article-ref { font-weight:700; color:var(--rust); }
+.next-btn { display:none; margin-top:1rem; background:var(--ink); color:var(--paper); border:none; padding:0.85rem 1.5rem; font-family:'Oswald',sans-serif; font-size:0.9rem; font-weight:600; letter-spacing:0.15em; text-transform:uppercase; cursor:pointer; border-radius:2px; width:100%; transition:all 0.2s; }
+.next-btn:hover { background:var(--amber); color:var(--ink); }
+
+/* ── BADGE POPUP ── */
+.badge-popup { position:fixed; top:80px; right:-300px; background:var(--paper); border:2px solid var(--amber); border-radius:3px; padding:1rem 1.2rem; display:flex; align-items:center; gap:0.9rem; box-shadow:4px 4px 20px rgba(0,0,0,0.5); transition:right 0.5s cubic-bezier(0.22,1,0.36,1); z-index:500; max-width:260px; }
+.badge-popup.show { right:1rem; }
+.badge-popup-icon { font-size:2rem; flex-shrink:0; }
+.badge-popup-title { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:var(--amber); margin-bottom:0.2rem; }
+.badge-popup-name { font-family:'Special Elite',serif; font-size:0.95rem; color:var(--ink); }
+
+/* ── END SCREEN ── */
+#screen-end { align-items:center; justify-content:center; padding:2rem 1rem; }
+.end-card { background:var(--paper); max-width:680px; width:100%; box-shadow:0 0 0 3px var(--desk2), 8px 8px 40px rgba(0,0,0,0.7); animation:cardDrop 0.6s ease both; overflow:hidden; }
+.end-header { background:var(--ink); padding:2rem 2.5rem; text-align:center; }
+.end-verdict { font-family:'Oswald',sans-serif; font-size:0.7rem; letter-spacing:0.3em; text-transform:uppercase; margin-bottom:0.5rem; }
+.end-title { font-family:'Special Elite',serif; font-size:clamp(1.6rem,5vw,2.5rem); line-height:1.2; }
+.end-score-display { text-align:center; padding:2rem; background:var(--paper2); border-bottom:1px solid rgba(26,18,8,0.12); }
+.end-score-num { font-family:'Oswald',sans-serif; font-size:4rem; font-weight:700; color:var(--amber); line-height:1; }
+.end-score-label { font-size:0.75rem; color:#888; text-transform:uppercase; letter-spacing:0.15em; margin-top:0.3rem; }
+.end-stats-row { display:flex; justify-content:center; gap:2rem; padding:1.5rem 2rem; border-bottom:1px dashed rgba(26,18,8,0.15); flex-wrap:wrap; }
+.end-stat { text-align:center; }
+.end-stat-val { font-family:'Oswald',sans-serif; font-size:1.8rem; font-weight:700; color:var(--ink); }
+.end-stat-label { font-size:0.65rem; color:#888; text-transform:uppercase; letter-spacing:0.1em; }
+.rank-section { padding:1.5rem 2rem; border-bottom:1px dashed rgba(26,18,8,0.15); }
+.rank-row { display:flex; align-items:center; gap:1rem; }
+.rank-icon { font-size:2.5rem; }
+.rank-title { font-family:'Special Elite',serif; font-size:1.3rem; color:var(--ink); }
+.rank-desc { font-size:0.78rem; color:#666; margin-top:0.2rem; line-height:1.5; }
+.badges-section { padding:1.5rem 2rem; border-bottom:1px dashed rgba(26,18,8,0.15); }
+.badges-title { font-family:'Oswald',sans-serif; font-size:0.65rem; letter-spacing:0.2em; text-transform:uppercase; color:#888; margin-bottom:1rem; }
+.badges-grid { display:flex; gap:0.75rem; flex-wrap:wrap; }
+.badge-card { flex:1; min-width:110px; background:var(--paper2); border:1px solid rgba(26,18,8,0.15); border-radius:3px; padding:0.9rem; text-align:center; opacity:0.3; transition:all 0.4s; position:relative; }
+.badge-card.earned { opacity:1; border-color:var(--amber); background:rgba(200,130,10,0.08); }
+.badge-card.earned::after { content:'✓'; position:absolute; top:0.3rem; right:0.4rem; font-size:0.7rem; color:var(--green-stamp); font-weight:700; }
+.badge-icon { font-size:1.8rem; margin-bottom:0.35rem; }
+.badge-name { font-family:'Oswald',sans-serif; font-size:0.7rem; letter-spacing:0.05em; text-transform:uppercase; color:var(--ink); font-weight:600; }
+.badge-desc { font-size:0.63rem; color:#888; margin-top:0.2rem; line-height:1.4; }
+.end-actions { padding:1.5rem 2rem; display:flex; gap:0.75rem; flex-wrap:wrap; }
+.btn-primary { flex:1; background:var(--ink); color:var(--paper); border:none; padding:0.9rem 1.5rem; font-family:'Oswald',sans-serif; font-size:0.9rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.2s; }
+.btn-primary:hover { background:var(--amber); color:var(--ink); }
+.btn-secondary { flex:1; background:transparent; color:var(--ink); border:1.5px solid rgba(26,18,8,0.3); padding:0.9rem 1.5rem; font-family:'Oswald',sans-serif; font-size:0.9rem; font-weight:600; letter-spacing:0.12em; text-transform:uppercase; cursor:pointer; border-radius:2px; transition:all 0.2s; }
+.btn-secondary:hover { border-color:var(--ink); background:rgba(26,18,8,0.05); }
+
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%{transform:translateX(-8px)} 40%{transform:translateX(8px)} 60%{transform:translateX(-5px)} 80%{transform:translateX(5px)} }
+.shake { animation:shake 0.4s ease; }
+.score-pop { position:fixed; pointer-events:none; font-family:'Oswald',sans-serif; font-size:1.4rem; font-weight:700; color:var(--neon); text-shadow:0 0 10px var(--neon2); z-index:9999; animation:scorePop 1.2s ease both; }
+@keyframes scorePop { 0%{opacity:0;transform:translateY(0) scale(0.5)} 20%{opacity:1;transform:translateY(-10px) scale(1.2)} 80%{opacity:1;transform:translateY(-50px) scale(1)} 100%{opacity:0;transform:translateY(-80px) scale(0.8)} }
+
+/* ── ROOM TRANSITION ── */
+.room-transition { position:fixed; inset:0; background:var(--ink); z-index:1000; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:1rem; animation:transIn 0.4s ease both; }
+@keyframes transIn { from{opacity:0} to{opacity:1} }
+.trans-label { font-family:'Oswald',sans-serif; font-size:0.7rem; letter-spacing:0.4em; text-transform:uppercase; color:var(--amber); }
+.trans-title { font-family:'Special Elite',serif; font-size:clamp(1.5rem,5vw,2.5rem); color:var(--paper); text-align:center; padding:0 1rem; }
+.trans-bar-wrap { width:200px; height:3px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden; margin-top:1rem; }
+.trans-bar { height:100%; background:var(--amber); border-radius:2px; animation:transBar 1.6s ease both; }
+@keyframes transBar { from{width:0} to{width:100%} }
+</style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="screen-intro" class="screen active">
+  <div class="intro-bg"></div>
+  <div class="intro-card">
+    <div class="intro-header">
+      <div class="intro-classified">☰ Ministerio de Trabajo · CR · Clasificado</div>
+      <div class="intro-title">EXPEDIENTE<br><span>LABORAL</span></div>
+      <div class="intro-subtitle">Un escape room de derecho laboral costarricense</div>
+    </div>
+    <div class="intro-body">
+      <div class="case-file-number">Expediente #2025-LAB-∞ · Acceso restringido</div>
+      <div class="intro-brief">Han llegado a su escritorio tres expedientes urgentes. Como asesor legal laboral, debe resolver cada caso antes de que el tiempo se agote. Un error puede costarle su reputación… y a su cliente, una demanda.</div>
+      <div class="intro-rooms">
+        <div class="room-badge" data-num="I"><div class="room-badge-icon">📋</div><div class="room-badge-label">Sala de Renuncias</div><div class="room-badge-diff">Básico · 90 seg</div></div>
+        <div class="room-badge" data-num="II"><div class="room-badge-icon">⚖️</div><div class="room-badge-label">Sala de Despidos</div><div class="room-badge-diff">Intermedio · 75 seg</div></div>
+        <div class="room-badge" data-num="III"><div class="room-badge-icon">🚨</div><div class="room-badge-label">Sala de Crisis</div><div class="room-badge-diff">Avanzado · 60 seg</div></div>
+      </div>
+      <div class="intro-stats">
+        <div class="stat"><div class="stat-val">12</div><div class="stat-label">Casos</div></div>
+        <div class="stat"><div class="stat-val">3</div><div class="stat-label">Vidas</div></div>
+        <div class="stat"><div class="stat-val">1160</div><div class="stat-label">Pts máx</div></div>
+        <div class="stat"><div class="stat-val">5</div><div class="stat-label">Insignias</div></div>
+      </div>
+      <button class="start-btn" onclick="startGame()"><span>▶ ABRIR EXPEDIENTE</span></button>
+    </div>
+  </div>
+</div>
+
+<!-- GAME -->
+<div id="screen-game" class="screen">
+  <div class="hud">
+    <div class="hud-room" id="hud-room">SALA I — RENUNCIAS</div>
+    <div class="lives" id="hud-lives"></div>
+    <div class="hud-score">⭐ <span id="hud-score">0</span></div>
+    <div class="timer-wrap">
+      <div class="timer-bar-wrap"><div class="timer-bar" id="timer-bar"></div></div>
+      <div class="timer" id="timer">1:30</div>
+    </div>
+  </div>
+  <div class="game-area">
+    <div class="room-header" id="room-header">
+      <div class="room-tag" id="room-tag">SALA I · NIVEL BÁSICO</div>
+      <div class="room-title" id="room-title">Sala de Renuncias</div>
+    </div>
+    <div class="progress-stamps" id="progress-stamps"></div>
+    <div class="q-container">
+      <div class="case-card" id="case-card">
+        <div class="card-tape"></div>
+        <div class="card-top">
+          <div class="card-case-num" id="card-case-num">Caso #1</div>
+          <div class="card-diff" id="card-diff">Básico</div>
+        </div>
+        <div class="card-body">
+          <div class="scenario-label">📁 Expediente del caso</div>
+          <div class="scenario-text" id="scenario-text"></div>
+          <div class="question-label">⚖ DILEMA LEGAL</div>
+          <div class="question-text" id="question-text"></div>
+          <div class="options-grid" id="options"></div>
+          <div class="feedback" id="feedback"></div>
+          <button class="next-btn" id="next-btn" onclick="nextQuestion()">SIGUIENTE CASO →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- END -->
+<div id="screen-end" class="screen">
+  <div class="end-card">
+    <div class="end-header">
+      <div class="end-verdict" id="end-verdict" style="color:var(--amber)">Expediente cerrado</div>
+      <div class="end-title" id="end-title" style="color:var(--paper)">¡Caso resuelto!</div>
+    </div>
+    <div class="end-score-display">
+      <div class="end-score-num" id="end-score">0</div>
+      <div class="end-score-label">puntos totales</div>
+    </div>
+    <div class="end-stats-row">
+      <div class="end-stat"><div class="end-stat-val" id="end-correct">0</div><div class="end-stat-label">✓ Correctas</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-wrong">0</div><div class="end-stat-label">✗ Errores</div></div>
+      <div class="end-stat"><div class="end-stat-val" id="end-accuracy">0%</div><div class="end-stat-label">Precisión</div></div>
+    </div>
+    <div class="rank-section">
+      <div class="rank-row">
+        <div class="rank-icon" id="rank-icon">📋</div>
+        <div><div class="rank-title" id="rank-title">Asistente Legal</div><div class="rank-desc" id="rank-desc">Siga estudiando el Código de Trabajo.</div></div>
+      </div>
+    </div>
+    <div class="badges-section">
+      <div class="badges-title">Insignias obtenidas</div>
+      <div class="badges-grid" id="badges-grid"></div>
+    </div>
+    <div class="end-actions">
+      <button class="btn-primary" onclick="startGame()">↺ JUGAR DE NUEVO</button>
+      <button class="btn-secondary" onclick="showScreen('screen-intro')">← MENÚ</button>
+    </div>
+  </div>
+</div>
+
+<footer style="
+  background: var(--ink);
+  border-top: 2px solid var(--amber);
+  padding: 0.8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 50;
+">
+  <div style="font-family:'Special Elite',serif; font-size:0.85rem; color:var(--amber); letter-spacing:0.05em;">
+    Herramienta gratuita · Roberto Mora
+  </div>
+</footer>
+
+<div class="badge-popup" id="badge-popup">
+  <div class="badge-popup-icon" id="badge-popup-icon">🏆</div>
+  <div><div class="badge-popup-title">¡Insignia obtenida!</div><div class="badge-popup-name" id="badge-popup-name">Nombre</div></div>
+</div>
+
+<script>
+const QUESTIONS = [
+  // SALA I — RENUNCIAS (básico, 90s)
+  { room:0, id:'R1', difficulty:'Básico', diffClass:'diff-easy',
+    scenario:'María lleva 8 meses trabajando como contadora. El lunes presenta su carta de renuncia firmada de puño y letra, sin indicar fecha de salida.',
+    question:'¿Cuántos días de preaviso debe laborar María según el Código de Trabajo?',
+    options:[
+      {l:'A', text:'No debe hacer preaviso, puede salir de inmediato.', correct:false},
+      {l:'B', text:'1 semana de preaviso.', correct:false},
+      {l:'C', text:'Un mes de preaviso obligatorio.', correct:false},
+      {l:'D', text:'15 días de preaviso mínimo.', correct:true}
+    ],
+    fc:'¡Correcto! Entre 6 meses y 1 año de trabajo continuo, el preaviso mínimo es de 15 días (Art. 28 CT). María con 8 meses entra en este rango.',
+    fw:'Incorrecto. Art. 28 CT: entre 6 meses y 1 año de trabajo continuo el preaviso mínimo es 15 días. Con 8 meses María está en ese tramo.',
+    art:'Art. 28 CT', pts:80
+  },
+  { room:0, id:'R2', difficulty:'Básico', diffClass:'diff-easy',
+    scenario:'Carlos renuncia a su puesto después de 2 meses. Su patrono le exige que labore el preaviso o pagará una multa.',
+    question:'¿Tiene razón el patrono en exigir el preaviso a Carlos?',
+    options:[
+      {l:'A', text:'Sí, siempre hay que dar preaviso sin importar el tiempo.', correct:false},
+      {l:'B', text:'Sí, pero solo debe laborar 3 días.', correct:false},
+      {l:'C', text:'No, con menos de 3 meses no se requiere preaviso.', correct:true},
+      {l:'D', text:'Depende del tipo de contrato, no del tiempo trabajado.', correct:false}
+    ],
+    fc:'¡Exacto! Art. 28 CT: trabajo continuo menor a 3 meses = sin preaviso. El patrono no tiene razón.',
+    fw:'Incorrecto. Art. 28 CT: con menos de 3 meses de trabajo continuo NO hay preaviso obligatorio. Carlos puede retirarse libremente.',
+    art:'Art. 28 CT', pts:80
+  },
+  { room:0, id:'R3', difficulty:'Básico', diffClass:'diff-easy',
+    scenario:'Ana renuncia y el patrono sospecha que podría demandar alegando despido indirecto. Quiere protegerse legalmente.',
+    question:'¿Cuál es la mejor evidencia para probar que fue una renuncia genuina?',
+    options:[
+      {l:'A', text:'La carta de renuncia firmada de puño y letra por Ana.', correct:true},
+      {l:'B', text:'Un testigo verbal de que Ana dijo que renunciaba.', correct:false},
+      {l:'C', text:'La liquidación pagada con recibo de caja.', correct:false},
+      {l:'D', text:'Un correo del patrono confirmando la renuncia.', correct:false}
+    ],
+    fc:'¡Perfecto! La carta firmada de puño y letra (o digitalmente desde el correo personal) es la prueba más sólida de voluntad libre.',
+    fw:'Incorrecto. La carta de renuncia firmada por la trabajadora es el documento clave. Sin ella, cualquier alegato de despido encubierto gana fuerza.',
+    art:'Art. 28 CT / Práctica recomendada', pts:80
+  },
+  { room:0, id:'R4', difficulty:'Básico', diffClass:'diff-easy',
+    scenario:'Pedro lleva 3 años en la empresa y renuncia voluntariamente. No existe Asociación Solidarista. El patrono duda si debe pagarle cesantía.',
+    question:'¿Corresponde pagar cesantía a Pedro por su renuncia voluntaria?',
+    options:[
+      {l:'A', text:'Sí, siempre que el trabajador tenga más de 1 año de laborar.', correct:false},
+      {l:'B', text:'Sí, la mitad de la cesantía en renuncias mayores a 2 años.', correct:false},
+      {l:'C', text:'No, en renuncia voluntaria sin solidarista no hay cesantía.', correct:true},
+      {l:'D', text:'Depende de si el patrono decide reconocerla o no.', correct:false}
+    ],
+    fc:'¡Correcto! En renuncia voluntaria sin Asociación Solidarista, el trabajador pierde cesantía. Solo aplican aguinaldo y vacaciones proporcionales.',
+    fw:'Incorrecto. Renuncia voluntaria sin solidarista = sin cesantía. Sí corresponden aguinaldo proporcional y vacaciones no disfrutadas.',
+    art:'Arts. 28-29 CT', pts:80
+  },
+  // SALA II — DESPIDOS (intermedio, 75s)
+  { room:1, id:'D1', difficulty:'Intermedio', diffClass:'diff-medium',
+    scenario:'Un empleado fue captado por cámara tomando mercancía sin autorización. El patrono lo despide al día siguiente sin entregar carta.',
+    question:'¿Qué error grave cometió el patrono en este despido justificado?',
+    options:[
+      {l:'A', text:'Despedirlo el día siguiente; debió esperar un mes.', correct:false},
+      {l:'B', text:'Usar cámaras como prueba, lo cual es ilegal.', correct:false},
+      {l:'C', text:'No llamar a la policía antes de despedirlo.', correct:false},
+      {l:'D', text:'No entregar la carta de despido describiendo el hecho (Art. 35 CT).', correct:true}
+    ],
+    fc:'¡Exacto! Art. 35 CT: en despidos por falta la carta es OBLIGATORIA y debe describir los hechos puntualmente. Sin ella, nada puede alegarse en juicio.',
+    fw:'Incorrecto. El error es no entregar la carta. Art. 35 CT exige carta con descripción clara de los hechos entregada personalmente. Esos hechos son los únicos alegables en juicio.',
+    art:'Art. 35 CT', pts:100
+  },
+  { room:1, id:'D2', difficulty:'Intermedio', diffClass:'diff-medium',
+    scenario:'La empresa reestructura y decide prescindir de 3 vendedores sin faltas graves. El departamento legal pregunta qué deben pagar.',
+    question:'¿Qué conceptos MÍNIMOS debe pagar el patrono en este despido?',
+    options:[
+      {l:'A', text:'Preaviso, cesantía, aguinaldo proporcional y vacaciones no disfrutadas.', correct:true},
+      {l:'B', text:'Solo aguinaldo. La reestructuración exonera todo lo demás.', correct:false},
+      {l:'C', text:'Solo cesantía y aguinaldo; el preaviso es opcional.', correct:false},
+      {l:'D', text:'Nada, si fue por causa económica no hay responsabilidad.', correct:false}
+    ],
+    fc:'¡Perfecto! Sin causa grave = despido con responsabilidad patronal. Deben pagarse: preaviso, cesantía, aguinaldo proporcional y vacaciones.',
+    fw:'Incorrecto. Sin causa grave el despido es "con responsabilidad patronal". El patrono debe pagar todo: preaviso, cesantía, aguinaldo y vacaciones. No hay exoneración por reestructuración.',
+    art:'Arts. 28-31 CT', pts:100
+  },
+  { room:1, id:'D3', difficulty:'Intermedio', diffClass:'diff-medium',
+    scenario:'El patrono entrega la carta de despido y el trabajador se niega a firmar el recibido. El departamento legal no sabe qué hacer.',
+    question:'¿Qué debe hacer el patrono cuando el trabajador rechaza recibir la carta?',
+    options:[
+      {l:'A', text:'Cancelar el despido hasta que el trabajador la acepte.', correct:false},
+      {l:'B', text:'El despido se anula automáticamente sin recibido firmado.', correct:false},
+      {l:'C', text:'Presentar la carta al Ministerio de Trabajo en un plazo de 10 días naturales.', correct:true},
+      {l:'D', text:'Publicar el despido en el periódico como notificación.', correct:false}
+    ],
+    fc:'¡Correcto! Art. 35 CT: si el trabajador rechaza la carta, el patrono tiene 10 días naturales para presentarla al Ministerio de Trabajo o enviarla por correo certificado.',
+    fw:'Incorrecto. Art. 35 CT prevé esto: si el trabajador rechaza la carta, debe presentarse al Ministerio de Trabajo (o correo certificado) en máximo 10 días naturales.',
+    art:'Art. 35 CT', pts:100
+  },
+  { room:1, id:'D4', difficulty:'Intermedio', diffClass:'diff-medium',
+    scenario:'Una empresa despide a su gerente alegando "bajo rendimiento". La carta solo dice "incumplimiento de metas". No hay expediente previo ni advertencias documentadas.',
+    question:'¿Cuál es el principal riesgo legal de este despido?',
+    options:[
+      {l:'A', text:'Ninguno; el bajo rendimiento siempre es causa justificada.', correct:false},
+      {l:'B', text:'El riesgo es la carta muy corta; debió tener más de 3 páginas.', correct:false},
+      {l:'C', text:'Solo hay riesgo si el gerente fue despedido un viernes.', correct:false},
+      {l:'D', text:'Sin pruebas previas, el tribunal puede convertirlo en despido con responsabilidad patronal.', correct:true}
+    ],
+    fc:'¡Exacto! La carga de la prueba recae en el patrono. Sin expediente previo, el tribunal concluirá que no hay causa grave y condenará al pago de todos los derechos.',
+    fw:'Incorrecto. El bajo rendimiento puede ser causa justificada, pero debe probarse. Sin expediente ni advertencias, el tribunal convierte el despido en uno "con responsabilidad patronal".',
+    art:'Art. 81 CT / Carga de la prueba', pts:100
+  },
+  // SALA III — CRISIS (avanzado, 60s)
+  { room:2, id:'C1', difficulty:'Avanzado', diffClass:'diff-hard',
+    scenario:'Laura, embarazada de 5 meses, filtró información confidencial a la competencia (causa grave documentada). El patrono quiere despedirla sin responsabilidad. Su abogado dice que no puede hacerlo directamente.',
+    question:'¿Por qué el abogado tiene razón y qué debe hacer el patrono?',
+    options:[
+      {l:'A', text:'Porque el fuero de embarazo exige gestionar autorización judicial previa, aun con causa grave.', correct:true},
+      {l:'B', text:'Porque ninguna embarazada puede ser despedida por ningún motivo.', correct:false},
+      {l:'C', text:'El abogado está equivocado; la falta grave rompe cualquier fuero automáticamente.', correct:false},
+      {l:'D', text:'Debe esperar a que Laura tenga al bebé para poder despedirla.', correct:false}
+    ],
+    fc:'¡Brillante! El fuero de embarazo (Art. 94 CT) exige autorización del juzgado laboral antes de ejecutar el despido, incluso con causa grave documentada. Sin ello, el despido puede ser nulo.',
+    fw:'Incorrecto. Art. 94 CT: el fuero de embarazo exige autorización judicial previa incluso cuando hay causa grave. Sin ese paso, el despido puede declararse nulo con reinstalación y salarios caídos.',
+    art:'Art. 94 CT — Fuero de embarazo', pts:120
+  },
+  { room:2, id:'C2', difficulty:'Avanzado', diffClass:'diff-hard',
+    scenario:'Rodrigo, 4 años en la empresa, renunció porque su jefe le cambió a horario nocturno, le redujo funciones y le bajó comisión. No previno al patrono antes de renunciar.',
+    question:'¿Puede Rodrigo reclamar derechos como si lo hubieran despedido?',
+    options:[
+      {l:'A', text:'No, él renunció voluntariamente y perdió todos sus derechos.', correct:false},
+      {l:'B', text:'Solo si el juez considera que el cambio fue "muy grave".', correct:false},
+      {l:'C', text:'Sí, pero su caso se debilita por no haber prevenido primero al patrono.', correct:true},
+      {l:'D', text:'Sí, con plenos derechos porque hay cambio de condiciones.', correct:false}
+    ],
+    fc:'¡Excelente! Rodrigo puede alegar autodespido (Arts. 83-84 CT), pero el principio de buena fe (Art. 19 CT) exige prevenir al patrono antes. No haberlo hecho debilita su posición, aunque no la elimina.',
+    fw:'Incorrecto. Configura posible autodespido (Arts. 83-84 CT). Sin embargo, la buena fe (Art. 19 CT) exige prevenir al patrono antes de renunciar. No hacerlo debilita el caso en juicio.',
+    art:'Arts. 83, 84 y 19 CT', pts:120
+  },
+  { room:2, id:'C3', difficulty:'Avanzado', diffClass:'diff-hard',
+    scenario:'La empresa necesita que un trabajador "renuncie" para no pagar cesantía. El jefe de RRHH le dice al empleado que si no firma la renuncia, lo despedirán por una falta que no cometió y le darán malas referencias.',
+    question:'¿Cómo se llama esta práctica y qué consecuencias tiene para el patrono?',
+    options:[
+      {l:'A', text:'Es una "renuncia pactada", completamente válida en derecho laboral.', correct:false},
+      {l:'B', text:'Es legal si el trabajador firma aunque haya presión verbal.', correct:false},
+      {l:'C', text:'Solo es ilegal si hay testigos presentes en la reunión.', correct:false},
+      {l:'D', text:'Es despido encubierto; si se prueba la coacción, el trabajador recupera todos sus derechos.', correct:true}
+    ],
+    fc:'¡Perfecto! El "despido encubierto mediante renuncia" es una práctica sancionada. Si se prueba coacción, la renuncia se anula y el patrono paga cesantía, preaviso, salarios caídos y daños.',
+    fw:'Incorrecto. Esta práctica es "despido encubierto mediante renuncia". Si el trabajador prueba coacción, el tribunal anula la renuncia y ordena pago completo de derechos más daños y perjuicios.',
+    art:'Doctrina: Despido Encubierto / Art. 19 CT', pts:120
+  },
+  { room:2, id:'C4', difficulty:'Avanzado', diffClass:'diff-hard',
+    scenario:'Ambas partes firmaron un acuerdo de terminación laboral. Tres semanas después, el trabajador demanda alegando que firmó bajo presión económica porque llevaba 2 meses sin recibir salario completo.',
+    question:'¿Cuál es la consecuencia legal más probable de este escenario?',
+    options:[
+      {l:'A', text:'El tribunal puede anular el acuerdo si el consentimiento fue viciado por la situación económica que creó el patrono.', correct:true},
+      {l:'B', text:'El acuerdo firmado es inatacable; la firma lo hace definitivo.', correct:false},
+      {l:'C', text:'El trabajador perdió el derecho a demandar al firmar el acuerdo.', correct:false},
+      {l:'D', text:'Solo procede si el trabajador demuestra amenazas físicas directas.', correct:false}
+    ],
+    fc:'¡Análisis brillante! La deuda salarial creada por el patrono puede viciar el consentimiento. El tribunal puede declarar nulo el acuerdo si el trabajador firmó sin libertad real.',
+    fw:'Incorrecto. Un acuerdo firmado en condiciones de vulnerabilidad económica causada por el patrono (atraso salarial) puede impugnarse. El tribunal analiza si el consentimiento fue realmente libre.',
+    art:'Art. 19 CT / Vicios del consentimiento', pts:120
+  }
+];
+
+const ROOMS = [
+  { name:'SALA I — RENUNCIAS',      title:'Sala de Renuncias',      tag:'SALA I · NIVEL BÁSICO',      time:90 },
+  { name:'SALA II — DESPIDOS',      title:'Sala de Despidos',       tag:'SALA II · NIVEL INTERMEDIO', time:75 },
+  { name:'SALA III — CRISIS LABORAL', title:'Sala de Crisis Laboral', tag:'SALA III · NIVEL AVANZADO',  time:60 }
+];
+
+const BADGES_DEF = [
+  { id:'velocista',  icon:'⚡', name:'Velocista Legal',    desc:'3 respuestas correctas en menos de 8 seg c/u' },
+  { id:'perfecto',   icon:'🎯', name:'Sin Errores',        desc:'Completa una sala sin fallar ningún caso' },
+  { id:'experto',    icon:'⚖️', name:'Experto en CT',      desc:'Responde correctamente 10 o más preguntas' },
+  { id:'resiliente', icon:'🔥', name:'Resiliente',         desc:'Pierde 2 vidas y aun así termina el juego' },
+  { id:'maestro',    icon:'🏆', name:'Maestro Laboral',    desc:'Obtén 900 puntos o más en una partida' }
+];
+
+// STATE
+let S = {};
+function initState() {
+  S = {
+    qIdx:0, score:0, lives:3, correct:0, wrong:0,
+    answered:false, timerInterval:null, timeLeft:90, totalTime:90,
+    room:0, roomQs:[], roomAnswers:[], roomPerfect:true,
+    fastAnswers:0, lastAnswerTime:0, livesLost:0,
+    earnedBadges:new Set()
+  };
+}
+
+function showScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+function startGame() {
+  initState();
+  S.roomQs = QUESTIONS.filter(q => q.room === 0);
+  showScreen('screen-game');
+  updateHUD();
+  setupRoom();
+  loadQuestion();
+  startTimer();
+}
+
+function setupRoom() {
+  const r = ROOMS[S.room];
+  document.getElementById('hud-room').textContent = r.name;
+  document.getElementById('room-tag').textContent = r.tag;
+  document.getElementById('room-title').textContent = r.title;
+  renderStamps();
+}
+
+function renderStamps() {
+  const c = document.getElementById('progress-stamps');
+  c.innerHTML = '';
+  S.roomQs.forEach((q,i) => {
+    const s = document.createElement('div');
+    let cls = '';
+    if (i < S.qIdx) cls = S.roomAnswers[i] ? 'done-ok' : 'done-wrong';
+    else if (i === S.qIdx) cls = 'current';
+    s.className = `stamp ${cls}`;
+    s.textContent = i + 1;
+    c.appendChild(s);
+  });
+}
+
+function loadQuestion() {
+  const q = S.roomQs[S.qIdx];
+  if (!q) { endRoom(); return; }
+  S.answered = false;
+  S.lastAnswerTime = S.timeLeft;
+  document.getElementById('card-case-num').textContent = `Caso #${S.qIdx+1} · ${q.id}`;
+  document.getElementById('card-diff').className = `card-diff ${q.diffClass}`;
+  document.getElementById('card-diff').textContent = q.difficulty;
+  document.getElementById('scenario-text').textContent = q.scenario;
+  document.getElementById('question-text').textContent = q.question;
+  const oc = document.getElementById('options');
+  oc.innerHTML = '';
+  q.options.forEach((opt,i) => {
+    const b = document.createElement('button');
+    b.className = 'opt';
+    b.innerHTML = `<span class="opt-letter">${opt.l}</span><span>${opt.text}</span>`;
+    b.onclick = () => answer(opt.correct, b, q, i);
+    oc.appendChild(b);
+  });
+  document.getElementById('feedback').style.display = 'none';
+  document.getElementById('feedback').className = 'feedback';
+  document.getElementById('next-btn').style.display = 'none';
+  const card = document.getElementById('case-card');
+  card.style.animation = 'none'; card.offsetHeight;
+  card.style.animation = 'cardIn 0.4s cubic-bezier(0.22,1,0.36,1) both';
+  renderStamps();
+}
+
+function answer(isCorrect, btn, q, idx) {
+  if (S.answered) return;
+  S.answered = true;
+  const timeDiff = S.lastAnswerTime - S.timeLeft;
+  const fast = timeDiff <= 8;
+  document.querySelectorAll('.opt').forEach((o,i) => {
+    o.classList.add('disabled');
+    if (q.options[i].correct) o.classList.add('correct');
+  });
+  if (isCorrect) {
+    S.correct++;
+    const pts = q.pts + (fast ? 20 : 0);
+    S.score += pts;
+    if (fast) { S.fastAnswers++; showScorePop(`+${pts} ⚡`); } else { showScorePop(`+${pts}`); }
+    btn.classList.add('correct');
+    showFeedback(true, q, fast ? ' ⚡ +20 bonus por velocidad!' : '');
+  } else {
+    S.wrong++; S.lives--; S.livesLost++; S.roomPerfect = false;
+    btn.classList.add('wrong');
+    const card = document.getElementById('case-card');
+    card.classList.remove('shake'); setTimeout(() => card.classList.add('shake'), 10);
+    showScorePop('−1 ❤️', true);
+    showFeedback(false, q, '');
+  }
+  S.roomAnswers[S.qIdx] = isCorrect;
+  updateHUD(); checkBadges();
+  if (S.lives <= 0) { clearInterval(S.timerInterval); setTimeout(endGame, 1800); return; }
+  document.getElementById('next-btn').style.display = 'block';
+  renderStamps();
+}
+
+function showFeedback(ok, q, extra) {
+  const fb = document.getElementById('feedback');
+  fb.style.display = 'block';
+  fb.className = `feedback ${ok ? 'correct-fb' : 'wrong-fb'}`;
+  fb.innerHTML = `<div class="feedback-title">${ok ? '✓ CORRECTO' : '✗ INCORRECTO'}</div>${ok ? q.fc : q.fw}${extra}<br><span class="article-ref">📖 ${q.art}</span>`;
+}
+
+function nextQuestion() {
+  S.qIdx++;
+  if (S.qIdx >= S.roomQs.length) endRoom();
+  else loadQuestion();
+}
+
+function endRoom() {
+  clearInterval(S.timerInterval);
+  if (S.roomPerfect) awardBadge('perfecto');
+  S.room++;
+  if (S.room >= ROOMS.length) { setTimeout(endGame, 600); return; }
+  // Room transition overlay
+  const ov = document.createElement('div');
+  ov.className = 'room-transition';
+  const r = ROOMS[S.room];
+  ov.innerHTML = `<div class="trans-label">Accediendo a...</div><div class="trans-title">${r.title}</div><div class="trans-bar-wrap"><div class="trans-bar"></div></div>`;
+  document.getElementById('screen-game').appendChild(ov);
+  setTimeout(() => {
+    ov.remove();
+    S.roomQs = QUESTIONS.filter(q => q.room === S.room);
+    S.qIdx = 0; S.roomAnswers = []; S.roomPerfect = true;
+    S.timeLeft = ROOMS[S.room].time; S.totalTime = S.timeLeft;
+    setupRoom(); loadQuestion(); startTimer(); updateHUD();
+  }, 1800);
+}
+
+function endGame() {
+  clearInterval(S.timerInterval);
+  if (S.correct >= 10) awardBadge('experto');
+  if (S.livesLost >= 2 && S.lives > 0) awardBadge('resiliente');
+  if (S.score >= 900) awardBadge('maestro');
+  if (S.fastAnswers >= 3) awardBadge('velocista');
+  const total = QUESTIONS.length;
+  const pct = Math.round((S.correct / total) * 100);
+  let vColor, verdict, title, rIcon, rTitle, rDesc;
+  if (pct === 100) {
+    vColor='#2d8a52'; verdict='⭐ Expediente Resuelto con Honores';
+    title='¡MAESTRO DEL DERECHO LABORAL!';
+    rIcon='🏆'; rTitle='Abogado Laboral Senior';
+    rDesc='Domina el Código de Trabajo a la perfección. Sus clientes están en las mejores manos.';
+  } else if (pct >= 75) {
+    vColor='#c8820a'; verdict='✓ Expediente Cerrado';
+    title='Buen desempeño, asesor';
+    rIcon='⚖️'; rTitle='Abogado Laboral';
+    rDesc='Sólido conocimiento del CT. Con más práctica llegará a la cima.';
+  } else if (pct >= 50) {
+    vColor='#8b3a0a'; verdict='~ Caso parcialmente resuelto';
+    title='Necesita más estudio';
+    rIcon='📋'; rTitle='Asistente Legal Senior';
+    rDesc='Conocimiento básico del CT. Repase despidos y fueros especiales.';
+  } else {
+    vColor='#8b1a1a'; verdict='✗ Expediente archivado sin resolver';
+    title='Regrese al Código de Trabajo';
+    rIcon='📚'; rTitle='Pasante Legal';
+    rDesc='El CT tiene mucho que ofrecerle. ¡Inténtelo de nuevo!';
+  }
+  document.getElementById('end-verdict').textContent = verdict;
+  document.getElementById('end-verdict').style.color = vColor;
+  document.getElementById('end-title').textContent = title;
+  document.getElementById('end-title').style.color = 'var(--paper)';
+  document.getElementById('end-score').textContent = S.score;
+  document.getElementById('end-correct').textContent = S.correct;
+  document.getElementById('end-wrong').textContent = S.wrong;
+  document.getElementById('end-accuracy').textContent = pct + '%';
+  document.getElementById('rank-icon').textContent = rIcon;
+  document.getElementById('rank-title').textContent = rTitle;
+  document.getElementById('rank-desc').textContent = rDesc;
+  const grid = document.getElementById('badges-grid');
+  grid.innerHTML = '';
+  BADGES_DEF.forEach(b => {
+    const e = S.earnedBadges.has(b.id);
+    grid.innerHTML += `<div class="badge-card ${e?'earned':''}"><div class="badge-icon">${b.icon}</div><div class="badge-name">${b.name}</div><div class="badge-desc">${b.desc}</div></div>`;
+  });
+  showScreen('screen-end');
+}
+
+// TIMER
+function startTimer() {
+  clearInterval(S.timerInterval);
+  updateTimerUI();
+  S.timerInterval = setInterval(() => {
+    S.timeLeft--;
+    updateTimerUI();
+    if (S.timeLeft <= 0) {
+      clearInterval(S.timerInterval);
+      S.lives--; S.livesLost++;
+      updateHUD();
+      showScorePop('⏰ ¡Tiempo!', true);
+      if (S.lives <= 0) { setTimeout(endGame, 1500); return; }
+      if (!S.answered) {
+        S.roomPerfect = false; S.wrong++;
+        S.roomAnswers[S.qIdx] = false;
+        renderStamps();
+        S.qIdx++;
+        if (S.qIdx >= S.roomQs.length) { endRoom(); return; }
+        S.timeLeft = ROOMS[S.room].time; S.totalTime = S.timeLeft;
+        loadQuestion(); startTimer();
+      }
+    }
+  }, 1000);
+}
+function updateTimerUI() {
+  const m = Math.floor(S.timeLeft/60), s = S.timeLeft%60;
+  const el = document.getElementById('timer');
+  el.textContent = `${m}:${s.toString().padStart(2,'0')}`;
+  const pct = S.timeLeft / S.totalTime;
+  document.getElementById('timer-bar').style.width = (pct*100)+'%';
+  if (pct <= 0.2) { el.className='timer danger'; document.getElementById('timer-bar').style.background='var(--danger)'; }
+  else if (pct <= 0.4) { el.className='timer warning'; document.getElementById('timer-bar').style.background='var(--amber)'; }
+  else { el.className='timer'; document.getElementById('timer-bar').style.background='var(--neon)'; }
+}
+
+function updateHUD() {
+  document.getElementById('hud-score').textContent = S.score;
+  const lc = document.getElementById('hud-lives');
+  lc.innerHTML = '';
+  for (let i=0;i<3;i++) {
+    const d = document.createElement('div');
+    d.className = `life ${i >= S.lives ? 'lost' : ''}`;
+    d.textContent = '❤️';
+    lc.appendChild(d);
+  }
+}
+
+function showScorePop(text, neg=false) {
+  const el = document.createElement('div');
+  el.className = 'score-pop';
+  el.textContent = text;
+  el.style.color = neg ? 'var(--danger)' : 'var(--neon)';
+  el.style.textShadow = neg ? '0 0 10px var(--danger)' : '0 0 10px var(--neon2)';
+  el.style.left = (window.innerWidth/2 - 40)+'px';
+  el.style.top  = (window.innerHeight/2)+'px';
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 1300);
+}
+
+function awardBadge(id) {
+  if (S.earnedBadges.has(id)) return;
+  S.earnedBadges.add(id);
+  const b = BADGES_DEF.find(x=>x.id===id);
+  if (!b) return;
+  const pop = document.getElementById('badge-popup');
+  document.getElementById('badge-popup-icon').textContent = b.icon;
+  document.getElementById('badge-popup-name').textContent = b.name;
+  pop.classList.add('show');
+  setTimeout(() => pop.classList.remove('show'), 3000);
+}
+
+function checkBadges() {
+  if (S.correct >= 10) awardBadge('experto');
+}
+</script>
+</body>
+</html>
