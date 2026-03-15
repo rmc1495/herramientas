@@ -1580,7 +1580,7 @@ function loadStudents() {
   } catch(e) {}
 }
 
-// ===== PDF EXPORT =====
+// ===== PDF EXPORT (tamaño dinámico según contenido) =====
 async function exportPDF() {
   if (!window.jspdf) {
     await new Promise((res, rej) => {
@@ -1591,40 +1591,106 @@ async function exportPDF() {
     });
   }
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a3' });
-  const W = 420, H = 297;
 
-  // Student data
+  // ── Datos de estudiantes ────────────────────────────────────────────────
   const empNombre = document.getElementById('emp-nombre').value.trim() || '—';
   const est1 = document.getElementById('est-1').value.trim();
   const est2 = document.getElementById('est-2').value.trim();
   const est3 = document.getElementById('est-3').value.trim();
 
-  // Colours
-  const INK     = [26, 22, 18];
-  const CREAM   = [247, 243, 238];
-  const RUST    = [196, 82, 42];
-  const GOLDC   = [212, 168, 83];
-  const SANDC   = [232, 221, 208];
-  const WHITEC  = [254, 252, 250];
-  const MUTEDC  = [140, 123, 107];
+  // ── Colores ─────────────────────────────────────────────────────────────
+  const CREAM  = [247, 243, 238];
+  const INK    = [26, 22, 18];
+  const RUST   = [196, 82, 42];
+  const GOLDC  = [212, 168, 83];
+  const SANDC  = [232, 221, 208];
+  const WHITEC = [254, 252, 250];
+  const MUTEDC = [140, 123, 107];
+  const HDR_BG = [58, 50, 42];
 
   const blockColors = {
-    kp: [74,124,89], ka: [61,90,115], kr: [123,94,167],
-    vp: [196,82,42], cr: [212,168,83], cs: [42,125,140],
-    ch: [92,138,60], cost: [74,74,74], rev: [122,59,16]
+    kp: [74,124,89],  ka: [61,90,115],   kr: [123,94,167],
+    vp: [196,82,42],  cr: [212,168,83],  cs: [42,125,140],
+    ch: [92,138,60],  cost: [74,74,74],  rev: [122,59,16]
   };
 
-  // ── Background ────────────────────────────────────────────────────────
-  doc.setFillColor(...CREAM);
-  doc.rect(0, 0, W, H, 'F');
+  // ── Layout fijo ─────────────────────────────────────────────────────────
+  const W      = 420;   // ancho fijo (mm) — estilo A3 landscape
+  const PAD    = 4;
+  const GAP    = 2;
+  const HDR    = 26;
+  const ACCENT = 1.5;
+  const TOP    = HDR + ACCENT + 1;
+  const COL_W  = (W - 2*PAD - 4*GAP) / 5;
+  const colX   = n => PAD + n * (COL_W + GAP);
+  const FOOT   = 7;
 
-  // ── Header (26mm tall — enough for 3 students) ────────────────────────
-  const HDR = 26;
-  doc.setFillColor(58, 50, 42);
+  // ── Altura de bloque según contenido ────────────────────────────────────
+  // Necesitamos un doc temporal solo para medir texto
+  const docMeasure = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, 400] });
+
+  const NOTE_FONT = 5.2;
+  const NOTE_PAD_V = 3;   // padding vertical dentro de sticky
+  const NOTE_LINE_H = 4;
+  const NOTE_GAP = 2;
+  const BLOCK_HEADER_H = 15; // espacio para número + título + línea separadora
+  const MIN_BLOCK_H = 22;    // mínimo aunque esté vacío
+
+  function calcBlockHeight(blockId) {
+    const items = notes[blockId] || [];
+    if (items.length === 0) return MIN_BLOCK_H;
+    let total = BLOCK_HEADER_H + 3;
+    items.forEach(note => {
+      const lines = docMeasure.splitTextToSize(note, COL_W - 8 - 4);
+      const h = Math.min(lines.length, 4) * NOTE_LINE_H + NOTE_PAD_V * 2;
+      total += h + NOTE_GAP;
+    });
+    return Math.max(total + 4, MIN_BLOCK_H);
+  }
+
+  // Alturas por bloque
+  const H_kp   = calcBlockHeight('kp');
+  const H_ka   = calcBlockHeight('ka');
+  const H_kr   = calcBlockHeight('kr');
+  const H_vp   = calcBlockHeight('vp');
+  const H_cr   = calcBlockHeight('cr');
+  const H_cs   = calcBlockHeight('cs');
+  const H_ch   = calcBlockHeight('ch');
+  const H_cost = calcBlockHeight('cost');
+  const H_rev  = calcBlockHeight('rev');
+
+  // Columna 0: KP solo
+  const COL0_H = H_kp;
+  // Columna 1: KA + KR apilados
+  const COL1_H = H_ka + GAP + H_kr;
+  // Columna 2: VP solo
+  const COL2_H = H_vp;
+  // Columna 3: CR + CH apilados
+  const COL3_H = H_cr + GAP + H_ch;
+  // Columna 4: CS solo
+  const COL4_H = H_cs;
+
+  // Altura del grid principal = máximo de todas las columnas
+  const MAIN_H = Math.max(COL0_H, COL1_H, COL2_H, COL3_H, COL4_H);
+
+  // Fila inferior: costes e ingresos
+  const BOT_H = Math.max(H_cost, H_rev);
+  const BOT_ROW_Y = TOP + MAIN_H + GAP;
+
+  // Altura total del documento
+  const TOTAL_H = BOT_ROW_Y + BOT_H + GAP + FOOT;
+
+  // ── Crear documento con tamaño exacto ───────────────────────────────────
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, TOTAL_H] });
+
+  // Fondo
+  doc.setFillColor(...CREAM);
+  doc.rect(0, 0, W, TOTAL_H, 'F');
+
+  // ── Header ───────────────────────────────────────────────────────────────
+  doc.setFillColor(...HDR_BG);
   doc.rect(0, 0, W, HDR, 'F');
 
-  // Left: title
   doc.setTextColor(255,255,255);
   doc.setFontSize(13); doc.setFont('helvetica','bold');
   doc.text('LIENZO DEL MODELO DE NEGOCIO', 8, 10);
@@ -1632,17 +1698,16 @@ async function exportPDF() {
   doc.setTextColor(...GOLDC);
   doc.text('Business Model Canvas  ·  Osterwalder & Pigneur (2010)', 8, 17);
 
-  // Center block: Emprendimiento
+  // Centro: emprendimiento
   const empX = W * 0.42;
   doc.setFontSize(5.5); doc.setFont('helvetica','bold');
   doc.setTextColor(...GOLDC);
   doc.text('EMPRENDIMIENTO', empX, 8);
   doc.setFontSize(10); doc.setFont('helvetica','bold');
   doc.setTextColor(255,255,255);
-  const empLines = doc.splitTextToSize(empNombre, W * 0.26);
-  doc.text(empLines[0], empX, 18);
+  doc.text(doc.splitTextToSize(empNombre, W * 0.26)[0], empX, 18);
 
-  // Right block: Equipo
+  // Derecha: equipo
   const estX = W * 0.72;
   doc.setFontSize(5.5); doc.setFont('helvetica','bold');
   doc.setTextColor(...GOLDC);
@@ -1650,115 +1715,94 @@ async function exportPDF() {
   doc.setFontSize(7); doc.setFont('helvetica','normal');
   doc.setTextColor(255,255,255);
   let ey = 14;
-  [est1, est2, est3].forEach(e => {
-    if (e) { doc.text('· ' + e, estX, ey); ey += 5; }
-  });
+  [est1, est2, est3].forEach(e => { if (e) { doc.text('· ' + e, estX, ey); ey += 5; } });
 
-  // Rust accent
+  // Barra acento
   doc.setFillColor(...RUST);
-  doc.rect(0, HDR, W, 1.5, 'F');
+  doc.rect(0, HDR, W, ACCENT, 'F');
 
-  // ── Grid geometry — everything fits between HDR+1.5 and H-7 ──────────
-  const PAD  = 4;
-  const GAP  = 2;
-  const TOP  = HDR + 1.5 + 1;      // 22.5
-  const FOOT = 7;
-  const BOT_ROW_H = 40;
-  const BOT_ROW_Y = H - FOOT - BOT_ROW_H; // 250
-  const MAIN_H    = BOT_ROW_Y - TOP - GAP; // ~225.5
-
-  const COL_W  = (W - 2*PAD - 4*GAP) / 5;
-  const ROW1_H = MAIN_H * 0.60;
-  const ROW2_H = MAIN_H - ROW1_H - GAP;
-  const TALL_H = MAIN_H;
-  const colX   = n => PAD + n * (COL_W + GAP);
-
-  // ── Block drawing ──────────────────────────────────────────────────────
+  // ── Función drawBlock dinámica ──────────────────────────────────────────
   function drawBlock(bx, by, bw, bh, num, title, sub, color, blockId) {
+    // Fondo y borde
     doc.setFillColor(...WHITEC);
     doc.setDrawColor(...SANDC);
     doc.setLineWidth(0.35);
     doc.rect(bx, by, bw, bh, 'FD');
 
-    // accent left bar
+    // Barra lateral izquierda
     doc.setFillColor(...color);
     doc.rect(bx, by, 2, bh, 'F');
 
-    // number circle
+    // Círculo número
     doc.setFillColor(...color);
     doc.circle(bx + 6, by + 5.5, 3.2, 'F');
     doc.setTextColor(255,255,255);
     doc.setFontSize(5.5); doc.setFont('helvetica','bold');
-    doc.text(String(num), bx + 6, by + 7, {align:'center'});
+    doc.text(String(num), bx + 6, by + 7, { align: 'center' });
 
-    // subtitle
+    // Subtítulo
     doc.setTextColor(...color);
     doc.setFontSize(4.8); doc.setFont('helvetica','bold');
     doc.text(sub.toUpperCase(), bx + 11.5, by + 4.5);
 
-    // title
+    // Título
     doc.setTextColor(...INK);
     doc.setFontSize(8); doc.setFont('helvetica','bold');
     doc.text(title, bx + 11.5, by + 10);
 
-    // separator line
+    // Línea separadora
     doc.setDrawColor(...SANDC); doc.setLineWidth(0.25);
     doc.line(bx + 3, by + 12.5, bx + bw - 3, by + 12.5);
 
-    // Notes (sticky)
+    // Notas (stickies dinámicos)
     const items = notes[blockId] || [];
-    let noteY = by + 15.5;
+    let ny = by + 15;
     const maxW = bw - 8;
 
     items.forEach(note => {
-      if (noteY > by + bh - 6) return;
       const noteLines = doc.splitTextToSize(note, maxW - 4);
-      const noteH = Math.min(noteLines.length, 3) * 3.8 + 3;
+      const visibleLines = noteLines.slice(0, 4);
+      const noteH = visibleLines.length * NOTE_LINE_H + NOTE_PAD_V * 2;
       doc.setFillColor(255, 249, 196);
       doc.setDrawColor(232, 217, 107);
       doc.setLineWidth(0.2);
-      doc.rect(bx + 3, noteY - 2, maxW, noteH, 'FD');
+      doc.rect(bx + 3, ny, maxW, noteH, 'FD');
       doc.setTextColor(...INK);
-      doc.setFontSize(5); doc.setFont('helvetica','normal');
-      noteLines.slice(0,3).forEach((line, i) => {
-        if (noteY + i * 3.8 < by + bh - 3)
-          doc.text(line, bx + 5, noteY + 1.5 + i * 3.8);
+      doc.setFontSize(NOTE_FONT); doc.setFont('helvetica','normal');
+      visibleLines.forEach((line, i) => {
+        doc.text(line, bx + 5, ny + NOTE_PAD_V + 1 + i * NOTE_LINE_H);
       });
-      noteY += noteH + 2;
+      ny += noteH + NOTE_GAP;
     });
-
-    // Dashed lines when empty
-    if (items.length === 0) {
-      doc.setDrawColor(215, 205, 195); doc.setLineWidth(0.2);
-      doc.setLineDashPattern([0.8, 1.8], 0);
-      for (let ly = by + 18; ly < by + bh - 4; ly += 7) {
-        doc.line(bx + 4, ly, bx + bw - 4, ly);
-      }
-      doc.setLineDashPattern([], 0);
-    }
   }
 
-  // ── Draw all blocks ────────────────────────────────────────────────────
-  drawBlock(colX(0), TOP, COL_W, TALL_H,  1, 'Socios Clave',        'Alianzas clave',     blockColors.kp,   'kp');
-  drawBlock(colX(1), TOP, COL_W, ROW1_H,  2, 'Actividades Clave',   'Actividades',         blockColors.ka,   'ka');
-  drawBlock(colX(1), TOP + ROW1_H + GAP, COL_W, ROW2_H, 6, 'Recursos Clave', 'Recursos', blockColors.kr,   'kr');
-  drawBlock(colX(2), TOP, COL_W, TALL_H,  3, 'Propuesta de Valor',  'El corazon del Canvas', blockColors.vp, 'vp');
-  drawBlock(colX(3), TOP, COL_W, ROW1_H,  4, 'Relacion con Clientes','Relaciones',         blockColors.cr,   'cr');
-  drawBlock(colX(3), TOP + ROW1_H + GAP, COL_W, ROW2_H, 7, 'Canales', 'Distribucion',     blockColors.ch,   'ch');
-  drawBlock(colX(4), TOP, COL_W, TALL_H,  5, 'Segmentos de Clientes','Mercado',            blockColors.cs,   'cs');
+  // ── Dibujar bloques ──────────────────────────────────────────────────────
+  // Col 0: KP (alto = MAIN_H para alinearse visualmente)
+  drawBlock(colX(0), TOP, COL_W, MAIN_H,  1, 'Socios Clave',         'Alianzas clave',        blockColors.kp,   'kp');
+  // Col 1: KA arriba, KR abajo
+  drawBlock(colX(1), TOP,             COL_W, H_ka, 2, 'Actividades Clave',  'Actividades',           blockColors.ka, 'ka');
+  drawBlock(colX(1), TOP + H_ka + GAP, COL_W, MAIN_H - H_ka - GAP,  6, 'Recursos Clave', 'Recursos', blockColors.kr, 'kr');
+  // Col 2: VP (alto = MAIN_H)
+  drawBlock(colX(2), TOP, COL_W, MAIN_H,  3, 'Propuesta de Valor',   'El corazon del Canvas', blockColors.vp,   'vp');
+  // Col 3: CR arriba, CH abajo
+  drawBlock(colX(3), TOP,             COL_W, H_cr, 4, 'Relacion con Clientes','Relaciones',          blockColors.cr, 'cr');
+  drawBlock(colX(3), TOP + H_cr + GAP, COL_W, MAIN_H - H_cr - GAP,  7, 'Canales',        'Distribucion',          blockColors.ch, 'ch');
+  // Col 4: CS (alto = MAIN_H)
+  drawBlock(colX(4), TOP, COL_W, MAIN_H,  5, 'Segmentos de Clientes','Mercado',               blockColors.cs,   'cs');
 
+  // Fila inferior
   const HALF_W = (W - 2*PAD - GAP) / 2;
-  drawBlock(PAD,             BOT_ROW_Y, HALF_W, BOT_ROW_H, 8, 'Estructura de Costes', 'Finanzas', blockColors.cost, 'cost');
-  drawBlock(PAD + HALF_W + GAP, BOT_ROW_Y, HALF_W, BOT_ROW_H, 9, 'Fuentes de Ingresos', 'Ingresos', blockColors.rev, 'rev');
+  drawBlock(PAD,              BOT_ROW_Y, HALF_W, BOT_H, 8, 'Estructura de Costes', 'Finanzas', blockColors.cost, 'cost');
+  drawBlock(PAD + HALF_W + GAP, BOT_ROW_Y, HALF_W, BOT_H, 9, 'Fuentes de Ingresos','Ingresos', blockColors.rev,  'rev');
 
-  // ── Footer ─────────────────────────────────────────────────────────────
+  // ── Footer ───────────────────────────────────────────────────────────────
   doc.setFillColor(...RUST);
-  doc.rect(0, H - FOOT, W, 1.5, 'F');
+  doc.rect(0, TOTAL_H - FOOT, W, 1.5, 'F');
   doc.setTextColor(...MUTEDC);
   doc.setFontSize(4.8); doc.setFont('helvetica','normal');
   doc.text(
     'Basado en: Osterwalder, A. & Pigneur, Y. (2010) Generacion de Modelos de Negocio. Deusto.  ·  Herramienta educativa de uso libre.',
-    W / 2, H - 1.8, {align:'center'}
+    W / 2, TOTAL_H - 2, { align: 'center' }
   );
 
   const filename = empNombre !== '—'
