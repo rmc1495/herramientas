@@ -574,6 +574,103 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.9rem; }
 
 .pb-note strong { color: var(--text); }
 
+/* SAVE / LOAD BUTTONS */
+.saveload-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 4px;
+}
+.sl-btn {
+  display: flex; align-items: center; justify-content: center; gap: 6px;
+  padding: 9px 10px; border-radius: 10px;
+  font-family: 'Syne', sans-serif; font-size: 0.75rem; font-weight: 700;
+  cursor: pointer; transition: all 0.18s; border: 2px solid;
+}
+.sl-btn.save { background: rgba(126,200,164,0.12); border-color: #7EC8A4; color: #3a7a5f; }
+.sl-btn.save:hover { background: #7EC8A4; color: white; }
+.sl-btn.load { background: rgba(147,197,232,0.12); border-color: #93C5E8; color: #2a5f8a; }
+.sl-btn.load:hover { background: #93C5E8; color: white; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(45,31,61,0.45);
+  backdrop-filter: blur(4px); z-index: 1000;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
+  animation: fadeIn 0.15s ease;
+}
+.modal {
+  background: white; border-radius: 16px; padding: 28px;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 20px 60px rgba(45,31,61,0.2); border: 2px solid var(--border);
+}
+.modal-title { font-family: 'Syne', sans-serif; font-size: 1.1rem; font-weight: 800; color: var(--text); margin-bottom: 4px; }
+.modal-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-bottom: 20px; }
+.modal input[type="text"] {
+  width: 100%; border: 2px solid var(--border); border-radius: 8px;
+  padding: 10px 14px; font-family: 'Instrument Sans', sans-serif; font-size: 0.9rem;
+  color: var(--text); outline: none; transition: border-color 0.15s; background: var(--surface2);
+}
+.modal input[type="text"]:focus { border-color: var(--accent); }
+.modal-btns { display: flex; gap: 10px; margin-top: 16px; justify-content: flex-end; }
+.modal-btn {
+  padding: 10px 20px; border-radius: 8px; font-family: 'Syne', sans-serif;
+  font-size: 0.8rem; font-weight: 700; cursor: pointer; border: 2px solid transparent; transition: all 0.15s;
+}
+.modal-btn.confirm { background: linear-gradient(135deg,#C084D8,#A78BFA); color: white; }
+.modal-btn.confirm:hover { opacity: 0.9; }
+.modal-btn.cancel { background: var(--surface2); color: var(--muted); border-color: var(--border); }
+.modal-btn.cancel:hover { border-color: var(--muted); color: var(--text); }
+
+/* SAVES LIST */
+.saves-list { display: flex; flex-direction: column; gap: 8px; max-height: 320px; overflow-y: auto; margin-top: 8px; }
+.save-item {
+  display: flex; align-items: center; gap: 10px; padding: 12px 14px;
+  background: var(--surface2); border: 1.5px solid var(--border); border-radius: 10px;
+  cursor: pointer; transition: all 0.15s;
+}
+.save-item:hover { border-color: var(--accent); background: rgba(192,132,216,0.06); }
+.save-item-icon { font-size: 1.4rem; }
+.save-item-info { flex: 1; min-width: 0; }
+.save-item-name { font-family: 'Syne', sans-serif; font-size: 0.88rem; font-weight: 700; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.save-item-meta { font-family: 'JetBrains Mono', monospace; font-size: 0.65rem; color: var(--muted); margin-top: 2px; }
+.save-item-del {
+  background: transparent; border: 1.5px solid var(--border); border-radius: 6px;
+  color: var(--muted); cursor: pointer; width: 26px; height: 26px;
+  display: flex; align-items: center; justify-content: center; font-size: 0.8rem;
+  transition: all 0.15s; flex-shrink: 0;
+}
+.save-item-del:hover { background: #fde8e8; border-color: #f4a7a7; color: #c05050; }
+.empty-saves { text-align: center; padding: 28px 0; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; }
+
+/* DROP ZONE */
+.drop-zone {
+  border: 2px dashed var(--border2);
+  border-radius: 12px;
+  padding: 36px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  background: var(--surface2);
+}
+.drop-zone:hover, .drop-zone.drag-over {
+  border-color: var(--accent);
+  background: rgba(192,132,216,0.07);
+}
+.drop-icon { font-size: 2.4rem; margin-bottom: 10px; }
+.drop-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.9rem; color: var(--text); margin-bottom: 4px; }
+.drop-sub  { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 28px; right: 28px;
+  background: #2D1F3D; color: white; padding: 12px 20px; border-radius: 10px;
+  font-family: 'JetBrains Mono', monospace; font-size: 0.78rem;
+  z-index: 2000; box-shadow: 0 6px 24px rgba(45,31,61,0.25);
+  animation: slideUp 0.2s ease; display: flex; align-items: center; gap: 10px;
+}
+@keyframes slideUp { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:none; } }
+
 /* EXPORT BUTTON */
 .export-btn {
   display: flex;
@@ -758,6 +855,17 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.9rem; }
     </div>
 
     <button class="calc-btn" onclick="calcular()">▶ Calcular</button>
+
+    <div class="saveload-row">
+      <button class="sl-btn save" onclick="abrirGuardar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar
+      </button>
+      <button class="sl-btn load" onclick="abrirCargar()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Cargar
+      </button>
+    </div>
   </div>
 
   <!-- RIGHT PANEL -->
@@ -772,6 +880,39 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.9rem; }
 
 <!-- HIDDEN PRINT REPORT -->
 <div id="print-report"></div>
+
+<!-- SAVE MODAL -->
+<div id="modal-guardar" class="modal-overlay" style="display:none" onclick="if(event.target===this)cerrarModales()">
+  <div class="modal">
+    <div class="modal-title">💾 Guardar progreso</div>
+    <div class="modal-subtitle">Dale un nombre a este conjunto de datos para recuperarlo después</div>
+    <input type="text" id="save-name" placeholder="Ej: Pastel de vainilla — jun 2025" maxlength="60">
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="cerrarModales()">Cancelar</button>
+      <button class="modal-btn confirm" onclick="confirmarGuardar()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- LOAD MODAL -->
+<div id="modal-cargar" class="modal-overlay" style="display:none" onclick="if(event.target===this)cerrarModales()">
+  <div class="modal">
+    <div class="modal-title">📂 Cargar progreso</div>
+    <div class="modal-subtitle">Seleccioná un archivo .json guardado anteriormente</div>
+    <div class="drop-zone" onclick="triggerFileInput()" id="drop-zone"
+         ondragover="event.preventDefault();this.classList.add('drag-over')"
+         ondragleave="this.classList.remove('drag-over')"
+         ondrop="event.preventDefault();this.classList.remove('drag-over');onFileSelected({target:{files:event.dataTransfer.files}})">
+      <div class="drop-icon">📄</div>
+      <div class="drop-text">Hacé clic o arrastrá un archivo .json aquí</div>
+      <div class="drop-sub">Los datos se restaurarán automáticamente</div>
+    </div>
+    <input type="file" id="json-file-input" accept=".json" style="display:none" onchange="onFileSelected(event)">
+    <div class="modal-btns">
+      <button class="modal-btn cancel" onclick="cerrarModales()">Cancelar</button>
+    </div>
+  </div>
+</div>
 
 <script>
 // ── Default data ─────────────────────────────────────────────────────────────
@@ -1208,6 +1349,121 @@ function drawChart(peU, pv, cv, fijos, prodActual, superavit, mc, peCol, col) {
     <span class="tag r">Gastos fijos: ${col(fijos)}/mes</span>
   `;
 }
+
+// ── Save / Load ───────────────────────────────────────────────────────────────
+function getFormState() {
+  return {
+    _version: 1,
+    _app: 'Calculadora Universal de Costos',
+    _fecha: new Date().toLocaleString('es-CR'),
+    product:      document.getElementById('product_name').value,
+    p_unidades:   document.getElementById('p_unidades').value,
+    p_indirectos: document.getElementById('p_indirectos').value,
+    p_margen:     document.getElementById('p_margen').value,
+    p_dia:        document.getElementById('p_dia').value,
+    p_dias_mes:   document.getElementById('p_dias_mes').value,
+    ingredients:  getIngredients(),
+    fixed:        getFixed(),
+  };
+}
+
+function loadFormState(state) {
+  document.getElementById('product_name').value  = state.product || '';
+  document.getElementById('p_unidades').value    = state.p_unidades || 10;
+  document.getElementById('p_indirectos').value  = state.p_indirectos || 50;
+  document.getElementById('p_margen').value      = state.p_margen || 50;
+  document.getElementById('p_dia').value         = state.p_dia || 30;
+  document.getElementById('p_dias_mes').value    = state.p_dias_mes || 26;
+
+  document.getElementById('ing-list').innerHTML = '';
+  document.getElementById('fixed-list').innerHTML = '';
+  ingId = 0; fixId = 0;
+
+  (state.ingredients || []).forEach(i => addIngredient(i.name, i.cost, i.qty));
+  (state.fixed || []).forEach(f => addFixed(f.name, f.value));
+}
+
+// ── GUARDAR → descarga JSON ───────────────────────────────────────────────────
+function abrirGuardar() {
+  const product = document.getElementById('product_name').value;
+  const now = new Date().toLocaleDateString('es-CR', { day:'2-digit', month:'short', year:'numeric' });
+  document.getElementById('save-name').value = product ? `${product} — ${now}` : `Producto — ${now}`;
+  document.getElementById('modal-guardar').style.display = 'flex';
+  setTimeout(() => { const i = document.getElementById('save-name'); i.focus(); i.select(); }, 60);
+}
+
+function confirmarGuardar() {
+  const name = document.getElementById('save-name').value.trim();
+  if (!name) { document.getElementById('save-name').focus(); return; }
+
+  const data = { ...getFormState(), _nombre: name };
+  const json = JSON.stringify(data, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+
+  // safe filename
+  const filename = name.replace(/[^a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-_]/g, '').trim().replace(/\s+/g, '_') || 'calculadora';
+
+  const a = document.createElement('a');
+  a.href = url; a.download = filename + '.json';
+  document.body.appendChild(a); a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+
+  cerrarModales();
+  showToast('💾 JSON descargado: ' + filename + '.json');
+}
+
+// ── CARGAR → abre selector de archivo JSON ────────────────────────────────────
+function abrirCargar() {
+  document.getElementById('modal-cargar').style.display = 'flex';
+}
+
+function triggerFileInput() {
+  document.getElementById('json-file-input').click();
+}
+
+function onFileSelected(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  if (!file.name.endsWith('.json')) {
+    showToast('⚠️ El archivo debe ser .json'); return;
+  }
+  const reader = new FileReader();
+  reader.onload = evt => {
+    try {
+      const state = JSON.parse(evt.target.result);
+      if (!state.ingredients && !state.product) throw new Error('Formato inválido');
+      loadFormState(state);
+      cerrarModales();
+      const nombre = state._nombre || state.product || file.name;
+      showToast('📂 Cargado: ' + nombre);
+      setTimeout(() => calcular(), 100);
+    } catch(err) {
+      showToast('❌ Archivo inválido o corrupto');
+    }
+    e.target.value = ''; // reset so same file can be re-selected
+  };
+  reader.readAsText(file);
+}
+
+function cerrarModales() {
+  document.getElementById('modal-guardar').style.display = 'none';
+  document.getElementById('modal-cargar').style.display = 'none';
+}
+
+function showToast(msg) {
+  const existing = document.querySelector('.toast');
+  if (existing) existing.remove();
+  const t = document.createElement('div');
+  t.className = 'toast'; t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+// Close modals with Escape
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModales(); });
+
 
 // ── Init ──────────────────────────────────────────────────────────────────────
 defaultIngredients.forEach(i => addIngredient(i.name, i.cost, i.qty));
