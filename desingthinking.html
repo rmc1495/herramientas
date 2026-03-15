@@ -41,23 +41,26 @@
         /* Estilos estrictos para forzar el PDF perfecto sin recortes */
         .pdf-exporting .no-print { display: none !important; }
         
-        html.pdf-exporting, body.pdf-exporting, .pdf-exporting #root, .pdf-exporting .min-h-screen { 
-            width: 1600px !important; 
-            min-width: 1600px !important; 
-            height: auto !important;
-            min-height: max-content !important;
-            overflow: visible !important; 
+        .pdf-exporting, .pdf-exporting body {
+            overflow: hidden !important; /* Congela la pantalla durante la exportación */
         }
         
+        /* Sacamos la pizarra de la pantalla temporalmente para que ignore los límites de los celulares/monitores */
         .pdf-exporting #board-container { 
+            position: absolute !important;
+            top: 0 !important;
+            left: 0 !important;
             width: 1600px !important; 
-            min-width: 1600px !important; 
             max-width: 1600px !important; 
             height: max-content !important;
+            min-height: 100vh !important;
             overflow: visible !important; 
             padding: 40px !important; 
             background-color: #f8fafc !important; 
             display: block !important;
+            z-index: 9999 !important;
+            transform: none !important;
+            scroll-snap-type: none !important;
         }
         
         /* Flex estricto en fila, sin saltos de línea y con anchos fijos */
@@ -68,7 +71,7 @@
             width: 1520px !important; 
             gap: 20px !important; 
             justify-content: flex-start !important;
-            height: max-content !important;
+            height: auto !important;
             align-items: flex-start !important;
         }
         
@@ -77,13 +80,9 @@
             width: 288px !important; 
             min-width: 288px !important; 
             max-width: 288px !important; 
-            height: max-content !important; 
-            page-break-inside: avoid !important; /* Ya no saltará a otra página */
-        }
-        
-        .pdf-exporting .shadow-postit {
-            page-break-inside: avoid !important; /* Evita que un post-it se parta a la mitad */
-            break-inside: avoid !important;
+            height: auto !important; 
+            overflow: visible !important;
+            padding-bottom: 20px !important;
         }
         
         .pdf-exporting .overflow-y-auto { 
@@ -490,33 +489,25 @@
             const handleExportPDF = () => {
                 setIsExporting(true);
                 
-                // 1. Guardar scroll original y resetear a 0 para evitar que la foto se tome desplazada
-                const container = boardRef.current;
+                const container = document.getElementById('board-container');
                 const originalScrollLeft = container.scrollLeft;
                 const originalScrollTop = container.scrollTop;
-                container.scrollLeft = 0;
-                container.scrollTop = 0;
-                window.scrollTo(0, 0);
-
-                // 2. Aplicar las clases que fuerzan el diseño panorámico en TODA la página
+                
+                // 1. Aplicar las clases que transforman la pizarra en un elemento absoluto gigante
                 document.documentElement.classList.add('pdf-exporting');
                 document.body.classList.add('pdf-exporting');
                 
-                // 3. Darle tiempo al navegador para repintar
+                // 2. Darle tiempo al navegador para repintar completamente sin límites de altura
                 setTimeout(() => {
-                    // Encontrar la columna más alta para determinar el alto total de la hoja
-                    const columns = container.querySelectorAll('.board-column');
-                    let maxColHeight = 0;
-                    columns.forEach(col => {
-                        if(col.scrollHeight > maxColHeight) maxColHeight = col.scrollHeight;
-                    });
+                    // Forzar cálculo de diseño del navegador
+                    void container.offsetHeight; 
 
-                    // Dimensiones exactas del documento (1600px de ancho y altura dinámica)
+                    // Obtener la altura real del contenedor ya expandido con todos los post-its
                     const contentWidth = 1600;
-                    const contentHeight = maxColHeight + 150; // Agregamos 150px de margen inferior
+                    const contentHeight = container.scrollHeight + 50; 
 
                     const opt = {
-                        margin: 0, // El margen ya lo da el padding de CSS
+                        margin: 0, 
                         filename: 'Pizarra_Design_Thinking.pdf', 
                         image: { type: 'jpeg', quality: 1 },
                         html2canvas: { 
@@ -528,25 +519,33 @@
                             windowWidth: contentWidth, 
                             width: contentWidth,
                             windowHeight: contentHeight, 
-                            height: contentHeight
+                            height: contentHeight,
+                            x: 0,
+                            y: 0
                         }, 
-                        // AQUÍ ESTÁ LA MAGIA: Formato personalizado exacto en píxeles. Todo en 1 hoja.
+                        // Formato de una sola hoja personalizada (magia para evitar cortes o saltos de página)
                         jsPDF: { 
                             unit: 'px', 
                             format: [contentWidth, contentHeight], 
-                            orientation: contentWidth > contentHeight ? 'landscape' : 'portrait' 
+                            orientation: contentWidth > contentHeight ? 'landscape' : 'portrait',
+                            hotfixes: ["px_scaling"]
                         }
                     };
                     
                     html2pdf().set(opt).from(container).save().then(() => {
-                        // 4. Restaurar todo a la normalidad para el usuario
+                        // 3. Restaurar todo a la normalidad para el usuario
                         document.documentElement.classList.remove('pdf-exporting');
                         document.body.classList.remove('pdf-exporting');
                         container.scrollLeft = originalScrollLeft;
                         container.scrollTop = originalScrollTop;
                         setIsExporting(false);
+                    }).catch(err => {
+                        console.error('Error exportando PDF:', err);
+                        document.documentElement.classList.remove('pdf-exporting');
+                        document.body.classList.remove('pdf-exporting');
+                        setIsExporting(false);
                     });
-                }, 800);
+                }, 1000); // 1 segundo de espera para asegurar que todo el CSS se aplicó antes de tomar la captura
             };
 
             return (
