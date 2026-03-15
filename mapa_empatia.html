@@ -1,393 +1,666 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Brain, Eye, Ear, MessageCircle, AlertCircle, Award, Trash2, X, Plus, Map, Inbox, Hand, User, Download, RotateCcw } from 'lucide-react';
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa de Empatía</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- html2canvas & jsPDF para Exportar a PDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-// Ideas por defecto para la primera vez que se carga
-const defaultItems = [
-  { id: '1', text: 'Siente que no tiene suficiente tiempo libre para sí mismo.', category: 'piensa', color: 'bg-yellow-200' },
-  { id: '2', text: '"Deberías probar esta nueva aplicación, es genial."', category: 'escucha', color: 'bg-blue-200' },
-  { id: '3', text: 'Mucha publicidad engañosa en redes sociales.', category: 've', color: 'bg-pink-200' },
-  { id: '4', text: 'Comparte artículos sobre productividad en LinkedIn.', category: 'dice', color: 'bg-green-200' },
-  { id: '5', text: 'Frustración por procesos lentos y burocráticos.', category: 'esfuerzos', color: 'bg-purple-200' },
-  { id: '6', text: 'Desea ahorrar al menos 2 horas a la semana.', category: 'resultados', color: 'bg-yellow-200' }
-];
+    <style>
+        /* Estilos específicos para la exportación a PDF */
+        .is-exporting .note-delete-btn,
+        .is-exporting .empty-placeholder {
+            display: none !important;
+        }
+        .is-exporting .note {
+            box-shadow: none !important;
+            transform: none !important;
+            border-color: rgba(0,0,0,0.05) !important;
+        }
+        .is-exporting {
+            background-color: #f1f5f9 !important; /* bg-slate-100 */
+        }
+        
+        /* Ocultar barra de desplazamiento visualmente pero permitir scroll */
+        .no-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .no-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .no-scrollbar::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 flex flex-col font-sans text-slate-800 min-h-screen">
 
-export default function App() {
-  // 1. LOCAL STORAGE: Inicializar estado leyendo de localStorage
-  const [items, setItems] = useState(() => {
-    const saved = localStorage.getItem('empathyMapData');
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch (e) {
-        console.error('Error al leer de localStorage', e);
-      }
-    }
-    return defaultItems;
-  });
-
-  // Guardar en localStorage cada vez que 'items' cambie
-  useEffect(() => {
-    localStorage.setItem('empathyMapData', JSON.stringify(items));
-  }, [items]);
-
-  // Ref para capturar el mapa para el PDF
-  const mapRef = useRef(null);
-  const [isExporting, setIsExporting] = useState(false);
-
-  // Estados para Drag & Drop y selección
-  const [draggedItemId, setDraggedItemId] = useState(null);
-  const [dragOverZone, setDragOverZone] = useState(null);
-  const [selectedItemId, setSelectedItemId] = useState(null);
-
-  // Estados del formulario
-  const [newText, setNewText] = useState('');
-  const [newColor, setNewColor] = useState('bg-yellow-200');
-
-  const colors = [
-    { name: 'Amarillo', class: 'bg-yellow-200' },
-    { name: 'Rosa', class: 'bg-pink-200' },
-    { name: 'Azul', class: 'bg-blue-200' },
-    { name: 'Verde', class: 'bg-green-200' },
-    { name: 'Morado', class: 'bg-purple-200' }
-  ];
-
-  const zones = [
-    { id: 'piensa', title: '¿Qué piensa y siente?', icon: <Brain size={20} className="text-blue-600"/>, bg: 'bg-blue-50', border: 'border-blue-200' },
-    { id: 've', title: '¿Qué ve?', icon: <Eye size={20} className="text-emerald-600"/>, bg: 'bg-emerald-50', border: 'border-emerald-200' },
-    { id: 'escucha', title: '¿Qué escucha?', icon: <Ear size={20} className="text-amber-600"/>, bg: 'bg-amber-50', border: 'border-amber-200' },
-    { id: 'dice', title: '¿Qué dice y hace?', icon: <MessageCircle size={20} className="text-purple-600"/>, bg: 'bg-purple-50', border: 'border-purple-200' }
-  ];
-
-  const bottomZones = [
-    { id: 'esfuerzos', title: 'Esfuerzos (Dolores)', icon: <AlertCircle size={20} className="text-red-600"/>, bg: 'bg-red-50', border: 'border-red-200' },
-    { id: 'resultados', title: 'Resultados (Beneficios)', icon: <Award size={20} className="text-green-600"/>, bg: 'bg-green-50', border: 'border-green-200' }
-  ];
-
-  // 2. FUNCIÓN PARA EXPORTAR A PDF SIN TAMAÑO DE HOJA ESTÁNDAR
-  const exportToPDF = async () => {
-    if (!mapRef.current) return;
-    setIsExporting(true);
-
-    try {
-      // Cargar librerías dinámicamente para el entorno de compilación actual
-      const loadScript = (src) => new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) return resolve();
-        const script = document.createElement('script');
-        script.src = src;
-        script.onload = resolve;
-        script.onerror = reject;
-        document.head.appendChild(script);
-      });
-
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
-      await loadScript('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
-
-      const html2canvas = window.html2canvas;
-      const jsPDF = window.jspdf.jsPDF;
-
-      // Tomar "foto" del contenedor exacto
-      const canvas = await html2canvas(mapRef.current, {
-        scale: 2, // Mayor calidad
-        useCORS: true,
-        backgroundColor: '#f1f5f9' // bg-slate-100 para que coincida con el fondo
-      });
-
-      const imgData = canvas.toDataURL('image/png');
-      
-      // Obtener dimensiones en píxeles reales del canvas
-      const pdfWidth = canvas.width;
-      const pdfHeight = canvas.height;
-
-      // Crear PDF con dimensiones PERSONALIZADAS exactas (sin forzar A4, Letter, etc.)
-      const pdf = new jsPDF({
-        orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
-        unit: 'px',
-        format: [pdfWidth, pdfHeight]
-      });
-
-      pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-      pdf.save('mi-mapa-de-empatia.pdf');
-    } catch (error) {
-      console.error("Error generando el PDF:", error);
-      alert("Hubo un error al generar el PDF.");
-    } finally {
-      setIsExporting(false);
-    }
-  };
-
-  const resetBoard = () => {
-    if (window.confirm('¿Estás seguro de querer borrar todo y volver al mapa por defecto?')) {
-      setItems(defaultItems);
-    }
-  };
-
-  const handleAddNote = (e) => {
-    e?.preventDefault();
-    if (!newText.trim()) return;
-    const newItem = {
-      id: Date.now().toString(),
-      text: newText,
-      category: 'bandeja',
-      color: newColor
-    };
-    setItems([newItem, ...items]);
-    setNewText('');
-  };
-
-  const deleteNote = (id) => {
-    setItems(items.filter(item => item.id !== id));
-    if (selectedItemId === id) setSelectedItemId(null);
-  };
-
-  const handleDragStart = (e, id) => {
-    setDraggedItemId(id);
-    setSelectedItemId(null);
-  };
-
-  const handleDragOver = (e, zoneId) => {
-    e.preventDefault();
-    if (dragOverZone !== zoneId) setDragOverZone(zoneId);
-  };
-
-  const handleDragLeave = (e, zoneId) => {
-    e.preventDefault();
-    if (dragOverZone === zoneId) setDragOverZone(null);
-  };
-
-  const handleDrop = (e, zoneId) => {
-    e.preventDefault();
-    setDragOverZone(null);
-    if (draggedItemId) {
-      setItems(items.map(i => i.id === draggedItemId ? { ...i, category: zoneId } : i));
-      setDraggedItemId(null);
-    }
-  };
-
-  const handleNoteClick = (id) => {
-    setSelectedItemId(selectedItemId === id ? null : id);
-  };
-
-  const handleZoneClick = (zoneId) => {
-    if (selectedItemId) {
-      if (zoneId === 'trash') {
-        deleteNote(selectedItemId);
-      } else {
-        setItems(items.map(i => i.id === selectedItemId ? { ...i, category: zoneId } : i));
-      }
-      setSelectedItemId(null);
-    }
-  };
-
-  const getItems = (categoryId) => items.filter(item => item.category === categoryId);
-
-  const StickyNote = ({ item, fullWidth = false }) => {
-    const isSelected = selectedItemId === item.id;
-    return (
-      <div
-        draggable
-        onDragStart={(e) => handleDragStart(e, item.id)}
-        onClick={(e) => { e.stopPropagation(); handleNoteClick(item.id); }}
-        className={`group relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transform transition-all 
-          ${item.color} 
-          ${fullWidth ? 'w-full' : 'w-full sm:w-36 md:w-40'} 
-          min-h-[80px] flex flex-col
-          hover:shadow-md hover:-translate-y-1 border border-black/5
-          ${isSelected ? 'ring-4 ring-blue-500 scale-105 shadow-lg z-20' : ''}
-          ${isExporting ? 'shadow-none hover:translate-y-0' : ''} /* Evitar efectos raros al tomar foto */
-        `}
-      >
-        <p className="text-sm font-medium text-slate-800 leading-snug whitespace-pre-wrap flex-1 break-words">{item.text}</p>
-        {!isExporting && (
-          <button
-            onClick={(e) => { e.stopPropagation(); deleteNote(item.id); }}
-            className="absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-30"
-            title="Eliminar"
-          >
-            <X size={14} />
-          </button>
-        )}
-      </div>
-    );
-  };
-
-  const EmpathyZone = ({ zone }) => {
-    const zoneItems = getItems(zone.id);
-    const isDropTarget = dragOverZone === zone.id;
-    const isSelectedTarget = selectedItemId !== null;
-
-    return (
-      <div
-        onDragOver={(e) => handleDragOver(e, zone.id)}
-        onDragLeave={(e) => handleDragLeave(e, zone.id)}
-        onDrop={(e) => handleDrop(e, zone.id)}
-        onClick={() => handleZoneClick(zone.id)}
-        className={`relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px]
-          ${zone.bg} ${zone.border}
-          ${isDropTarget && !isExporting ? 'ring-4 ring-blue-400 ring-opacity-50 scale-[1.02] shadow-lg z-10' : ''}
-          ${isSelectedTarget && !isExporting ? 'cursor-pointer hover:shadow-md hover:border-blue-400 hover:bg-blue-50/50' : ''}
-        `}
-      >
-        <div className="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2">
-          {zone.icon}
-          <h3>{zone.title}</h3>
-          <span className="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">{zoneItems.length}</span>
-        </div>
-        <div className="flex flex-wrap gap-3 items-start content-start flex-1">
-          {zoneItems.map(item => (
-            <StickyNote key={item.id} item={item} />
-          ))}
-          {zoneItems.length === 0 && !isExporting && (
-            <div className="w-full h-full flex flex-col items-center justify-center opacity-40 text-sm font-medium pointer-events-none mt-4">
-               <span className="border-2 border-dashed border-slate-400 rounded-lg p-4">Arrastra ideas aquí</span>
+    <!-- Modal de Confirmación (Reemplazo de window.confirm) -->
+    <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
+        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300" id="confirmModalContent">
+            <h3 class="text-lg font-bold text-slate-800 mb-2">¿Reiniciar tablero?</h3>
+            <p class="text-slate-600 mb-6 text-sm">¿Estás seguro de querer borrar todo y volver al mapa por defecto? Esta acción no se puede deshacer.</p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeConfirmModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
+                <button onclick="confirmReset()" class="px-4 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors shadow-sm">Sí, reiniciar</button>
             </div>
-          )}
         </div>
-      </div>
-    );
-  };
+    </div>
 
-  return (
-    <div className="min-h-screen bg-slate-100 flex flex-col font-sans text-slate-800">
-      
-      {/* Cabecera */}
-      <header className="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
-        <div className="flex items-center gap-3">
-          <div className="bg-blue-600 p-2 rounded-lg shadow-inner">
-            <Map className="text-white" size={24} />
-          </div>
-          <h1 className="text-2xl font-bold text-slate-800">Mapa de Empatía</h1>
+    <!-- Sistema de Toasts (Notificaciones) -->
+    <div id="toastContainer" class="fixed top-20 right-6 z-50 flex flex-col gap-2"></div>
+
+    <!-- Toast de Accesibilidad (Clic para mover) -->
+    <div id="a11yToast" class="fixed bottom-6 right-6 bg-blue-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
+        <i data-lucide="hand" class="w-5 h-5"></i>
+        <span class="text-sm font-semibold">Idea seleccionada. Haz clic en un área para moverla.</span>
+        <button onclick="clearSelection(event)" class="ml-2 bg-blue-700/50 p-1.5 rounded-full hover:bg-blue-800 transition-colors pointer-events-auto">
+            <i data-lucide="x" class="w-4 h-4"></i>
+        </button>
+    </div>
+
+    <!-- Cabecera -->
+    <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
+        <div class="flex items-center gap-3">
+            <div class="bg-blue-600 p-2 rounded-lg shadow-inner">
+                <i data-lucide="map" class="text-white w-6 h-6"></i>
+            </div>
+            <h1 class="text-2xl font-bold text-slate-800">Mapa de Empatía</h1>
         </div>
         
-        <div className="flex items-center gap-3">
-          <button 
-            onClick={resetBoard}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-          >
-            <RotateCcw size={18} />
-            <span className="hidden sm:inline">Reiniciar</span>
-          </button>
-          <button 
-            onClick={exportToPDF}
-            disabled={isExporting}
-            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-sm"
-          >
-            {isExporting ? (
-              <span className="animate-pulse flex items-center gap-2">Generando...</span>
-            ) : (
-              <>
-                <Download size={18} />
-                <span>Exportar PDF</span>
-              </>
-            )}
-          </button>
+        <div class="flex items-center gap-3">
+            <button onclick="openConfirmModal()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+                <span class="hidden sm:inline">Reiniciar</span>
+            </button>
+            <button id="exportBtn" onclick="exportToPDF()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-sm">
+                <i data-lucide="download" id="exportIcon" class="w-4 h-4"></i>
+                <span id="exportText">Exportar PDF</span>
+            </button>
         </div>
-      </header>
+    </header>
 
-      {/* Contenido Principal */}
-      <main className="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 items-start">
+    <!-- Contenido Principal -->
+    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 items-start">
         
-        {/* Barra Lateral (No se incluye en el PDF) */}
-        <aside className="w-full lg:w-80 flex flex-col gap-4 lg:sticky lg:top-24 h-auto lg:h-[calc(100vh-8rem)]">
-          <form onSubmit={handleAddNote} className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
-            <label className="text-sm font-bold text-slate-700 flex items-center gap-2">
-              <Plus size={16} className="text-blue-600"/> Añadir Nueva Idea
-            </label>
-            <textarea
-              value={newText}
-              onChange={(e) => setNewText(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleAddNote(); }
-              }}
-              placeholder="Escribe lo que el usuario siente, piensa, dice..."
-              className="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none outline-none transition-all shadow-inner bg-slate-50 focus:bg-white"
-              rows="3"
-            />
-            <div className="flex items-center justify-between mt-1">
-              <div className="flex gap-2">
-                {colors.map(c => (
-                  <button
-                    key={c.class} type="button" onClick={() => setNewColor(c.class)}
-                    className={`w-7 h-7 rounded-full border-2 transition-all shadow-sm ${c.class} ${newColor === c.class ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-110'}`}
-                    title={c.name}
-                  />
-                ))}
-              </div>
-              <button type="submit" disabled={!newText.trim()} className="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 text-white p-2.5 rounded-lg transition-colors font-medium text-sm shadow-sm">
-                Agregar
-              </button>
-            </div>
-          </form>
+        <!-- Barra Lateral -->
+        <aside class="w-full lg:w-80 flex flex-col gap-4 lg:sticky lg:top-24 h-auto lg:h-[calc(100vh-8rem)]">
+            
+            <!-- Formulario Nueva Idea -->
+            <form id="noteForm" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
+                <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
+                    <i data-lucide="plus" class="text-blue-600 w-4 h-4"></i> Añadir Nueva Idea
+                </label>
+                <textarea
+                    id="newNoteText"
+                    placeholder="Escribe lo que el usuario siente, piensa, dice..."
+                    class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none outline-none transition-all shadow-inner bg-slate-50 focus:bg-white"
+                    rows="3"
+                ></textarea>
+                <div class="flex items-center justify-between mt-1">
+                    <div class="flex gap-2" id="colorPicker">
+                        <!-- Botones de colores se inyectan por JS -->
+                    </div>
+                    <button type="submit" id="addBtn" disabled class="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white p-2.5 rounded-lg transition-colors font-medium text-sm shadow-sm">
+                        Agregar
+                    </button>
+                </div>
+            </form>
 
-          <div
-            onDragOver={(e) => handleDragOver(e, 'bandeja')} onDragLeave={(e) => handleDragLeave(e, 'bandeja')} onDrop={(e) => handleDrop(e, 'bandeja')} onClick={() => handleZoneClick('bandeja')}
-            className={`flex-1 bg-white p-4 rounded-xl border-2 transition-all flex flex-col min-h-[250px] border-slate-200 shadow-sm
-              ${dragOverZone === 'bandeja' ? 'ring-4 ring-blue-300 ring-opacity-50' : ''}
-              ${selectedItemId ? 'cursor-pointer hover:border-blue-400 hover:bg-blue-50/50' : ''}`}
-          >
-            <div className="flex items-center gap-2 font-bold text-slate-700 border-b border-slate-100 pb-3 mb-3">
-              <Inbox size={20} className="text-blue-600"/>
-              <h3>Bandeja</h3>
-              <span className="ml-auto text-xs bg-slate-100 px-2 py-1 rounded-full">{getItems('bandeja').length}</span>
+            <!-- Bandeja -->
+            <div id="zone-bandeja" data-zone="bandeja" class="drop-zone flex-1 bg-white p-4 rounded-xl border-2 transition-all flex flex-col min-h-[250px] border-slate-200 shadow-sm cursor-pointer">
+                <div class="flex items-center gap-2 font-bold text-slate-700 border-b border-slate-100 pb-3 mb-3 pointer-events-none">
+                    <i data-lucide="inbox" class="text-blue-600 w-5 h-5"></i>
+                    <h3>Bandeja</h3>
+                    <span id="count-bandeja" class="ml-auto text-xs bg-slate-100 px-2 py-1 rounded-full">0</span>
+                </div>
+                <div id="content-bandeja" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pr-1 pointer-events-none">
+                    <!-- Notas de bandeja -->
+                </div>
             </div>
-            <div className="flex-1 overflow-y-auto flex flex-col gap-3 pr-1">
-              {getItems('bandeja').map(item => <StickyNote key={item.id} item={item} fullWidth />)}
-            </div>
-          </div>
 
-          <div
-            onDragOver={(e) => handleDragOver(e, 'trash')} onDragLeave={(e) => handleDragLeave(e, 'trash')} onClick={() => handleZoneClick('trash')}
-            onDrop={(e) => { e.preventDefault(); setDragOverZone(null); if (draggedItemId) { deleteNote(draggedItemId); setDraggedItemId(null); } }}
-            className={`p-4 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all font-medium
-              ${dragOverZone === 'trash' ? 'bg-red-100 border-red-500 text-red-600 scale-105' : 'border-slate-300 text-slate-500 hover:bg-slate-50'}
-              ${selectedItemId ? 'cursor-pointer hover:border-red-400 hover:bg-red-50 hover:text-red-500' : ''}`}
-          >
-            <Trash2 size={20} />
-            <span>Papelera</span>
-          </div>
+            <!-- Papelera -->
+            <div id="zone-trash" data-zone="trash" class="drop-zone p-4 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all font-medium border-slate-300 text-slate-500 hover:bg-slate-50 cursor-pointer">
+                <i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i>
+                <span class="pointer-events-none">Papelera</span>
+            </div>
         </aside>
 
-        {/* Tablero Principal del Mapa (ESTO ES LO QUE SE CAPTURA EN EL PDF) */}
-        <section 
-          ref={mapRef} 
-          className="flex-1 w-full flex flex-col gap-4 p-4 bg-slate-100 rounded-2xl"
-          style={{ 
-            // Esto asegura que la captura tome todo el espacio independientemente del padding externo
-            boxSizing: 'border-box' 
-          }}
-        >
-          {/* Título solo visible en el PDF si quisieras, aquí lo ponemos disimulado o no */}
-          {isExporting && (
-             <h2 className="text-3xl font-bold text-slate-800 mb-2 text-center">Mapa de Empatía</h2>
-          )}
-
-          <div className="relative grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-            <EmpathyZone zone={zones[0]} />
-            <EmpathyZone zone={zones[1]} />
-            <EmpathyZone zone={zones[2]} />
-            <EmpathyZone zone={zones[3]} />
+        <!-- Tablero Principal del Mapa (Para PDF) -->
+        <section id="mapBoard" class="flex-1 w-full flex flex-col gap-4 p-4 bg-slate-100 rounded-2xl" style="box-sizing: border-box;">
             
-            <div className="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-4 shadow-xl border-4 border-slate-50 z-10 pointer-events-none text-slate-300">
-               <User size={48} strokeWidth={1.5} />
+            <h2 id="pdfTitle" class="text-3xl font-bold text-slate-800 mb-2 text-center hidden">Mapa de Empatía</h2>
+
+            <div class="relative grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
+                
+                <!-- Piensa -->
+                <div id="zone-piensa" data-zone="piensa" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-blue-50 border-blue-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="brain" class="text-blue-600 w-5 h-5"></i>
+                        <h3>¿Qué piensa y siente?</h3>
+                        <span id="count-piensa" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-piensa" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+
+                <!-- Ve -->
+                <div id="zone-ve" data-zone="ve" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-emerald-50 border-emerald-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="eye" class="text-emerald-600 w-5 h-5"></i>
+                        <h3>¿Qué ve?</h3>
+                        <span id="count-ve" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-ve" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+
+                <!-- Escucha -->
+                <div id="zone-escucha" data-zone="escucha" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-amber-50 border-amber-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="ear" class="text-amber-600 w-5 h-5"></i>
+                        <h3>¿Qué escucha?</h3>
+                        <span id="count-escucha" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-escucha" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+
+                <!-- Dice -->
+                <div id="zone-dice" data-zone="dice" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-purple-50 border-purple-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="message-circle" class="text-purple-600 w-5 h-5"></i>
+                        <h3>¿Qué dice y hace?</h3>
+                        <span id="count-dice" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-dice" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+                
+                <!-- Ícono central -->
+                <div class="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-4 shadow-xl border-4 border-slate-50 z-10 pointer-events-none text-slate-300">
+                    <i data-lucide="user" class="w-12 h-12" stroke-width="1.5"></i>
+                </div>
             </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <EmpathyZone zone={bottomZones[0]} />
-            <EmpathyZone zone={bottomZones[1]} />
-          </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Esfuerzos -->
+                <div id="zone-esfuerzos" data-zone="esfuerzos" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-red-50 border-red-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="alert-circle" class="text-red-600 w-5 h-5"></i>
+                        <h3>Esfuerzos (Dolores)</h3>
+                        <span id="count-esfuerzos" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-esfuerzos" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+
+                <!-- Resultados -->
+                <div id="zone-resultados" data-zone="resultados" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-green-50 border-green-200 cursor-pointer">
+                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
+                        <i data-lucide="award" class="text-green-600 w-5 h-5"></i>
+                        <h3>Resultados (Beneficios)</h3>
+                        <span id="count-resultados" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
+                    </div>
+                    <div id="content-resultados" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
+                </div>
+            </div>
         </section>
-      </main>
+    </main>
 
-      {/* Toast de Accesibilidad */}
-      {selectedItemId && (
-        <div className="fixed bottom-6 right-6 bg-blue-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 animate-bounce z-50">
-          <Hand size={20} />
-          <span className="text-sm font-semibold">Idea seleccionada. Haz clic en un área para moverla.</span>
-          <button onClick={() => setSelectedItemId(null)} className="ml-2 bg-blue-700/50 p-1.5 rounded-full hover:bg-blue-800 transition-colors">
-            <X size={16}/>
-          </button>
-        </div>
-      )}
-    </div>
-  );
-}
+    <script>
+        // Inicializar Iconos
+        lucide.createIcons();
+
+        // ---------------- DATOS Y ESTADO ----------------
+        const defaultItems = [
+            { id: '1', text: 'Siente que no tiene suficiente tiempo libre para sí mismo.', category: 'piensa', color: 'bg-yellow-200' },
+            { id: '2', text: '"Deberías probar esta nueva aplicación, es genial."', category: 'escucha', color: 'bg-blue-200' },
+            { id: '3', text: 'Mucha publicidad engañosa en redes sociales.', category: 've', color: 'bg-pink-200' },
+            { id: '4', text: 'Comparte artículos sobre productividad en LinkedIn.', category: 'dice', color: 'bg-green-200' },
+            { id: '5', text: 'Frustración por procesos lentos y burocráticos.', category: 'esfuerzos', color: 'bg-purple-200' },
+            { id: '6', text: 'Desea ahorrar al menos 2 horas a la semana.', category: 'resultados', color: 'bg-yellow-200' }
+        ];
+
+        const colors = [
+            { name: 'Amarillo', class: 'bg-yellow-200' },
+            { name: 'Rosa', class: 'bg-pink-200' },
+            { name: 'Azul', class: 'bg-blue-200' },
+            { name: 'Verde', class: 'bg-green-200' },
+            { name: 'Morado', class: 'bg-purple-200' }
+        ];
+
+        let items = [];
+        let selectedColor = 'bg-yellow-200';
+        let draggedItemId = null;
+        let selectedItemId = null;
+
+        // Cargar desde LocalStorage
+        function loadData() {
+            const saved = localStorage.getItem('empathyMapDataHtml');
+            if (saved) {
+                try {
+                    items = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Error parseando localStorage', e);
+                    items = [...defaultItems];
+                }
+            } else {
+                items = [...defaultItems];
+            }
+        }
+
+        function saveData() {
+            localStorage.setItem('empathyMapDataHtml', JSON.stringify(items));
+        }
+
+        // ---------------- UI: RENDERIZADO ----------------
+        function renderColors() {
+            const container = document.getElementById('colorPicker');
+            container.innerHTML = '';
+            colors.forEach(c => {
+                const btn = document.createElement('button');
+                btn.type = 'button';
+                btn.title = c.name;
+                btn.className = `w-7 h-7 rounded-full border-2 transition-all shadow-sm ${c.class} ${selectedColor === c.class ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-110'}`;
+                btn.onclick = () => {
+                    selectedColor = c.class;
+                    renderColors();
+                };
+                container.appendChild(btn);
+            });
+        }
+
+        function renderNotes() {
+            // Limpiar zonas
+            const categories = ['bandeja', 'piensa', 've', 'escucha', 'dice', 'esfuerzos', 'resultados'];
+            const containers = {};
+            
+            categories.forEach(cat => {
+                containers[cat] = document.getElementById(`content-${cat}`);
+                if(containers[cat]) containers[cat].innerHTML = '';
+                document.getElementById(`count-${cat}`).innerText = '0';
+            });
+
+            // Agrupar y renderizar
+            const grouped = {};
+            categories.forEach(c => grouped[c] = []);
+            
+            items.forEach(item => {
+                if(grouped[item.category]) {
+                    grouped[item.category].push(item);
+                }
+            });
+
+            categories.forEach(cat => {
+                const zoneItems = grouped[cat];
+                document.getElementById(`count-${cat}`).innerText = zoneItems.length;
+
+                if (zoneItems.length === 0 && cat !== 'bandeja') {
+                    containers[cat].innerHTML = `
+                        <div class="empty-placeholder w-full h-full flex flex-col items-center justify-center opacity-40 text-sm font-medium pointer-events-none mt-4">
+                            <span class="border-2 border-dashed border-slate-400 rounded-lg p-4">Arrastra ideas aquí</span>
+                        </div>
+                    `;
+                } else if (zoneItems.length === 0 && cat === 'bandeja') {
+                    containers[cat].innerHTML = `<div class="text-center text-slate-400 text-sm mt-10 empty-placeholder pointer-events-none">Las nuevas ideas aparecerán aquí.</div>`;
+                } else {
+                    zoneItems.forEach(item => {
+                        const isSelected = selectedItemId === item.id;
+                        const widthClass = cat === 'bandeja' ? 'w-full' : 'w-full sm:w-36 md:w-40';
+                        const selectClass = isSelected ? 'ring-4 ring-blue-500 scale-105 shadow-lg z-20' : '';
+                        
+                        const noteHTML = `
+                            <div 
+                                id="note-${item.id}"
+                                draggable="true"
+                                class="note group relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transform transition-all pointer-events-auto
+                                ${item.color} ${widthClass} min-h-[80px] flex flex-col hover:shadow-md hover:-translate-y-1 border border-black/5 ${selectClass}"
+                            >
+                                <p class="text-sm font-medium text-slate-800 leading-snug whitespace-pre-wrap flex-1 break-words pointer-events-none">${escapeHTML(item.text)}</p>
+                                <button
+                                    class="note-delete-btn absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-30"
+                                    title="Eliminar"
+                                >
+                                    <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
+                                </button>
+                            </div>
+                        `;
+                        
+                        const template = document.createElement('template');
+                        template.innerHTML = noteHTML.trim();
+                        const noteElement = template.content.firstChild;
+
+                        // Eventos de la nota
+                        noteElement.addEventListener('dragstart', (e) => handleDragStart(e, item.id));
+                        noteElement.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            handleNoteClick(item.id);
+                        });
+
+                        // Evento borrar
+                        const delBtn = noteElement.querySelector('.note-delete-btn');
+                        delBtn.addEventListener('click', (e) => {
+                            e.stopPropagation();
+                            deleteNote(item.id);
+                        });
+
+                        containers[cat].appendChild(noteElement);
+                    });
+                }
+            });
+
+            lucide.createIcons();
+            updateA11yToast();
+        }
+
+        // ---------------- UTILIDADES ----------------
+        function escapeHTML(str) {
+            return str.replace(/[&<>'"]/g, 
+                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+            );
+        }
+
+        function showToastMessage(msg, isError = false) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = `px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-all transform translate-x-10 opacity-0 ${isError ? 'bg-red-600' : 'bg-slate-800'}`;
+            toast.innerText = msg;
+            container.appendChild(toast);
+            
+            // Animar entrada
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-x-10', 'opacity-0');
+            });
+
+            // Eliminar después de 3s
+            setTimeout(() => {
+                toast.classList.add('translate-x-10', 'opacity-0');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // ---------------- MODAL CONFIRMACION ----------------
+        const modal = document.getElementById('confirmModal');
+        const modalContent = document.getElementById('confirmModalContent');
+
+        function openConfirmModal() {
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            requestAnimationFrame(() => {
+                modal.classList.remove('opacity-0');
+                modalContent.classList.remove('scale-95');
+            });
+        }
+
+        function closeConfirmModal() {
+            modal.classList.add('opacity-0');
+            modalContent.classList.add('scale-95');
+            setTimeout(() => {
+                modal.classList.add('hidden');
+                modal.classList.remove('flex');
+            }, 300);
+        }
+
+        function confirmReset() {
+            items = [...defaultItems];
+            saveData();
+            renderNotes();
+            closeConfirmModal();
+            showToastMessage("Tablero reiniciado");
+        }
+
+        // ---------------- LOGICA CORE ----------------
+
+        function addNote(e) {
+            e.preventDefault();
+            const input = document.getElementById('newNoteText');
+            const text = input.value.trim();
+            if (!text) return;
+
+            const newItem = {
+                id: Date.now().toString(),
+                text: text,
+                category: 'bandeja',
+                color: selectedColor
+            };
+
+            items.unshift(newItem); // Al inicio
+            saveData();
+            renderNotes();
+            
+            input.value = '';
+            checkInput();
+            showToastMessage("Idea añadida a la bandeja");
+        }
+
+        function deleteNote(id) {
+            items = items.filter(item => item.id !== id);
+            if (selectedItemId === id) selectedItemId = null;
+            saveData();
+            renderNotes();
+        }
+
+        // Form Input Listener
+        const newNoteInput = document.getElementById('newNoteText');
+        const addBtn = document.getElementById('addBtn');
+        
+        function checkInput() {
+            addBtn.disabled = newNoteInput.value.trim().length === 0;
+        }
+
+        newNoteInput.addEventListener('input', checkInput);
+        newNoteInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                if(!addBtn.disabled) addNote(e);
+            }
+        });
+        document.getElementById('noteForm').addEventListener('submit', addNote);
+
+        // ---------------- DRAG & DROP Y SELECCIÓN ----------------
+        
+        function handleDragStart(e, id) {
+            draggedItemId = id;
+            selectedItemId = null; 
+            e.dataTransfer.effectAllowed = 'move';
+            // Configurar imagen ghost (opcional)
+            setTimeout(() => {
+                document.getElementById(`note-${id}`).classList.add('opacity-50');
+            }, 0);
+        }
+
+        function handleDragEnd(e) {
+            if(draggedItemId) {
+                const el = document.getElementById(`note-${draggedItemId}`);
+                if(el) el.classList.remove('opacity-50');
+                draggedItemId = null;
+            }
+            document.querySelectorAll('.drop-zone').forEach(z => {
+                z.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-50', 'bg-red-100', 'border-red-500', 'scale-[1.02]');
+            });
+        }
+
+        // Configurar Zonas
+        document.querySelectorAll('.drop-zone').forEach(zone => {
+            zone.addEventListener('dragover', (e) => {
+                e.preventDefault(); // Permitir drop
+                e.dataTransfer.dropEffect = 'move';
+                
+                const zoneId = zone.dataset.zone;
+                if(zoneId === 'trash') {
+                    zone.classList.add('bg-red-100', 'border-red-500', 'text-red-600');
+                } else if(zoneId !== 'bandeja') {
+                    zone.classList.add('ring-4', 'ring-blue-400', 'ring-opacity-50', 'scale-[1.02]', 'z-10');
+                } else {
+                    zone.classList.add('ring-4', 'ring-blue-300', 'ring-opacity-50');
+                }
+            });
+
+            zone.addEventListener('dragleave', (e) => {
+                const zoneId = zone.dataset.zone;
+                if(zoneId === 'trash') {
+                    zone.classList.remove('bg-red-100', 'border-red-500', 'text-red-600');
+                } else if(zoneId !== 'bandeja') {
+                    zone.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-50', 'scale-[1.02]', 'z-10');
+                } else {
+                    zone.classList.remove('ring-4', 'ring-blue-300', 'ring-opacity-50');
+                }
+            });
+
+            zone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                handleDragEnd(); // Limpiar UI
+                
+                const zoneId = zone.dataset.zone;
+                
+                if (draggedItemId) {
+                    if (zoneId === 'trash') {
+                        deleteNote(draggedItemId);
+                    } else {
+                        // Actualizar categoría
+                        const itemIndex = items.findIndex(i => i.id === draggedItemId);
+                        if (itemIndex > -1) {
+                            items[itemIndex].category = zoneId;
+                            saveData();
+                            renderNotes();
+                        }
+                    }
+                    draggedItemId = null;
+                }
+            });
+
+            // Clic en la zona (para el modo accesibilidad)
+            zone.addEventListener('click', () => {
+                if (selectedItemId) {
+                    const zoneId = zone.dataset.zone;
+                    if (zoneId === 'trash') {
+                        deleteNote(selectedItemId);
+                    } else {
+                        const itemIndex = items.findIndex(i => i.id === selectedItemId);
+                        if (itemIndex > -1) {
+                            items[itemIndex].category = zoneId;
+                            selectedItemId = null;
+                            saveData();
+                            renderNotes();
+                        }
+                    }
+                }
+            });
+        });
+
+        document.addEventListener('dragend', handleDragEnd);
+
+        // ---------------- MODO ACCESIBILIDAD ----------------
+        function handleNoteClick(id) {
+            selectedItemId = selectedItemId === id ? null : id;
+            renderNotes(); // Re-render para mostrar estilos
+        }
+
+        function clearSelection(e) {
+            if(e) e.stopPropagation();
+            selectedItemId = null;
+            renderNotes();
+        }
+
+        function updateA11yToast() {
+            const toast = document.getElementById('a11yToast');
+            if (selectedItemId) {
+                toast.classList.remove('translate-y-20', 'opacity-0');
+            } else {
+                toast.classList.add('translate-y-20', 'opacity-0');
+            }
+
+            // Actualizar UI de las zonas para sugerir clics
+            document.querySelectorAll('.drop-zone').forEach(zone => {
+                if(selectedItemId) {
+                    if(zone.dataset.zone === 'trash') {
+                        zone.classList.add('hover:border-red-400', 'hover:bg-red-50', 'hover:text-red-500');
+                    } else {
+                        zone.classList.add('hover:shadow-md', 'hover:border-blue-400');
+                    }
+                } else {
+                    zone.classList.remove('hover:border-red-400', 'hover:bg-red-50', 'hover:text-red-500', 'hover:shadow-md', 'hover:border-blue-400');
+                }
+            });
+        }
+
+        // Clic fuera para deseleccionar
+        document.addEventListener('click', (e) => {
+            if (selectedItemId && !e.target.closest('.note') && !e.target.closest('.drop-zone') && !e.target.closest('#a11yToast')) {
+                clearSelection();
+            }
+        });
+
+        // ---------------- EXPORTAR PDF ----------------
+        async function exportToPDF() {
+            const mapBoard = document.getElementById('mapBoard');
+            const exportBtn = document.getElementById('exportBtn');
+            const exportText = document.getElementById('exportText');
+            const exportIcon = document.getElementById('exportIcon');
+            const pdfTitle = document.getElementById('pdfTitle');
+            
+            if (!mapBoard || typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+                showToastMessage("Las librerías PDF aún no cargan. Intenta en un segundo.", true);
+                return;
+            }
+
+            // Estado de carga
+            exportBtn.disabled = true;
+            exportText.innerText = 'Generando...';
+            exportIcon.setAttribute('data-lucide', 'loader');
+            lucide.createIcons();
+            exportIcon.classList.add('animate-spin');
+
+            // Preparar UI para la foto
+            mapBoard.classList.add('is-exporting');
+            pdfTitle.classList.remove('hidden');
+
+            try {
+                const canvas = await html2canvas(mapBoard, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#f1f5f9'
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+                const pdfWidth = canvas.width;
+                const pdfHeight = canvas.height;
+
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({
+                    orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
+                    unit: 'px',
+                    format: [pdfWidth, pdfHeight]
+                });
+
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                pdf.save('mi-mapa-de-empatia.pdf');
+                showToastMessage("PDF descargado correctamente");
+                
+            } catch (error) {
+                console.error("Error generando el PDF:", error);
+                showToastMessage("Hubo un error al generar el PDF.", true);
+            } finally {
+                // Restaurar UI
+                mapBoard.classList.remove('is-exporting');
+                pdfTitle.classList.add('hidden');
+                
+                exportBtn.disabled = false;
+                exportText.innerText = 'Exportar PDF';
+                exportIcon.setAttribute('data-lucide', 'download');
+                exportIcon.classList.remove('animate-spin');
+                lucide.createIcons();
+            }
+        }
+
+        // ---------------- ARRANQUE ----------------
+        loadData();
+        renderColors();
+        renderNotes();
+
+    </script>
+</body>
+</html>
