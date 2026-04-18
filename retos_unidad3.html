@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unidad 3 · Retos de Emprendimiento | Tablero de Equipos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#F6F2EA;
+  --paper-deep:#EDE6D7;
+  --ink:#15130F;
+  --ink-soft:#403A30;
+  --muted:#7A7165;
+  --line:#D9D3C4;
+  --line-soft:#E8E2D3;
+  --white:#FDFBF6;
+  --ok:#15803D;
+  --bad:#B91C1C;
+  --warn:#B45309;
+
+  /* Acentos por actividad */
+  --c1:#1F4E3D;
+  --c2:#B45309;
+  --c3:#1E3A8A;
+  --c4:#9D174D;
+  --c5:#7C2D12;
+  --c6:#4338CA;
+  --c7:#0E7490;
+  --c8:#701A75;
+
+  /* Colores de equipos */
+  --t1:#B45309;
+  --t2:#1F4E3D;
+  --t3:#1E3A8A;
+  --t4:#9D174D;
+  --t5:#7C2D12;
+  --t6:#4338CA;
+
+  --shadow-sm:0 1px 2px rgba(21,19,15,.04);
+  --shadow-md:0 4px 14px rgba(21,19,15,.08);
+  --shadow-lg:0 20px 44px -14px rgba(21,19,15,.18);
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Manrope',sans-serif;
+  background:var(--paper);
+  color:var(--ink);
+  line-height:1.55;
+  min-height:100vh;
+  overflow-x:hidden;
+}
+body::before{
+  content:'';position:fixed;inset:0;pointer-events:none;z-index:0;
+  background:
+    radial-gradient(circle at 15% 20%,rgba(180,83,9,.04) 0%,transparent 35%),
+    radial-gradient(circle at 85% 75%,rgba(31,78,61,.03) 0%,transparent 35%);
+}
+h1,h2,h3,h4,.display{
+  font-family:'Fraunces',serif;
+  letter-spacing:-.015em;
+  font-weight:500;
+}
+button{font-family:inherit; cursor:pointer}
+.wrap{max-width:1240px;margin:0 auto;padding:0 1.5rem;position:relative;z-index:1}
+
+/* ===== TOPBAR ===== */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  background:rgba(246,242,234,.9);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border-bottom:1px solid var(--line);
+  padding:.75rem 0;
+}
+.topbar .wrap{display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:.7rem;font-family:'Fraunces',serif;font-weight:600;font-size:1rem}
+.brand-mark{
+  width:30px;height:30px;border-radius:50%;
+  background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-style:italic;font-weight:600;font-size:.9rem;
+}
+.brand small{display:block;font-family:'Manrope',sans-serif;font-weight:500;font-size:.7rem;color:var(--muted);letter-spacing:.04em}
+.topbar-actions{display:flex;gap:.5rem;align-items:center}
+.btn-ghost{
+  font-size:.8rem;color:var(--ink-soft);border:1px solid var(--line);
+  background:var(--white);padding:.45rem .85rem;border-radius:999px;
+  display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;font-weight:500;
+}
+.btn-ghost:hover{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+.btn-primary{
+  background:var(--ink);color:var(--paper);border:none;
+  padding:.7rem 1.4rem;border-radius:999px;font-weight:600;font-size:.9rem;
+  display:inline-flex;align-items:center;gap:.5rem;transition:all .2s;
+}
+.btn-primary:hover{background:var(--c2);transform:translateY(-1px);box-shadow:var(--shadow-md)}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+/* ===== VISTAS ===== */
+.view{display:none;padding:2rem 0 4rem}
+.view.active{display:block;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+
+/* ===== SETUP ===== */
+.setup-wrap{max-width:680px;margin:0 auto;padding-top:1rem}
+.setup-badge{
+  display:inline-flex;align-items:center;gap:.5rem;
+  padding:.4rem .9rem;background:var(--white);border:1px solid var(--line);
+  border-radius:999px;font-size:.72rem;color:var(--ink-soft);
+  letter-spacing:.1em;text-transform:uppercase;font-weight:600;margin-bottom:1.3rem;
+}
+.setup-badge::before{content:'';width:6px;height:6px;background:var(--c2);border-radius:50%}
+.setup-wrap h1{font-size:clamp(2.2rem,4.5vw,3.4rem);line-height:1.05;margin-bottom:.8rem;font-weight:400}
+.setup-wrap h1 em{font-style:italic;color:var(--c2);font-weight:400}
+.setup-wrap .lede{font-size:1.05rem;color:var(--ink-soft);margin-bottom:2.5rem;line-height:1.6}
+
+.setup-card{
+  background:var(--white);border:1px solid var(--line);border-radius:18px;
+  padding:2rem;box-shadow:var(--shadow-sm);
+}
+.field{margin-bottom:1.4rem}
+.field label{
+  display:block;font-size:.78rem;font-weight:600;
+  color:var(--ink-soft);letter-spacing:.06em;text-transform:uppercase;margin-bottom:.5rem;
+}
+.field input{
+  width:100%;padding:.85rem 1rem;background:var(--paper);
+  border:1.5px solid var(--line);border-radius:10px;
+  font-family:inherit;font-size:1rem;color:var(--ink);
+  transition:all .2s;
+}
+.field input:focus{outline:none;border-color:var(--c2);background:var(--white)}
+.field .hint{font-size:.78rem;color:var(--muted);margin-top:.35rem}
+
+.count-picker{display:flex;gap:.45rem;margin-top:.3rem}
+.count-opt{
+  flex:1;padding:.9rem .5rem;background:var(--paper);
+  border:1.5px solid var(--line);border-radius:10px;font-weight:600;font-size:1.05rem;
+  transition:all .2s;color:var(--ink);
+}
+.count-opt:hover{border-color:var(--ink-soft)}
+.count-opt.active{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+
+.team-inputs{display:grid;grid-template-columns:1fr 1fr;gap:.8rem}
+@media(max-width:520px){.team-inputs{grid-template-columns:1fr}}
+.team-input-wrap{position:relative}
+.team-input-dot{
+  position:absolute;left:.85rem;top:50%;transform:translateY(-50%);
+  width:10px;height:10px;border-radius:50%;
+}
+.team-input-wrap input{padding-left:2rem}
+
+.setup-card .btn-primary{width:100%;justify-content:center;padding:1rem;font-size:1rem;margin-top:.7rem}
+
+/* ===== DASHBOARD ===== */
+.dashboard-head{padding:2rem 0 1.5rem}
+.dashboard-head .eyebrow{
+  font-size:.7rem;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--muted);font-weight:600;margin-bottom:.6rem;
+}
+.dashboard-head h2{font-size:clamp(1.8rem,3.5vw,2.6rem);line-height:1.1;margin-bottom:.4rem;font-weight:500}
+.dashboard-head p{color:var(--ink-soft);max-width:640px;font-size:.97rem}
+
+/* Scoreboard */
+.scoreboard{
+  display:grid;gap:.7rem;margin:1.8rem 0 2.5rem;
+  grid-template-columns:repeat(auto-fit,minmax(180px,1fr));
+}
+.team-chip{
+  background:var(--white);border:1.5px solid var(--team-color);
+  border-radius:14px;padding:.95rem 1.1rem;position:relative;
+  display:flex;justify-content:space-between;align-items:center;gap:.8rem;
+  box-shadow:var(--shadow-sm);
+}
+.team-chip::before{
+  content:'';position:absolute;left:-1.5px;top:-1.5px;bottom:-1.5px;width:5px;
+  background:var(--team-color);border-radius:14px 0 0 14px;
+}
+.team-chip.active{box-shadow:0 0 0 3px var(--team-color)20, var(--shadow-md)}
+.team-chip.active::after{
+  content:'EN TURNO';position:absolute;top:-10px;right:.7rem;
+  background:var(--team-color);color:white;padding:.18rem .55rem;
+  border-radius:999px;font-size:.6rem;font-weight:700;letter-spacing:.1em;
+}
+.team-chip-name{font-weight:600;font-size:.95rem;line-height:1.1;color:var(--ink)}
+.team-chip-sub{font-size:.7rem;color:var(--muted);letter-spacing:.04em;margin-top:.15rem}
+.team-chip-score{
+  font-family:'Fraunces',serif;font-weight:500;font-size:1.6rem;
+  color:var(--team-color);line-height:1;
+}
+
+/* Actividades grid */
+.acts-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1rem}
+.act-card{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:16px;padding:1.4rem;cursor:pointer;position:relative;
+  transition:all .3s cubic-bezier(.2,.8,.2,1);overflow:hidden;
+  display:flex;flex-direction:column;min-height:200px;
+}
+.act-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:var(--act-color);transform:scaleX(.15);transform-origin:left;
+  transition:transform .4s cubic-bezier(.2,.8,.2,1);
+}
+.act-card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg);border-color:var(--act-color)}
+.act-card:hover::before{transform:scaleX(1)}
+.act-card.done{background:linear-gradient(to bottom right,var(--white),var(--paper-deep))}
+.act-card.done::after{
+  content:'✓';position:absolute;top:1rem;right:1.1rem;
+  width:28px;height:28px;border-radius:50%;
+  background:var(--act-color);color:white;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.95rem;
+}
+.act-num{
+  font-family:'Fraunces',serif;font-style:italic;color:var(--act-color);
+  font-size:.85rem;font-weight:500;margin-bottom:.8rem;letter-spacing:.02em;
+}
+.act-card h3{font-size:1.2rem;line-height:1.2;margin-bottom:.5rem;font-weight:500}
+.act-card p{font-size:.87rem;color:var(--ink-soft);line-height:1.5;flex:1;margin-bottom:.9rem}
+.act-meta{display:flex;justify-content:space-between;align-items:center;font-size:.75rem;color:var(--muted);margin-top:auto;padding-top:.6rem;border-top:1px solid var(--line-soft)}
+.act-meta b{color:var(--act-color);font-family:'Fraunces',serif;font-weight:600;font-size:.9rem}
+
+[data-c="1"]{--act-color:var(--c1)}
+[data-c="2"]{--act-color:var(--c2)}
+[data-c="3"]{--act-color:var(--c3)}
+[data-c="4"]{--act-color:var(--c4)}
+[data-c="5"]{--act-color:var(--c5)}
+[data-c="6"]{--act-color:var(--c6)}
+[data-c="7"]{--act-color:var(--c7)}
+[data-c="8"]{--act-color:var(--c8)}
+
+/* ===== ACTIVIDAD EN CURSO ===== */
+.activity-shell{max-width:880px;margin:0 auto}
+.act-head{
+  display:flex;justify-content:space-between;align-items:center;
+  padding:1.5rem 0;border-bottom:1px solid var(--line);margin-bottom:2rem;gap:1rem;
+}
+.act-head-title h2{font-size:1.4rem;line-height:1.15;font-weight:500;margin-bottom:.2rem}
+.act-head-title .sub{font-size:.78rem;color:var(--muted);letter-spacing:.05em}
+.progress-track{
+  height:5px;background:var(--line);border-radius:99px;overflow:hidden;
+  margin:0 0 2rem;
+}
+.progress-fill{height:100%;background:var(--act-color);transition:width .4s ease;border-radius:99px}
+
+.turn-banner{
+  background:var(--white);border:1.5px solid var(--team-color);
+  border-radius:14px;padding:1rem 1.3rem;margin-bottom:1.5rem;
+  display:flex;align-items:center;gap:1rem;
+  box-shadow:var(--shadow-sm);position:relative;overflow:hidden;
+}
+.turn-banner::before{
+  content:'';position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--team-color);
+}
+.turn-banner-label{
+  font-size:.7rem;letter-spacing:.14em;color:var(--muted);
+  text-transform:uppercase;font-weight:700;
+}
+.turn-banner-name{
+  font-family:'Fraunces',serif;font-size:1.3rem;color:var(--team-color);
+  font-weight:600;line-height:1.1;
+}
+.turn-banner-aside{margin-left:auto;font-size:.8rem;color:var(--muted);text-align:right}
+.turn-banner-aside b{color:var(--ink);font-family:'Fraunces',serif;font-weight:600;font-size:1rem;display:block}
+
+.q-card{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:16px;padding:1.8rem;margin-bottom:1rem;
+}
+.q-context{
+  background:var(--paper);padding:1rem 1.2rem;border-radius:10px;
+  border-left:3px solid var(--act-color);margin-bottom:1.3rem;
+  font-size:.95rem;line-height:1.6;color:var(--ink-soft);
+}
+.q-context b{color:var(--ink);font-family:'Fraunces',serif;font-weight:600}
+.q-title{
+  font-family:'Fraunces',serif;font-size:1.25rem;
+  font-weight:500;margin-bottom:1.2rem;line-height:1.3;color:var(--ink);
+}
+.q-options{display:flex;flex-direction:column;gap:.6rem}
+.q-opt{
+  padding:1rem 1.2rem;border:1.5px solid var(--line);
+  background:var(--paper);border-radius:12px;font-size:.95rem;
+  text-align:left;color:var(--ink);transition:all .2s;
+  display:flex;align-items:center;gap:.8rem;line-height:1.45;
+  font-family:inherit;width:100%;
+}
+.q-opt:hover:not(:disabled){border-color:var(--act-color);background:var(--white);transform:translateX(2px)}
+.q-opt-letter{
+  width:28px;height:28px;border-radius:50%;background:var(--white);
+  border:1.5px solid var(--line);flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:.85rem;color:var(--ink-soft);
+  transition:all .2s;
+}
+.q-opt:hover:not(:disabled) .q-opt-letter{background:var(--act-color);color:white;border-color:var(--act-color)}
+.q-opt.correct{background:#E7F5EC;border-color:var(--ok)}
+.q-opt.correct .q-opt-letter{background:var(--ok);color:white;border-color:var(--ok)}
+.q-opt.wrong{background:#FCEAEA;border-color:var(--bad)}
+.q-opt.wrong .q-opt-letter{background:var(--bad);color:white;border-color:var(--bad)}
+.q-opt:disabled{cursor:default}
+
+.feedback{
+  padding:1.1rem 1.3rem;border-radius:12px;margin-top:1rem;
+  font-size:.9rem;line-height:1.6;
+  border:1px solid transparent;
+}
+.feedback.ok{background:#E7F5EC;border-color:#BBE1C6;color:#14532D}
+.feedback.bad{background:#FCEAEA;border-color:#F3BEBE;color:#7F1D1D}
+.feedback.neutral{background:var(--paper);border-color:var(--line)}
+.feedback b{font-family:'Fraunces',serif;font-weight:600;display:block;margin-bottom:.3rem;font-size:.95rem}
+
+.act-actions{display:flex;justify-content:space-between;gap:1rem;margin-top:1.5rem}
+.btn-next{
+  background:var(--act-color);color:white;border:none;
+  padding:.9rem 1.8rem;border-radius:999px;font-weight:600;font-size:.92rem;
+  display:inline-flex;align-items:center;gap:.5rem;transition:all .2s;
+}
+.btn-next:hover{transform:translateY(-1px);box-shadow:var(--shadow-md);filter:brightness(1.1)}
+
+/* ==== Clasificador múltiple (Act 1) ==== */
+.classifier{display:flex;flex-direction:column;gap:1rem;margin-top:1rem}
+.classifier-row{
+  display:grid;grid-template-columns:180px 1fr;gap:1rem;align-items:center;
+  padding:.9rem 1.1rem;background:var(--paper);border-radius:10px;
+  border:1.5px solid var(--line);
+}
+.classifier-row.answered{background:var(--white)}
+.classifier-row.answered.correct{border-color:var(--ok);background:#F0F9F3}
+.classifier-row.answered.wrong{border-color:var(--bad);background:#FEF5F5}
+.classifier-label{font-weight:600;font-size:.88rem;color:var(--ink)}
+.classifier-opts{display:flex;flex-wrap:wrap;gap:.35rem}
+.classifier-pill{
+  padding:.4rem .75rem;background:var(--white);border:1px solid var(--line);
+  border-radius:999px;font-size:.78rem;color:var(--ink);transition:all .2s;
+  font-family:inherit;
+}
+.classifier-pill:hover:not(:disabled){border-color:var(--act-color)}
+.classifier-pill.selected{background:var(--act-color);color:white;border-color:var(--act-color)}
+.classifier-pill.correct-answer{background:#E7F5EC;border-color:var(--ok);color:var(--ok)}
+.classifier-pill.wrong-answer{background:#FCEAEA;border-color:var(--bad);color:var(--bad);text-decoration:line-through}
+.classifier-pill:disabled{cursor:not-allowed}
+@media(max-width:560px){.classifier-row{grid-template-columns:1fr}}
+
+/* ==== Organigrama (Act 3) ==== */
+.orga-deptos{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;margin-top:1rem}
+@media(max-width:640px){.orga-deptos{grid-template-columns:repeat(2,1fr)}}
+.depto-btn{
+  padding:.85rem .7rem;background:var(--paper);border:1.5px solid var(--line);
+  border-radius:10px;font-size:.82rem;font-weight:600;color:var(--ink);
+  text-align:center;transition:all .2s;line-height:1.2;
+  font-family:inherit;
+}
+.depto-btn:hover:not(:disabled){border-color:var(--c3);transform:translateY(-1px)}
+.depto-btn.correct{background:#E7F5EC;border-color:var(--ok);color:var(--ok)}
+.depto-btn.wrong{background:#FCEAEA;border-color:var(--bad);color:var(--bad)}
+.depto-btn:disabled{cursor:not-allowed;opacity:.7}
+
+/* ==== Medidor satisfacción (Act 5) ==== */
+.meter-wrap{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:14px;padding:1.1rem 1.3rem;margin-bottom:1.5rem;
+}
+.meter-head{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;margin-bottom:.6rem;color:var(--muted);letter-spacing:.05em;font-weight:600;text-transform:uppercase}
+.meter-value{font-family:'Fraunces',serif;font-size:1.3rem;font-weight:600;color:var(--ink)}
+.meter-track{height:14px;background:var(--paper-deep);border-radius:99px;overflow:hidden;position:relative}
+.meter-fill{
+  height:100%;border-radius:99px;
+  transition:width .6s cubic-bezier(.2,.8,.2,1), background-color .4s;
+}
+.meter-emoji{margin-top:.6rem;font-size:.85rem;color:var(--ink-soft)}
+
+/* ==== Quiz rápido (Act 6) ==== */
+.quick-choice{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.3rem}
+.quick-btn{
+  padding:1.5rem 1rem;background:var(--white);
+  border:2px solid var(--line);border-radius:14px;
+  font-size:1.05rem;font-weight:600;color:var(--ink);
+  transition:all .2s;font-family:'Fraunces',serif;
+}
+.quick-btn:hover:not(:disabled){transform:translateY(-2px);box-shadow:var(--shadow-md)}
+.quick-btn[data-ans="serv"]:hover:not(:disabled){border-color:var(--c7)}
+.quick-btn[data-ans="aten"]:hover:not(:disabled){border-color:var(--c4)}
+.quick-btn.correct{background:#E7F5EC;border-color:var(--ok);color:var(--ok)}
+.quick-btn.wrong{background:#FCEAEA;border-color:var(--bad);color:var(--bad)}
+
+/* ==== Resultados finales ==== */
+.results-hero{
+  background:linear-gradient(135deg,var(--ink) 0%,#2A2620 100%);
+  color:var(--paper);border-radius:18px;padding:2.5rem 2rem;margin-bottom:2rem;
+  position:relative;overflow:hidden;
+}
+.results-hero::after{
+  content:'';position:absolute;right:-40px;bottom:-40px;
+  width:200px;height:200px;border-radius:50%;
+  border:1px solid rgba(255,255,255,.1);
+}
+.results-hero h2{color:var(--paper);font-size:clamp(1.8rem,4vw,2.6rem);margin-bottom:.5rem;font-weight:400}
+.results-hero h2 em{color:var(--c2);font-style:italic}
+.results-hero p{opacity:.8;font-size:.98rem}
+
+.ranking{display:grid;gap:.7rem;margin-bottom:2.5rem}
+.rank-row{
+  display:grid;grid-template-columns:50px 1fr auto;gap:1rem;align-items:center;
+  padding:1.1rem 1.3rem;background:var(--white);border:1.5px solid var(--line);
+  border-radius:14px;position:relative;overflow:hidden;
+}
+.rank-row::before{content:'';position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--team-color)}
+.rank-pos{font-family:'Fraunces',serif;font-size:1.8rem;font-style:italic;color:var(--muted);font-weight:500;line-height:1}
+.rank-row:nth-child(1) .rank-pos{color:var(--c2);font-size:2.2rem}
+.rank-info b{font-family:'Fraunces',serif;font-size:1.1rem;font-weight:600;display:block;color:var(--ink)}
+.rank-info span{font-size:.8rem;color:var(--muted);letter-spacing:.04em}
+.rank-score{font-family:'Fraunces',serif;font-size:1.7rem;font-weight:600;color:var(--team-color)}
+.rank-score small{font-size:.7rem;color:var(--muted);font-family:'Manrope',sans-serif;font-weight:500;letter-spacing:.04em;display:block;text-align:right;margin-top:.1rem}
+
+.breakdown{
+  background:var(--white);border:1px solid var(--line);
+  border-radius:16px;padding:1.5rem;margin-bottom:2rem;
+}
+.breakdown h3{font-size:1.1rem;margin-bottom:1rem;font-weight:600}
+.breakdown table{width:100%;border-collapse:collapse;font-size:.88rem}
+.breakdown th, .breakdown td{padding:.65rem .4rem;text-align:left;border-bottom:1px solid var(--line-soft)}
+.breakdown th{font-size:.7rem;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.breakdown td{color:var(--ink-soft)}
+.breakdown td.score{font-family:'Fraunces',serif;font-weight:600;color:var(--ink);text-align:right}
+.breakdown td:first-child{font-weight:500;color:var(--ink)}
+
+.results-actions{display:flex;flex-wrap:wrap;gap:.7rem;margin-top:1rem}
+
+/* ===== FOOTER ===== */
+footer{
+  border-top:1px solid var(--line);padding:2rem 0;margin-top:4rem;
+  background:var(--paper-deep);font-size:.82rem;color:var(--muted);
+}
+footer .wrap{display:flex;flex-wrap:wrap;gap:1rem;justify-content:space-between;align-items:center}
+footer .credit{display:flex;align-items:center;gap:.7rem}
+footer .mark{
+  width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--paper);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-weight:600;font-style:italic;font-size:.85rem;
+}
+footer strong{color:var(--ink);font-family:'Fraunces',serif;font-weight:600}
+
+/* Modal confirm */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(21,19,15,.6);
+  display:none;align-items:center;justify-content:center;z-index:300;padding:1rem;
+}
+.modal-overlay.show{display:flex;animation:fadeUp .2s ease}
+.modal{
+  background:var(--white);border-radius:16px;padding:2rem;max-width:440px;width:100%;
+  box-shadow:var(--shadow-lg);
+}
+.modal h3{font-size:1.3rem;margin-bottom:.6rem;font-weight:500}
+.modal p{color:var(--ink-soft);margin-bottom:1.3rem;font-size:.95rem}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end}
+.btn-danger{background:var(--bad);color:white;border:none;padding:.7rem 1.3rem;border-radius:999px;font-weight:600;font-size:.88rem;transition:all .2s}
+.btn-danger:hover{filter:brightness(1.1)}
+
+/* Certificado (Act 2) */
+.certificado{
+  background:linear-gradient(135deg,#FAF5E8 0%,#F5ECD4 100%);
+  border:3px double var(--c2);padding:2.5rem 2rem;border-radius:12px;text-align:center;
+  margin:1.5rem 0;position:relative;
+}
+.certificado::before,.certificado::after{
+  content:'';position:absolute;width:40px;height:40px;border:2px solid var(--c2);
+}
+.certificado::before{top:12px;left:12px;border-right:none;border-bottom:none}
+.certificado::after{bottom:12px;right:12px;border-left:none;border-top:none}
+.cert-title{font-family:'Fraunces',serif;font-size:.8rem;letter-spacing:.3em;color:var(--c2);font-weight:600;margin-bottom:1rem}
+.cert-name{font-family:'Fraunces',serif;font-size:2rem;color:var(--ink);margin-bottom:.8rem;font-style:italic;font-weight:500;line-height:1.15}
+.cert-text{color:var(--ink-soft);font-size:.92rem;line-height:1.6;margin-bottom:1rem}
+.cert-score{font-family:'Fraunces',serif;font-size:1.6rem;color:var(--c2);font-weight:600}
+.cert-sign{font-size:.78rem;color:var(--muted);margin-top:1.3rem;letter-spacing:.05em}
+
+::-webkit-scrollbar{width:9px;height:9px}
+::-webkit-scrollbar-track{background:var(--paper)}
+::-webkit-scrollbar-thumb{background:var(--line);border-radius:10px}
+::-webkit-scrollbar-thumb:hover{background:var(--muted)}
+@media print{.topbar,.act-actions,.results-actions,.btn-ghost{display:none}}
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-mark">U3</div>
+      <div>
+        Unidad 3 · Retos
+        <small>Emprendimiento e Innovación · MEP</small>
+      </div>
+    </div>
+    <div class="topbar-actions" id="topActions"></div>
+  </div>
+</header>
+
+<!-- ============ SETUP ============ -->
+<section class="view active" id="view-setup">
+  <div class="wrap setup-wrap">
+    <div class="setup-badge">Tablero de equipos</div>
+    <h1>Ocho retos.<br>Un <em>tablero.</em><br>Todos compiten.</h1>
+    <p class="lede">Herramienta de aula para abordar la Unidad 3 — Creación de Empresas — mediante ocho actividades gamificadas con turnos por equipo, puntaje en vivo y exportación de resultados.</p>
+
+    <div class="setup-card">
+      <div class="field">
+        <label for="groupName">Nombre del grupo o sección</label>
+        <input type="text" id="groupName" placeholder="Ej: 11-2 Secretariado Ejecutivo" maxlength="80">
+        <div class="hint">Aparecerá en la exportación final.</div>
+      </div>
+
+      <div class="field">
+        <label>¿Cuántos equipos participan?</label>
+        <div class="count-picker" id="countPicker">
+          <button class="count-opt" data-n="2">2</button>
+          <button class="count-opt active" data-n="3">3</button>
+          <button class="count-opt" data-n="4">4</button>
+          <button class="count-opt" data-n="5">5</button>
+          <button class="count-opt" data-n="6">6</button>
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Nombre de los equipos</label>
+        <div class="team-inputs" id="teamInputs"></div>
+      </div>
+
+      <button class="btn-primary" onclick="startBoard()">
+        Comenzar la competencia
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- ============ DASHBOARD ============ -->
+<section class="view" id="view-dashboard">
+  <div class="wrap">
+    <div class="dashboard-head">
+      <div class="eyebrow" id="dashGroup">Tablero · Grupo</div>
+      <h2>Elige el próximo reto.</h2>
+      <p>Cada equipo suma puntos por sus aciertos. Las actividades pueden jugarse en cualquier orden. Al terminar, exporta los resultados.</p>
+    </div>
+
+    <div class="scoreboard" id="scoreboard"></div>
+
+    <div class="acts-grid" id="actsGrid"></div>
+  </div>
+</section>
+
+<!-- ============ ACTIVIDAD ============ -->
+<section class="view" id="view-activity">
+  <div class="wrap">
+    <div class="activity-shell" id="activityShell"></div>
+  </div>
+</section>
+
+<!-- ============ RESULTADOS ============ -->
+<section class="view" id="view-results">
+  <div class="wrap">
+    <div class="results-hero">
+      <h2>Cierre de <em>la partida.</em></h2>
+      <p id="resultsIntro">Resumen de puntajes por equipo y por actividad.</p>
+    </div>
+
+    <div class="ranking" id="ranking"></div>
+
+    <div class="breakdown">
+      <h3>Desglose por actividad</h3>
+      <div id="breakdownTable"></div>
+    </div>
+
+    <div class="results-actions">
+      <button class="btn-primary" onclick="exportResults()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Descargar resultados
+      </button>
+      <button class="btn-ghost" onclick="window.print()">Imprimir</button>
+      <button class="btn-ghost" onclick="goDashboard()">Volver al tablero</button>
+    </div>
+  </div>
+</section>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalReset">
+  <div class="modal">
+    <h3>¿Reiniciar todo?</h3>
+    <p>Se borrarán los equipos, los nombres y los puntajes de todas las actividades. Esta acción no se puede deshacer.</p>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal()">Cancelar</button>
+      <button class="btn-danger" onclick="doReset()">Sí, reiniciar todo</button>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap">
+    <div class="credit">
+      <div class="mark">R</div>
+      <div>
+        <strong>Roberto Mora Castro</strong><br>
+        CTP Educación Comercial y de Servicios
+      </div>
+    </div>
+    <div>Unidad 3 · Creación de Empresas · Tablero de Retos</div>
+  </div>
+</footer>
+
+<script>
+// =====================================================
+// DATOS DE ACTIVIDADES
+// =====================================================
+
+const CLASIF_AXES = [
+  {key:'ambito', label:'Ámbito', options:['Local','Provincial','Regional','Nacional','Multinacional']},
+  {key:'destino', label:'Destino beneficios', options:['Con lucro','Sin lucro']},
+  {key:'juridica', label:'Forma jurídica', options:['Persona física','S.A.','S.R.L.','Cooperativa','Estatal']},
+  {key:'capital', label:'Origen capital', options:['Privada','Pública','Mixta']},
+  {key:'tamano', label:'Tamaño', options:['Micro','Pequeña','Mediana','Grande']},
+  {key:'sector', label:'Actividad', options:['Primario','Secundario','Terciario']},
+];
+
+const EMPRESAS = [
+  {nombre:'Pulpería "Donde Don Memo"', ctx:'Pulpería de barrio en Tres Ríos. Atendida por doña Rosa y su esposo. 2 empleados. Vende abarrotes.',
+   correct:{ambito:'Local',destino:'Con lucro',juridica:'Persona física',capital:'Privada',tamano:'Micro',sector:'Terciario'}},
+  {nombre:'Panadería "El Buen Pan" S.R.L.', ctx:'Panadería con 3 sucursales en Alajuela. 18 empleados. Hornean pan y repostería.',
+   correct:{ambito:'Provincial',destino:'Con lucro',juridica:'S.R.L.',capital:'Privada',tamano:'Pequeña',sector:'Secundario'}},
+  {nombre:'Finca Cafetalera "La Esperanza"', ctx:'Produce café en Tarrazú y lo vende a varias provincias. 25 empleados fijos. Don Rodolfo es propietario único.',
+   correct:{ambito:'Regional',destino:'Con lucro',juridica:'Persona física',capital:'Privada',tamano:'Pequeña',sector:'Primario'}},
+  {nombre:'Transportes "Rápido del Este" S.A.', ctx:'Empresa de buses con rutas en Cartago, Limón y Turrialba. 60 empleados. Accionistas privados.',
+   correct:{ambito:'Regional',destino:'Con lucro',juridica:'S.A.',capital:'Privada',tamano:'Mediana',sector:'Terciario'}},
+  {nombre:'Diseños Tico-Web S.R.L.', ctx:'Desarrollo de páginas web para clientes en todo el país. Equipo de 9 personas en San José.',
+   correct:{ambito:'Nacional',destino:'Con lucro',juridica:'S.R.L.',capital:'Privada',tamano:'Pequeña',sector:'Terciario'}},
+  {nombre:'Cooperativa "CoopeMontes R.L."', ctx:'Cooperativa agrícola de la zona norte. 45 asociados. Los excedentes se reinvierten en beneficio de los socios.',
+   correct:{ambito:'Regional',destino:'Sin lucro',juridica:'Cooperativa',capital:'Privada',tamano:'Mediana',sector:'Primario'}},
+  {nombre:'Textiles del Sol S.A.', ctx:'Fábrica de ropa con operaciones en todo el territorio costarricense. 220 empleados. Capital 100% privado.',
+   correct:{ambito:'Nacional',destino:'Con lucro',juridica:'S.A.',capital:'Privada',tamano:'Grande',sector:'Secundario'}},
+  {nombre:'Café Britt', ctx:'Empresa costarricense con operaciones en varios países de Latinoamérica y tiendas en aeropuertos internacionales. Más de 400 empleados.',
+   correct:{ambito:'Multinacional',destino:'Con lucro',juridica:'S.A.',capital:'Privada',tamano:'Grande',sector:'Secundario'}},
+  {nombre:'Banco Nacional de Costa Rica', ctx:'Entidad bancaria estatal con sucursales en todo el país. Más de 4.000 colaboradores. Capital del Estado.',
+   correct:{ambito:'Nacional',destino:'Con lucro',juridica:'Estatal',capital:'Pública',tamano:'Grande',sector:'Terciario'}},
+  {nombre:'Asociación "Manos Unidas"', ctx:'Organización que brinda apoyo a personas en situación de calle en tres regiones del país. Los excedentes se destinan al objetivo social. 40 personas.',
+   correct:{ambito:'Regional',destino:'Sin lucro',juridica:'Persona física',capital:'Privada',tamano:'Mediana',sector:'Terciario'}},
+  {nombre:'AgroTico Mixta S.A.', ctx:'Empresa de agroindustria con 55% de capital estatal y 45% de inversionistas privados. Opera a nivel nacional con 150 colaboradores.',
+   correct:{ambito:'Nacional',destino:'Con lucro',juridica:'S.A.',capital:'Mixta',tamano:'Grande',sector:'Primario'}},
+  {nombre:'Taller Mecánico "Hermanos Rojas"', ctx:'Taller de don Jorge y don Luis en Heredia centro. 4 empleados incluidos los hermanos. Reparan vehículos livianos.',
+   correct:{ambito:'Local',destino:'Con lucro',juridica:'Persona física',capital:'Privada',tamano:'Micro',sector:'Terciario'}},
+];
+
+const MEIC_PASOS = [
+  {paso:1, titulo:'Paso 1 · CCSS',
+   ctx:'Antes de cualquier trámite, la CCSS revisa que quien abre la empresa esté al día. ¿Qué se verifica primero?',
+   opts:[
+    {t:'Que no tengas deudas ni cuotas obrero-patronales pendientes',ok:true,exp:'Correcto. La CCSS exige estar al día para iniciar los trámites siguientes.'},
+    {t:'Que tengas al menos 5 empleados ya contratados',ok:false,exp:'Incorrecto. En el Paso 1 no se requiere tener personal; eso se ve en el Paso 6.'},
+    {t:'Que la empresa ya esté operando formalmente',ok:false,exp:'Incorrecto. La verificación CCSS es un requisito previo, no posterior.'},
+   ]},
+  {paso:2, titulo:'Paso 2 · Uso de Suelo',
+   ctx:'Ya verificado el estado en CCSS, toca el uso de suelo. ¿Dónde se solicita?',
+   opts:[
+    {t:'En el Ministerio de Hacienda',ok:false,exp:'Hacienda se ocupa de tributos, no del uso de suelo.'},
+    {t:'En la Municipalidad del cantón donde operará la empresa',ok:true,exp:'Correcto. Cada Municipalidad autoriza el uso del suelo de su territorio.'},
+    {t:'En el INS',ok:false,exp:'El INS se ocupa de la póliza de riesgos, no del uso de suelo.'},
+   ]},
+  {paso:3, titulo:'Paso 3 · Permiso Sanitario de Funcionamiento',
+   ctx:'El PSF lo emite…',
+   opts:[
+    {t:'La Caja Costarricense de Seguro Social',ok:false,exp:'La CCSS gestiona la seguridad social, no los permisos sanitarios.'},
+    {t:'El Ministerio de Salud, a través del Área Rectora del cantón',ok:true,exp:'Correcto. El PSF se tramita en el Área Rectora del Ministerio de Salud correspondiente.'},
+    {t:'El Ministerio de Trabajo',ok:false,exp:'El MTSS regula condiciones laborales, no permisos sanitarios.'},
+   ]},
+  {paso:4, titulo:'Paso 4 · Póliza del INS',
+   ctx:'La Póliza de Riesgos del Trabajo ante el INS…',
+   opts:[
+    {t:'Es obligatoria sin ninguna excepción posible',ok:false,exp:'En realidad sí existe la posibilidad de exoneración en casos específicos.'},
+    {t:'Es obligatoria, pero aplica exoneración para personas físicas y trabajadores independientes en ciertos casos',ok:true,exp:'Correcto. El trámite principal es la Póliza, y existe el Formulario de Exoneración para casos aplicables.'},
+    {t:'Solo es obligatoria si la empresa tiene más de 10 empleados',ok:false,exp:'El número de empleados no es el criterio; aplica aunque contrate a una sola persona.'},
+   ]},
+  {paso:5, titulo:'Paso 5 · Inscripción en Hacienda',
+   ctx:'Si el negocio es pequeño, factura poco y sus actividades están en la lista autorizada, puede optar por:',
+   opts:[
+    {t:'Régimen Simplificado',ok:true,exp:'Correcto. El Régimen Simplificado es para actividades específicas de menor escala.'},
+    {t:'Régimen Estatal',ok:false,exp:'No existe tal régimen. Las opciones son Tradicional o Simplificado.'},
+    {t:'Solo puede inscribirse en Régimen Tradicional',ok:false,exp:'Incorrecto. Precisamente para pequeños comercios existe el Simplificado.'},
+   ]},
+  {paso:6, titulo:'Paso 6 · Inscripción CCSS',
+   ctx:'Si contratas personal para tu empresa, te inscribes ante la CCSS como:',
+   opts:[
+    {t:'Trabajador independiente',ok:false,exp:'Eso aplica solo si NO tienes empleados y trabajas por cuenta propia.'},
+    {t:'Patrono',ok:true,exp:'Correcto. Al tener personal contratado, la inscripción es como Patrono.'},
+    {t:'Asegurado por el Estado',ok:false,exp:'Esa categoría es de asistencia social, no aplica a empresas.'},
+   ]},
+  {paso:7, titulo:'Paso 7 · Patente municipal',
+   ctx:'Para solicitar la patente ante la Municipalidad, entre los requisitos obligatorios está:',
+   opts:[
+    {t:'Tener 5 años de experiencia en el ramo',ok:false,exp:'No existe requisito de experiencia previa para obtener patente.'},
+    {t:'Presentar la Póliza de Riesgos o Exoneración, el PSF y el Uso de Suelo vigentes',ok:true,exp:'Correcto. La patente requiere todos los trámites previos en orden.'},
+    {t:'Tener al menos 3 empleados inscritos',ok:false,exp:'No existe requisito mínimo de empleados para la patente.'},
+   ]},
+];
+
+const ORGA_TAREAS = [
+  {t:'Contabilizar las facturas emitidas y recibidas del mes', d:'admin'},
+  {t:'Negociar con un proveedor nuevo de materia prima', d:'compras'},
+  {t:'Cobrar a los clientes que tienen cuentas pendientes', d:'admin'},
+  {t:'Fabricar el producto terminado cumpliendo los objetivos de stock', d:'produccion'},
+  {t:'Calcular y pagar la planilla mensual de los colaboradores', d:'rrhh'},
+  {t:'Liquidar los impuestos ante el Ministerio de Hacienda', d:'admin'},
+  {t:'Gestionar un préstamo bancario para una inversión grande', d:'financiero'},
+  {t:'Diseñar una campaña publicitaria para el lanzamiento de un producto', d:'marketing'},
+  {t:'Contratar a un nuevo colaborador y gestionar su inducción', d:'rrhh'},
+  {t:'Supervisar que todas las áreas cumplan las metas del mes', d:'control'},
+  {t:'Cerrar una venta con un cliente corporativo importante', d:'comercial'},
+  {t:'Definir los objetivos estratégicos del siguiente año', d:'direccion'},
+  {t:'Asegurarse de que siempre haya materia prima disponible', d:'compras'},
+  {t:'Mantener al equipo motivado y reducir la rotación', d:'rrhh'},
+  {t:'Planificar el flujo de caja del próximo trimestre', d:'financiero'},
+  {t:'Asignar los presupuestos anuales a cada departamento', d:'direccion'},
+  {t:'Evitar las roturas de stock con buena planificación de compras', d:'compras'},
+  {t:'Analizar si el negocio está siendo rentable', d:'financiero'},
+  {t:'Responder comentarios y mensajes en las redes sociales', d:'marketing'},
+  {t:'Atender personalmente la queja de un cliente fiel', d:'comercial'},
+];
+const DEPTOS = [
+  {id:'comercial',n:'Comercial · Ventas'},{id:'produccion',n:'Producción'},
+  {id:'compras',n:'Compras'},{id:'admin',n:'Administración'},
+  {id:'financiero',n:'Financiero'},{id:'control',n:'Control de Gestión'},
+  {id:'marketing',n:'Marketing'},{id:'rrhh',n:'Recursos Humanos'},
+  {id:'direccion',n:'Dirección · Gerencia'},
+];
+
+const TRIANGULO_CASOS = [
+  {ctx:'Los clientes comentan que el cajero fue grosero y no supo explicar la promoción vigente.',
+   ans:'personal',exp:'Falta capacitación y actitud en los colaboradores. El vértice "Personal" del triángulo.'},
+  {ctx:'La app de pagos de la empresa se cae cada vez que un cliente intenta finalizar la compra.',
+   ans:'sistemas',exp:'Un recurso tecnológico falla. El vértice "Sistemas".'},
+  {ctx:'La empresa promete entrega en 24 horas pero nunca definió cómo lograrlo ni qué recursos destinar.',
+   ans:'estrategia',exp:'La promesa de valor no tiene una estrategia detrás. El vértice "Estrategia".'},
+  {ctx:'El equipo de ventas no sabe realmente qué valora, qué necesita ni cómo compra su público meta.',
+   ans:'cliente',exp:'Falta conocimiento del cliente, que es el centro y motor del triángulo.'},
+  {ctx:'Los colaboradores están desmotivados; los clientes lo perciben en cada llamada.',
+   ans:'personal',exp:'El bienestar del personal se transmite al cliente. Vértice "Personal".'},
+  {ctx:'No existe un CRM y cada vendedor lleva su propio cuaderno. Se pierde el historial del cliente.',
+   ans:'sistemas',exp:'Faltan herramientas tecnológicas adecuadas. Vértice "Sistemas".'},
+  {ctx:'La empresa no tiene claro si quiere ser barata o premium. Cada mes cambia su mensaje.',
+   ans:'estrategia',exp:'No hay una propuesta de valor clara y sostenida. Vértice "Estrategia".'},
+  {ctx:'Se diseñó un nuevo protocolo de atención sin consultar a los clientes qué valoran más.',
+   ans:'estrategia',exp:'La estrategia se diseñó sin centrar al cliente; es un fallo en la "Estrategia" del triángulo.'},
+  {ctx:'El nuevo sistema de citas en línea cierra sin guardar; los clientes pierden sus reservas.',
+   ans:'sistemas',exp:'Fallo técnico directo en la herramienta digital. Vértice "Sistemas".'},
+  {ctx:'Un cliente lleva tres semanas esperando que alguien le devuelva la llamada que prometieron.',
+   ans:'sistemas',exp:'No hay un proceso ni un sistema que asegure el seguimiento. Vértice "Sistemas".'},
+];
+const TRI_OPTS = [
+  {k:'cliente',n:'El cliente'},{k:'personal',n:'El personal'},
+  {k:'sistemas',n:'Los sistemas'},{k:'estrategia',n:'La estrategia'},
+];
+
+const QUEJAS_ESCENARIOS = [
+  {titulo:'Escenario 1 · La panadería',
+   ctx:'Doña Rosa llega a tu panadería. Ordenó 2 docenas de queques para el cumpleaños de su hija y al recibirlos nota que les falta el decorado especial que pagó extra. Está molesta.',
+   turnos:[
+    {q:'¿Cómo recibes la queja?',
+     opts:[
+      {t:'"Eso es culpa de la pastelera nueva, yo no tengo nada que ver."',p:-15,fb:'No se debe responsabilizar a un empleado delante del cliente. Además, el cliente no vino a saber de quién fue la culpa.'},
+      {t:'"Tiene toda la razón, déjeme ver de inmediato qué podemos hacer para resolverlo."',p:20,fb:'Excelente. Reconoces el problema con empatía y ofreces acción inmediata.'},
+      {t:'"Lo siento, pero ya no hay tiempo; la fiesta es hoy."',p:-10,fb:'Cerrarse a la posibilidad sin buscar soluciones empeora la queja.'},
+     ]},
+    {q:'Tras recibir la queja, ¿qué solución ofreces?',
+     opts:[
+      {t:'Devolver el dinero extra del decorado y regalar dos queques adicionales para la fiesta',p:25,fb:'Solución concreta, clara y con algo extra. Supera la expectativa y fideliza.'},
+      {t:'Dar un cupón de descuento para una próxima compra',p:5,fb:'Algo es mejor que nada, pero no resuelve el problema inmediato de la fiesta.'},
+      {t:'Prometer llamar al proveedor del decorado y que ella regrese mañana',p:-15,fb:'Promesa con poca claridad y sin resolver el momento. Nunca prometer lo que no se puede cumplir.'},
+     ]},
+   ]},
+  {titulo:'Escenario 2 · El taller mecánico',
+   ctx:'Don Jorge entra al taller muy enojado. Le cambiaron el aceite hace una semana y su carro está dejando un rastro de aceite en el parqueo de la casa.',
+   turnos:[
+    {q:'Primera reacción:',
+     opts:[
+      {t:'"Eso ya no es nuestro problema, usted se lo llevó hace una semana."',p:-20,fb:'Negar de entrada destruye la relación con el cliente.'},
+      {t:'Invitarlo a sentarse, ofrecerle un café y revisar el carro ya mismo',p:25,fb:'Empatía, acción, y un detalle extra. El cliente se siente atendido.'},
+      {t:'"Tiene que hacer una cita y volver la próxima semana."',p:-10,fb:'Trámite innecesario ante una queja que debería priorizarse.'},
+     ]},
+   ]},
+  {titulo:'Escenario 3 · El e-commerce',
+   ctx:'Un cliente escribe furioso por WhatsApp: pidió un producto hace 10 días, pagó, y aún no le llega. El sistema de seguimiento no muestra información.',
+   turnos:[
+    {q:'¿Qué haces primero?',
+     opts:[
+      {t:'Pedirle disculpas, rastrear el pedido con la empresa de envíos y darle una respuesta concreta en menos de 1 hora',p:25,fb:'Empatía + acción + compromiso de tiempo. Excelente.'},
+      {t:'"Eso es culpa de Correos, no nuestra."',p:-15,fb:'El cliente te compró a ti, no a la empresa de envíos. La responsabilidad es tuya.'},
+      {t:'Responder "estamos viendo" y no volver a escribir hasta que tengas información',p:-10,fb:'El silencio prolonga la molestia. Hay que mantener contacto aunque sea parcial.'},
+     ]},
+    {q:'Tras rastrear, sabes que el pedido se perdió. ¿Qué ofreces?',
+     opts:[
+      {t:'Reponer el pedido sin costo adicional y agregar un cupón de próximo envío gratis',p:20,fb:'Reparas el daño y compensas la molestia. Convierte una queja en lealtad.'},
+      {t:'Devolver solo el dinero del producto',p:10,fb:'Aceptable, pero no compensa el tiempo perdido ni la molestia.'},
+      {t:'Ofrecer reposición solo si el cliente paga el nuevo envío',p:-15,fb:'El error fue tuyo; no puedes trasladar un costo al cliente afectado.'},
+     ]},
+   ]},
+  {titulo:'Escenario 4 · La soda',
+   ctx:'En tu soda, un cliente reclama que encontró un pelo en su casado. Hay otras mesas alrededor escuchando todo.',
+   turnos:[
+    {q:'¿Cómo actúas?',
+     opts:[
+      {t:'Invitarlo a hablar en privado, disculparte, retirar el plato y reemplazarlo sin costo',p:25,fb:'Confidencialidad (queja grave), empatía y solución concreta. Lo correcto.'},
+      {t:'Defender en voz alta la higiene del lugar ante los demás clientes',p:-20,fb:'Discutir en público agrava la imagen y no resuelve la queja.'},
+      {t:'Ofrecerle no cobrarle la comida pero pedirle que se vaya',p:-10,fb:'Cerrarse así pierde al cliente y envía mal mensaje al resto.'},
+     ]},
+   ]},
+  {titulo:'Escenario 5 · El servicio web',
+   ctx:'Una cliente corporativa llama: el sitio web que le hiciste lleva 2 días caído y está perdiendo ventas. Es su temporada alta.',
+   turnos:[
+    {q:'Primera respuesta:',
+     opts:[
+      {t:'Priorizar el caso, suspender otras tareas y dar un tiempo estimado concreto de resolución',p:25,fb:'Tratas el caso como urgente, comunicas claramente y te comprometes con un plazo.'},
+      {t:'"Estamos ocupados con otros proyectos, en cuanto podamos lo vemos."',p:-15,fb:'Para una cliente que pierde ventas, esta respuesta es inaceptable.'},
+      {t:'Revisar cuándo fue la última vez que pagó antes de ayudarla',p:-10,fb:'Primero se resuelve la crisis; el tema administrativo va después.'},
+     ]},
+    {q:'Tras resolver el problema, ¿qué acción de seguimiento implementas?',
+     opts:[
+      {t:'Enviar reporte del incidente, sus causas, y un plan de monitoreo para evitar recurrencia',p:20,fb:'Proactivo y profesional. Recupera la confianza perdida.'},
+      {t:'Dar por cerrado el tema sin más comunicación',p:-5,fb:'Pierdes la oportunidad de fortalecer la relación tras la falla.'},
+      {t:'Ofrecer un descuento en la próxima factura como único gesto',p:10,fb:'Buen gesto, pero sin explicación técnica no recuperas confianza plena.'},
+     ]},
+   ]},
+];
+
+const SERVICIO_ATENCION = [
+  {t:'Un cliente llama para reclamar por un cargo extra en su factura.',ans:'aten'},
+  {t:'La empresa rediseña el empaque de un producto basándose en encuestas a clientes.',ans:'serv'},
+  {t:'Se responde un mensaje en Instagram sobre un producto defectuoso.',ans:'aten'},
+  {t:'Se envía una encuesta de satisfacción una semana después de la compra.',ans:'serv'},
+  {t:'Un técnico va a reparar un equipo que el cliente reportó averiado.',ans:'aten'},
+  {t:'Se capacita al personal de ventas en técnicas de atención personalizada.',ans:'serv'},
+  {t:'La vendedora recuerda el nombre del cliente y su última compra al saludarlo.',ans:'serv'},
+  {t:'Un cajero corrige un cobro doble que apareció en la caja del cliente.',ans:'aten'},
+  {t:'La empresa envía recordatorios automáticos antes de que venza la garantía.',ans:'serv'},
+  {t:'Se responde al reclamo por un pedido que nunca llegó al destinatario.',ans:'aten'},
+  {t:'El menú incluye opciones para personas celíacas tras detectar esa demanda.',ans:'serv'},
+  {t:'Se entrega un teléfono directo a cada cliente corporativo para dudas.',ans:'serv'},
+  {t:'Se resuelve formalmente una queja presentada por escrito.',ans:'aten'},
+  {t:'La empresa tiene un programa de fidelización con recompensas por compra.',ans:'serv'},
+  {t:'Se gestiona la devolución de un producto que no cumplió expectativas.',ans:'aten'},
+  {t:'La marca investiga qué redes sociales usan sus clientes y abre perfiles ahí.',ans:'serv'},
+  {t:'Se atiende una llamada entrante por un error en el monto facturado.',ans:'aten'},
+  {t:'El manual del producto incluye videos tutoriales anticipando dudas frecuentes.',ans:'serv'},
+  {t:'Se recibe un reclamo escrito por un producto en mal estado.',ans:'aten'},
+  {t:'Se envía un email de cumpleaños con un descuento personalizado.',ans:'serv'},
+];
+
+const CRM_FASES = [
+  {titulo:'Fase 1 · Identificar',
+   ctx:'Llega un nuevo cliente a tu negocio: la señora Elena, dueña de una cafetería que quiere comprar insumos al por mayor.',
+   q:'¿Qué acción corresponde a esta fase del CRM?',
+   opts:[
+    {t:'Registrar su nombre, contacto, tipo de negocio y tamaño estimado de compra',ok:true,p:15,fb:'Correcto. La Fase 1 consiste en identificar al cliente y guardar su información clave.'},
+    {t:'Ofrecerle de inmediato un 20% de descuento para cerrar la venta',ok:false,p:-5,fb:'Aún no has identificado sus necesidades. Saltarse la identificación lleva a ofertas genéricas.'},
+    {t:'Adaptar el catálogo de productos exclusivamente para ella',ok:false,p:-5,fb:'Adaptar es la Fase 4. Primero se identifica, se diferencia y se interactúa.'},
+   ]},
+  {titulo:'Fase 2 · Diferenciar',
+   ctx:'Ya tienes registrados a Elena y otros 40 clientes. Necesitas agruparlos para atenderlos mejor.',
+   q:'¿Cuál acción corresponde a Diferenciar?',
+   opts:[
+    {t:'Agruparlos por tamaño de compra, frecuencia y tipo de negocio para tratarlos distinto',ok:true,p:15,fb:'Correcto. Diferenciar es agrupar según patrones comunes y valor para la organización.'},
+    {t:'Tratar a todos los clientes exactamente igual para ser justos',ok:false,p:-5,fb:'Eso niega la esencia del CRM; la diferenciación permite atención más valiosa para cada grupo.'},
+    {t:'Llamar a cada uno por teléfono todos los meses',ok:false,p:-5,fb:'Eso es interactuar (Fase 3), no diferenciar. Además sería insostenible sin segmentación previa.'},
+   ]},
+  {titulo:'Fase 3 · Interactuar',
+   ctx:'Elena está en el grupo "Cafeterías frecuentes, compra mensual". Es momento de mantener contacto.',
+   q:'¿Qué interacción aporta más valor al cliente?',
+   opts:[
+    {t:'Enviarle anticipadamente el inventario nuevo de granos de café del mes',ok:true,p:15,fb:'Correcto. Interacción útil, anticipada, alineada con su necesidad. Genera valor real.'},
+    {t:'Enviarle promociones genéricas de productos que no consume',ok:false,p:-5,fb:'El contacto debe aportar valor; spam daña la relación.'},
+    {t:'No contactarla hasta que ella pregunte',ok:false,p:-5,fb:'El CRM es proactivo. Esperar es perder la relación.'},
+   ]},
+  {titulo:'Fase 4 · Adaptar',
+   ctx:'Ya identificaste, diferenciaste e interactuaste. Es el momento más difícil: adaptar la oferta.',
+   q:'¿Cuál adaptación es coherente con el CRM?',
+   opts:[
+    {t:'Crear un combo mensual con los insumos que ella pide usualmente y descuento por volumen',ok:true,p:15,fb:'Correcto. Adaptación basada en la información recolectada en las fases anteriores.'},
+    {t:'Cambiar todo el catálogo de la empresa para ajustarse a un solo cliente',ok:false,p:-5,fb:'Adaptar es dentro de límites razonables, no transformar toda la empresa por un cliente.'},
+    {t:'Ignorar la información recolectada y seguir vendiendo igual',ok:false,p:-5,fb:'Eso anula todo el CRM. La adaptación es el paso final donde la información se traduce en valor.'},
+   ]},
+];
+
+const OP_COMERCIAL = [
+  {t:'Emitir una factura electrónica por venta a un cliente',c:'transacciones'},
+  {t:'Pagar las cuotas obrero-patronales ante la CCSS',c:'cargas'},
+  {t:'Declarar y pagar el IVA ante el Ministerio de Hacienda',c:'impuestos'},
+  {t:'Vender suministros a otra empresa formalmente registrada',c:'compraventa'},
+  {t:'Participar en una licitación del Ministerio de Educación',c:'compras_estado'},
+  {t:'Renovar la póliza de riesgos del trabajo en el INS',c:'polizas'},
+  {t:'Hacer un depósito en la cuenta bancaria del negocio',c:'bancarias'},
+  {t:'Revisar el dashboard de ventas para decidir un descuento',c:'datos'},
+  {t:'Inscribir la empresa en el Registro Público',c:'registro'},
+  {t:'Coordinar el turno del personal desde el centro de operaciones',c:'centro_ops'},
+  {t:'Contratar una consultoría para mejorar procesos internos',c:'asesoria'},
+  {t:'Comprar equipo de cómputo a un proveedor B2B',c:'compraventa'},
+  {t:'Pagar el impuesto municipal de patente anual',c:'impuestos'},
+  {t:'Inscribir un nuevo empleado ante la CCSS',c:'cargas'},
+  {t:'Hacer una transferencia bancaria a un proveedor',c:'bancarias'},
+  {t:'Analizar reportes de ventas del último trimestre para ajustar la estrategia',c:'datos'},
+  {t:'Adquirir una póliza de seguro de incendio para la planta',c:'polizas'},
+  {t:'Solicitar asesoría legal para un contrato con un nuevo socio',c:'asesoria'},
+  {t:'Adjudicarse un contrato de la CCSS como proveedor',c:'compras_estado'},
+  {t:'Registrar formalmente el catálogo de productos ante Hacienda',c:'registro'},
+];
+const OP_CATS = [
+  {id:'transacciones',n:'Transacciones comerciales'},
+  {id:'centro_ops',n:'Centro de operaciones'},
+  {id:'registro',n:'Registro de la empresa'},
+  {id:'bancarias',n:'Transacciones bancarias'},
+  {id:'compraventa',n:'Compra-venta entre empresas'},
+  {id:'compras_estado',n:'Compras del Estado'},
+  {id:'datos',n:'Uso de datos para decisiones'},
+  {id:'impuestos',n:'Pago de impuestos'},
+  {id:'cargas',n:'Cargas sociales'},
+  {id:'polizas',n:'Pólizas y seguros'},
+  {id:'asesoria',n:'Asesoría empresarial'},
+];
+
+// =====================================================
+// DEFINICIÓN DE ACTIVIDADES
+// =====================================================
+const ACTIVITIES = [
+  {id:'tipos', n:1, color:1, titulo:'¿Qué tipo de empresa es?',
+   desc:'Clasifica 12 empresas costarricenses en los 6 criterios vistos en clase.',
+   pasos:EMPRESAS.length, puntosMax:EMPRESAS.length*6, render:'renderTipos'},
+  {id:'meic', n:2, color:2, titulo:'Ruta MEIC: abre tu empresa',
+   desc:'Los 7 pasos oficiales para abrir una empresa en Costa Rica, con decisiones en cada paso.',
+   pasos:MEIC_PASOS.length, puntosMax:MEIC_PASOS.length*10, render:'renderMeic'},
+  {id:'orga', n:3, color:3, titulo:'Organigrama en acción',
+   desc:'20 tareas cotidianas de una empresa. Asigna cada una al departamento correcto.',
+   pasos:ORGA_TAREAS.length, puntosMax:ORGA_TAREAS.length*5, render:'renderOrga'},
+  {id:'triangulo', n:4, color:4, titulo:'Diagnóstico del Triángulo',
+   desc:'10 casos reales. Identifica qué vértice del triángulo de Albrecht está fallando.',
+   pasos:TRIANGULO_CASOS.length, puntosMax:TRIANGULO_CASOS.length*10, render:'renderTriangulo'},
+  {id:'quejas', n:5, color:5, titulo:'Manejo de quejas en vivo',
+   desc:'5 escenarios de role-play con medidor de satisfacción del cliente.',
+   pasos:QUEJAS_ESCENARIOS.reduce((a,e)=>a+e.turnos.length,0), puntosMax:160, render:'renderQuejas'},
+  {id:'servaten', n:6, color:6, titulo:'¿Servicio o atención?',
+   desc:'20 situaciones. Clasifica rápido entre servicio al cliente (proactivo) y atención (reactiva).',
+   pasos:SERVICIO_ATENCION.length, puntosMax:SERVICIO_ATENCION.length*5, render:'renderServAten'},
+  {id:'crm', n:7, color:7, titulo:'CRM en 4 fases',
+   desc:'Aplica las cuatro fases del CRM con una clienta real: identificar, diferenciar, interactuar y adaptar.',
+   pasos:CRM_FASES.length, puntosMax:CRM_FASES.length*15, render:'renderCrm'},
+  {id:'operacion', n:8, color:8, titulo:'Clasifica la operación',
+   desc:'20 operaciones empresariales. Ubica cada una en la categoría correcta de puesta en marcha.',
+   pasos:OP_COMERCIAL.length, puntosMax:OP_COMERCIAL.length*5, render:'renderOperacion'},
+];
+
+// =====================================================
+// STATE MANAGEMENT + LOCALSTORAGE
+// =====================================================
+const STORAGE_KEY = 'u3_retos_state_v1';
+const TEAM_COLORS = ['--t1','--t2','--t3','--t4','--t5','--t6'];
+
+let state = loadState() || null;
+
+function loadState(){
+  try{
+    const raw = localStorage.getItem(STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  }catch(e){return null}
+}
+function saveState(){
+  try{localStorage.setItem(STORAGE_KEY, JSON.stringify(state))}catch(e){}
+}
+function resetAll(){
+  state = null;
+  localStorage.removeItem(STORAGE_KEY);
+  renderTopbar();
+  showView('view-setup');
+  initSetup();
+}
+
+// =====================================================
+// NAVEGACIÓN
+// =====================================================
+function showView(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+function renderTopbar(){
+  const el = document.getElementById('topActions');
+  if(!state){el.innerHTML='';return}
+  el.innerHTML = `
+    <button class="btn-ghost" onclick="goDashboard()">Tablero</button>
+    <button class="btn-ghost" onclick="showResults()">Resultados</button>
+    <button class="btn-ghost" onclick="openModal()">Reiniciar</button>
+  `;
+}
+
+// =====================================================
+// SETUP
+// =====================================================
+function initSetup(){
+  // Restaurar desde estado si existe
+  if(state){
+    document.getElementById('groupName').value = state.groupName || '';
+    document.querySelectorAll('.count-opt').forEach(b=>{
+      b.classList.toggle('active', +b.dataset.n === state.teams.length);
+    });
+    renderTeamInputs(state.teams.length, state.teams.map(t=>t.name));
+  }else{
+    renderTeamInputs(3);
+  }
+  document.querySelectorAll('.count-opt').forEach(btn=>{
+    btn.onclick=()=>{
+      document.querySelectorAll('.count-opt').forEach(b=>b.classList.remove('active'));
+      btn.classList.add('active');
+      renderTeamInputs(+btn.dataset.n);
+    };
+  });
+}
+function renderTeamInputs(n, names=[]){
+  const el = document.getElementById('teamInputs');
+  const defaultNames = ['Los Emprendedores','Las Pioneras','Equipo Visión','Los Estrategas','Las Innovadoras','Equipo Alpha'];
+  el.innerHTML = '';
+  for(let i=0;i<n;i++){
+    const c = getComputedStyle(document.documentElement).getPropertyValue(TEAM_COLORS[i]).trim();
+    const val = names[i] || defaultNames[i];
+    el.innerHTML += `
+      <div class="team-input-wrap">
+        <span class="team-input-dot" style="background:${c}"></span>
+        <input type="text" class="team-name-input" value="${val}" maxlength="30" placeholder="Equipo ${i+1}">
+      </div>`;
+  }
+}
+function startBoard(){
+  const group = document.getElementById('groupName').value.trim() || 'Sin nombre de grupo';
+  const names = [...document.querySelectorAll('.team-name-input')].map(i=>i.value.trim() || 'Equipo');
+  state = {
+    groupName: group,
+    teams: names.map((n,i)=>({
+      id:i, name:n, color: getComputedStyle(document.documentElement).getPropertyValue(TEAM_COLORS[i]).trim(),
+      score:0
+    })),
+    turnIdx: 0, // equipo global en turno
+    activities: {},
+    createdAt: new Date().toISOString(),
+  };
+  ACTIVITIES.forEach(a=>{
+    state.activities[a.id] = {completed:false, stepIdx:0, scores: state.teams.map(_=>0)};
+  });
+  saveState();
+  renderTopbar();
+  goDashboard();
+}
+
+// =====================================================
+// DASHBOARD
+// =====================================================
+function goDashboard(){
+  if(!state){showView('view-setup');initSetup();return}
+  document.getElementById('dashGroup').textContent = 'Grupo · ' + state.groupName;
+  renderScoreboard();
+  renderActsGrid();
+  showView('view-dashboard');
+}
+function renderScoreboard(){
+  const el = document.getElementById('scoreboard');
+  el.innerHTML = state.teams.map((t,i)=>`
+    <div class="team-chip ${i===state.turnIdx?'active':''}" style="--team-color:${t.color}">
+      <div>
+        <div class="team-chip-name">${escapeHtml(t.name)}</div>
+        <div class="team-chip-sub">Equipo ${i+1}</div>
+      </div>
+      <div class="team-chip-score">${t.score}</div>
+    </div>
+  `).join('');
+}
+function renderActsGrid(){
+  const el = document.getElementById('actsGrid');
+  el.innerHTML = ACTIVITIES.map(a=>{
+    const st = state.activities[a.id];
+    const total = st.scores.reduce((s,n)=>s+n,0);
+    const leader = st.completed ? (()=>{
+      const maxIdx = st.scores.indexOf(Math.max(...st.scores));
+      return state.teams[maxIdx].name;
+    })() : null;
+    return `
+      <button class="act-card ${st.completed?'done':''}" data-c="${a.color}" onclick="startActivity('${a.id}')">
+        <div class="act-num">Reto · ${String(a.n).padStart(2,'0')}</div>
+        <h3>${a.titulo}</h3>
+        <p>${a.desc}</p>
+        <div class="act-meta">
+          <span>${a.pasos} ${a.pasos===1?'paso':'pasos'}</span>
+          ${st.completed ? `<span>Líder: <b>${escapeHtml(leader)}</b></span>` : `<span><b>${total}</b> pts</span>`}
+        </div>
+      </button>`;
+  }).join('');
+}
+
+// =====================================================
+// UTILIDADES DE ACTIVIDAD
+// =====================================================
+function rotateTurn(){
+  state.turnIdx = (state.turnIdx + 1) % state.teams.length;
+  saveState();
+}
+function addScore(actId, teamIdx, pts){
+  state.activities[actId].scores[teamIdx] += pts;
+  state.teams[teamIdx].score += pts;
+  saveState();
+}
+function completeActivity(actId){
+  state.activities[actId].completed = true;
+  saveState();
+}
+function currentTeam(){return state.teams[state.turnIdx]}
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c])}
+
+function actShellHead(act, stepNum, totalSteps){
+  return `
+    <div class="act-head">
+      <div class="act-head-title">
+        <h2>${act.titulo}</h2>
+        <div class="sub">Reto ${String(act.n).padStart(2,'0')} · Paso ${stepNum} de ${totalSteps}</div>
+      </div>
+      <button class="btn-ghost" onclick="goDashboard()">← Tablero</button>
+    </div>
+    <div class="progress-track"><div class="progress-fill" style="width:${(stepNum/totalSteps)*100}%;--act-color:var(--c${act.color})"></div></div>
+  `;
+}
+function turnBanner(){
+  const t = currentTeam();
+  return `
+    <div class="turn-banner" style="--team-color:${t.color}">
+      <div>
+        <div class="turn-banner-label">Responde</div>
+        <div class="turn-banner-name">${escapeHtml(t.name)}</div>
+      </div>
+      <div class="turn-banner-aside">
+        Puntaje actual<br><b>${t.score} pts</b>
+      </div>
+    </div>`;
+}
+
+function startActivity(id){
+  const act = ACTIVITIES.find(a=>a.id===id);
+  if(!act) return;
+  // Resetear step si ya estaba completado
+  if(state.activities[id].completed){
+    state.activities[id].stepIdx = 0;
+    state.activities[id].completed = false;
+    state.teams.forEach((t,i)=>{
+      t.score -= state.activities[id].scores[i];
+      state.activities[id].scores[i] = 0;
+    });
+    saveState();
+  }
+  window[act.render](act);
+  showView('view-activity');
+}
+
+// =====================================================
+// ACT 1 · TIPOS DE EMPRESA
+// =====================================================
+function renderTipos(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= EMPRESAS.length) return finishActivity(act);
+  const emp = EMPRESAS[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, EMPRESAS.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>${escapeHtml(emp.nombre)}</b><br>${escapeHtml(emp.ctx)}</div>
+      <div class="q-title">Clasifica esta empresa en los 6 criterios.</div>
+      <div class="classifier" id="classifier"></div>
+      <div id="tipoFeedback"></div>
+      <div class="act-actions"><span></span>
+        <button class="btn-next" id="tiposNext" disabled onclick="submitTipos()" style="background:var(--c${act.color})">Revisar y continuar</button>
+      </div>
+    </div>`;
+  const cl = document.getElementById('classifier');
+  const selections = {};
+  CLASIF_AXES.forEach(ax=>{
+    const row = document.createElement('div');
+    row.className = 'classifier-row';
+    row.innerHTML = `
+      <div class="classifier-label">${ax.label}</div>
+      <div class="classifier-opts" data-ax="${ax.key}">
+        ${ax.options.map(o=>`<button class="classifier-pill" data-v="${escapeHtml(o)}">${escapeHtml(o)}</button>`).join('')}
+      </div>`;
+    cl.appendChild(row);
+    row.querySelectorAll('.classifier-pill').forEach(p=>{
+      p.onclick = ()=>{
+        if(p.disabled) return;
+        row.querySelectorAll('.classifier-pill').forEach(x=>x.classList.remove('selected'));
+        p.classList.add('selected');
+        selections[ax.key] = p.dataset.v;
+        if(Object.keys(selections).length === CLASIF_AXES.length){
+          document.getElementById('tiposNext').disabled = false;
+        }
+      };
+    });
+  });
+  window._tiposSel = selections;
+  window._tiposAct = act;
+  window._tiposEmp = emp;
+}
+function submitTipos(){
+  const sel = window._tiposSel;
+  const emp = window._tiposEmp;
+  const act = window._tiposAct;
+  let correctCount = 0;
+  document.querySelectorAll('#classifier .classifier-row').forEach(row=>{
+    const axKey = row.querySelector('.classifier-opts').dataset.ax;
+    const correctVal = emp.correct[axKey];
+    const selected = sel[axKey];
+    const isCorrect = correctVal === selected;
+    if(isCorrect) correctCount++;
+    row.classList.add('answered', isCorrect?'correct':'wrong');
+    row.querySelectorAll('.classifier-pill').forEach(p=>{
+      p.disabled = true;
+      if(p.dataset.v === correctVal) p.classList.add('correct-answer');
+      else if(p.dataset.v === selected && !isCorrect) p.classList.add('wrong-answer');
+    });
+  });
+  const points = correctCount; // 1 punto por acierto
+  addScore(act.id, state.turnIdx, points);
+  document.getElementById('tipoFeedback').innerHTML = `
+    <div class="feedback ${correctCount===6?'ok':(correctCount>=3?'neutral':'bad')}">
+      <b>${correctCount} de 6 aciertos — ${currentTeam().name} suma ${points} pts</b>
+      ${correctCount<6 ? 'Las respuestas correctas están marcadas en verde.' : '¡Clasificación perfecta!'}
+    </div>`;
+  document.getElementById('tiposNext').disabled = false;
+  document.getElementById('tiposNext').textContent = 'Siguiente empresa →';
+  document.getElementById('tiposNext').onclick = ()=>{
+    state.activities[act.id].stepIdx++;
+    rotateTurn();
+    renderTipos(act);
+  };
+}
+
+// =====================================================
+// ACT 2 · RUTA MEIC
+// =====================================================
+function renderMeic(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= MEIC_PASOS.length) return finishActivityMeic(act);
+  const paso = MEIC_PASOS[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, MEIC_PASOS.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>${escapeHtml(paso.titulo)}</b><br>${escapeHtml(paso.ctx)}</div>
+      <div class="q-title">Elige la opción correcta:</div>
+      <div class="q-options">
+        ${paso.opts.map((o,i)=>`
+          <button class="q-opt" data-i="${i}" onclick="answerMeic(${i})">
+            <span class="q-opt-letter">${String.fromCharCode(65+i)}</span>${escapeHtml(o.t)}
+          </button>`).join('')}
+      </div>
+      <div id="meicFb"></div>
+    </div>`;
+  window._meicAct = act;
+  window._meicPaso = paso;
+}
+function answerMeic(i){
+  const paso = window._meicPaso;
+  const act = window._meicAct;
+  const opt = paso.opts[i];
+  document.querySelectorAll('.q-opt').forEach((b,bi)=>{
+    b.disabled = true;
+    if(paso.opts[bi].ok) b.classList.add('correct');
+    else if(bi===i && !opt.ok) b.classList.add('wrong');
+  });
+  const pts = opt.ok ? 10 : 0;
+  addScore(act.id, state.turnIdx, pts);
+  document.getElementById('meicFb').innerHTML = `
+    <div class="feedback ${opt.ok?'ok':'bad'}">
+      <b>${opt.ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${currentTeam().name}</b>
+      ${escapeHtml(opt.exp)}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextMeic()">
+        ${state.activities[act.id].stepIdx < MEIC_PASOS.length-1 ? 'Siguiente paso →' : 'Ver certificado →'}
+      </button>
+    </div>`;
+}
+function nextMeic(){
+  const act = window._meicAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderMeic(act);
+}
+function finishActivityMeic(act){
+  const st = state.activities[act.id];
+  const totalPts = st.scores.reduce((s,n)=>s+n,0);
+  const maxIdx = st.scores.indexOf(Math.max(...st.scores));
+  const lider = state.teams[maxIdx];
+  completeActivity(act.id);
+  const shell = document.getElementById('activityShell');
+  shell.innerHTML = `
+    <div class="act-head">
+      <div class="act-head-title">
+        <h2>${act.titulo}</h2>
+        <div class="sub">Reto completado</div>
+      </div>
+      <button class="btn-ghost" onclick="goDashboard()">← Tablero</button>
+    </div>
+    <div class="certificado">
+      <div class="cert-title">CERTIFICADO DE RUTA MEIC</div>
+      <div class="cert-name">${escapeHtml(state.groupName)}</div>
+      <div class="cert-text">Completó exitosamente la Ruta de 7 pasos para abrir una empresa en Costa Rica, alcanzando un puntaje total de:</div>
+      <div class="cert-score">${totalPts} / ${MEIC_PASOS.length*10} puntos</div>
+      <div class="cert-text" style="margin-top:1rem">
+        <b>Equipo líder:</b> ${escapeHtml(lider.name)} con ${Math.max(...st.scores)} pts
+      </div>
+      <div class="cert-sign">Unidad 3 · Creación de Empresas · Tablero de Retos</div>
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" onclick="goDashboard()" style="background:var(--c2)">Volver al tablero →</button>
+    </div>`;
+}
+
+// =====================================================
+// ACT 3 · ORGANIGRAMA
+// =====================================================
+function renderOrga(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= ORGA_TAREAS.length) return finishActivity(act);
+  const tarea = ORGA_TAREAS[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, ORGA_TAREAS.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>Tarea:</b> ${escapeHtml(tarea.t)}</div>
+      <div class="q-title">¿A qué departamento corresponde?</div>
+      <div class="orga-deptos" id="orgaDeptos">
+        ${DEPTOS.map(d=>`<button class="depto-btn" data-d="${d.id}" onclick="answerOrga('${d.id}')">${escapeHtml(d.n)}</button>`).join('')}
+      </div>
+      <div id="orgaFb"></div>
+    </div>`;
+  window._orgaTarea = tarea;
+  window._orgaAct = act;
+}
+function answerOrga(d){
+  const tarea = window._orgaTarea;
+  const act = window._orgaAct;
+  const ok = d === tarea.d;
+  document.querySelectorAll('.depto-btn').forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.d === tarea.d) b.classList.add('correct');
+    else if(b.dataset.d === d && !ok) b.classList.add('wrong');
+  });
+  const pts = ok ? 5 : 0;
+  addScore(act.id, state.turnIdx, pts);
+  const correctName = DEPTOS.find(x=>x.id===tarea.d).n;
+  document.getElementById('orgaFb').innerHTML = `
+    <div class="feedback ${ok?'ok':'bad'}">
+      <b>${ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${currentTeam().name}</b>
+      ${ok ? 'Esa tarea pertenece a <b>'+escapeHtml(correctName)+'</b>.' : 'La respuesta correcta es <b>'+escapeHtml(correctName)+'</b>.'}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextOrga()">
+        ${state.activities[act.id].stepIdx < ORGA_TAREAS.length-1 ? 'Siguiente tarea →' : 'Finalizar reto →'}
+      </button>
+    </div>`;
+}
+function nextOrga(){
+  const act = window._orgaAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderOrga(act);
+}
+
+// =====================================================
+// ACT 4 · TRIÁNGULO
+// =====================================================
+function renderTriangulo(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= TRIANGULO_CASOS.length) return finishActivity(act);
+  const caso = TRIANGULO_CASOS[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, TRIANGULO_CASOS.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>Caso:</b> ${escapeHtml(caso.ctx)}</div>
+      <div class="q-title">¿Qué vértice del triángulo está fallando?</div>
+      <div class="q-options">
+        ${TRI_OPTS.map((o,i)=>`
+          <button class="q-opt" data-k="${o.k}" onclick="answerTri('${o.k}')">
+            <span class="q-opt-letter">${String.fromCharCode(65+i)}</span>${escapeHtml(o.n)}
+          </button>`).join('')}
+      </div>
+      <div id="triFb"></div>
+    </div>`;
+  window._triCaso = caso;
+  window._triAct = act;
+}
+function answerTri(k){
+  const caso = window._triCaso;
+  const act = window._triAct;
+  const ok = k === caso.ans;
+  document.querySelectorAll('.q-opt').forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.k === caso.ans) b.classList.add('correct');
+    else if(b.dataset.k === k && !ok) b.classList.add('wrong');
+  });
+  const pts = ok ? 10 : 0;
+  addScore(act.id, state.turnIdx, pts);
+  document.getElementById('triFb').innerHTML = `
+    <div class="feedback ${ok?'ok':'bad'}">
+      <b>${ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${currentTeam().name}</b>
+      ${escapeHtml(caso.exp)}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextTri()">
+        ${state.activities[act.id].stepIdx < TRIANGULO_CASOS.length-1 ? 'Siguiente caso →' : 'Finalizar reto →'}
+      </button>
+    </div>`;
+}
+function nextTri(){
+  const act = window._triAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderTriangulo(act);
+}
+
+// =====================================================
+// ACT 5 · MANEJO DE QUEJAS
+// =====================================================
+function renderQuejas(act){
+  const st = state.activities[act.id];
+  if(!st.escenarioIdx && st.escenarioIdx!==0) st.escenarioIdx = 0;
+  if(!st.turnoIdx && st.turnoIdx!==0) st.turnoIdx = 0;
+  if(st.satisfaccion === undefined) st.satisfaccion = 70; // inicial neutral-positivo
+  if(st.escenarioIdx >= QUEJAS_ESCENARIOS.length) return finishActivity(act);
+  const esc = QUEJAS_ESCENARIOS[st.escenarioIdx];
+  const turno = esc.turnos[st.turnoIdx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  // stepNumGlobal: contar los turnos anteriores
+  let stepGlobal = 1;
+  for(let i=0;i<st.escenarioIdx;i++) stepGlobal += QUEJAS_ESCENARIOS[i].turnos.length;
+  stepGlobal += st.turnoIdx;
+  shell.innerHTML = actShellHead(act, stepGlobal, act.pasos) + turnBanner() + meterWrap(st.satisfaccion) + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>${escapeHtml(esc.titulo)}</b><br>${escapeHtml(esc.ctx)}</div>
+      <div class="q-title">${escapeHtml(turno.q)}</div>
+      <div class="q-options">
+        ${turno.opts.map((o,i)=>`
+          <button class="q-opt" data-i="${i}" onclick="answerQueja(${i})">
+            <span class="q-opt-letter">${String.fromCharCode(65+i)}</span>${escapeHtml(o.t)}
+          </button>`).join('')}
+      </div>
+      <div id="quejaFb"></div>
+    </div>`;
+  window._quejaAct = act;
+  window._quejaTurno = turno;
+}
+function meterWrap(val){
+  const color = val<30 ? '#B91C1C' : (val<60 ? '#B45309' : '#15803D');
+  const label = val<20 ? 'Cliente furioso · a punto de irse' :
+                val<40 ? 'Cliente molesto' :
+                val<60 ? 'Cliente dudoso' :
+                val<80 ? 'Cliente conforme' : 'Cliente satisfecho · fidelizado';
+  return `
+    <div class="meter-wrap">
+      <div class="meter-head"><span>Satisfacción del cliente</span><span class="meter-value">${Math.max(0,Math.min(100,Math.round(val)))}%</span></div>
+      <div class="meter-track"><div class="meter-fill" style="width:${Math.max(0,Math.min(100,val))}%;background:${color}"></div></div>
+      <div class="meter-emoji">${label}</div>
+    </div>`;
+}
+function answerQueja(i){
+  const st = state.activities['quejas'];
+  const act = window._quejaAct;
+  const turno = window._quejaTurno;
+  const opt = turno.opts[i];
+  // Actualiza satisfacción y puntaje (solo positivo suma al equipo)
+  st.satisfaccion = Math.max(0, Math.min(100, st.satisfaccion + opt.p));
+  const pts = Math.max(0, opt.p); // solo los puntos positivos cuentan para el equipo
+  if(pts>0) addScore(act.id, state.turnIdx, pts);
+  saveState();
+  document.querySelectorAll('.q-opt').forEach(b=>{
+    b.disabled = true;
+    if(+b.dataset.i === i){
+      b.classList.add(opt.p>=15?'correct': (opt.p<0?'wrong':'correct'));
+    }
+  });
+  document.getElementById('quejaFb').innerHTML = `
+    <div class="feedback ${opt.p>=15?'ok':(opt.p<0?'bad':'neutral')}">
+      <b>${opt.p>0?'+':''}${opt.p} pts de satisfacción ${pts>0?` · +${pts} pts para ${escapeHtml(currentTeam().name)}`:''}</b>
+      ${escapeHtml(opt.fb)}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextQueja()">Continuar →</button>
+    </div>`;
+}
+function nextQueja(){
+  const st = state.activities['quejas'];
+  const esc = QUEJAS_ESCENARIOS[st.escenarioIdx];
+  st.turnoIdx++;
+  if(st.turnoIdx >= esc.turnos.length){
+    st.turnoIdx = 0;
+    st.escenarioIdx++;
+    // Al pasar de escenario: reset suave de satisfacción (cada escenario empieza fresco en 70)
+    st.satisfaccion = 70;
+  }
+  rotateTurn();
+  saveState();
+  renderQuejas(window._quejaAct);
+}
+
+// =====================================================
+// ACT 6 · SERVICIO O ATENCIÓN
+// =====================================================
+function renderServAten(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= SERVICIO_ATENCION.length) return finishActivity(act);
+  const item = SERVICIO_ATENCION[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, SERVICIO_ATENCION.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context">${escapeHtml(item.t)}</div>
+      <div class="q-title">¿Qué tipo de acción es?</div>
+      <div class="quick-choice">
+        <button class="quick-btn" data-ans="serv" onclick="answerServ('serv')">Servicio al cliente</button>
+        <button class="quick-btn" data-ans="aten" onclick="answerServ('aten')">Atención al cliente</button>
+      </div>
+      <div id="servFb"></div>
+    </div>`;
+  window._servItem = item;
+  window._servAct = act;
+}
+function answerServ(ans){
+  const item = window._servItem;
+  const act = window._servAct;
+  const ok = ans === item.ans;
+  document.querySelectorAll('.quick-btn').forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.ans === item.ans) b.classList.add('correct');
+    else if(b.dataset.ans === ans && !ok) b.classList.add('wrong');
+  });
+  const pts = ok ? 5 : 0;
+  addScore(act.id, state.turnIdx, pts);
+  const exp = item.ans === 'serv'
+    ? 'Es <b>servicio al cliente</b>: proactivo, anticipa necesidades, inicia antes del contacto del cliente.'
+    : 'Es <b>atención al cliente</b>: reactivo, responde a una petición o problema ya manifestado.';
+  document.getElementById('servFb').innerHTML = `
+    <div class="feedback ${ok?'ok':'bad'}">
+      <b>${ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${escapeHtml(currentTeam().name)}</b>
+      ${exp}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextServ()">
+        ${state.activities[act.id].stepIdx < SERVICIO_ATENCION.length-1 ? 'Siguiente →' : 'Finalizar →'}
+      </button>
+    </div>`;
+}
+function nextServ(){
+  const act = window._servAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderServAten(act);
+}
+
+// =====================================================
+// ACT 7 · CRM
+// =====================================================
+function renderCrm(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= CRM_FASES.length) return finishActivity(act);
+  const fase = CRM_FASES[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, CRM_FASES.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>${escapeHtml(fase.titulo)}</b><br>${escapeHtml(fase.ctx)}</div>
+      <div class="q-title">${escapeHtml(fase.q)}</div>
+      <div class="q-options">
+        ${fase.opts.map((o,i)=>`
+          <button class="q-opt" data-i="${i}" onclick="answerCrm(${i})">
+            <span class="q-opt-letter">${String.fromCharCode(65+i)}</span>${escapeHtml(o.t)}
+          </button>`).join('')}
+      </div>
+      <div id="crmFb"></div>
+    </div>`;
+  window._crmFase = fase;
+  window._crmAct = act;
+}
+function answerCrm(i){
+  const fase = window._crmFase;
+  const act = window._crmAct;
+  const opt = fase.opts[i];
+  document.querySelectorAll('.q-opt').forEach((b,bi)=>{
+    b.disabled = true;
+    if(fase.opts[bi].ok) b.classList.add('correct');
+    else if(bi===i && !opt.ok) b.classList.add('wrong');
+  });
+  const pts = Math.max(0, opt.p);
+  if(pts>0) addScore(act.id, state.turnIdx, pts);
+  document.getElementById('crmFb').innerHTML = `
+    <div class="feedback ${opt.ok?'ok':'bad'}">
+      <b>${opt.ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${escapeHtml(currentTeam().name)}</b>
+      ${escapeHtml(opt.fb)}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextCrm()">
+        ${state.activities[act.id].stepIdx < CRM_FASES.length-1 ? 'Siguiente fase →' : 'Finalizar reto →'}
+      </button>
+    </div>`;
+}
+function nextCrm(){
+  const act = window._crmAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderCrm(act);
+}
+
+// =====================================================
+// ACT 8 · CLASIFICA LA OPERACIÓN
+// =====================================================
+function renderOperacion(act){
+  const st = state.activities[act.id];
+  const idx = st.stepIdx;
+  if(idx >= OP_COMERCIAL.length) return finishActivity(act);
+  const op = OP_COMERCIAL[idx];
+  const shell = document.getElementById('activityShell');
+  shell.style.setProperty('--act-color','var(--c'+act.color+')');
+  shell.innerHTML = actShellHead(act, idx+1, OP_COMERCIAL.length) + turnBanner() + `
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-context"><b>Operación:</b> ${escapeHtml(op.t)}</div>
+      <div class="q-title">¿A qué categoría de la puesta en marcha del negocio pertenece?</div>
+      <div class="orga-deptos" id="opDeptos">
+        ${OP_CATS.map(c=>`<button class="depto-btn" data-d="${c.id}" onclick="answerOp('${c.id}')">${escapeHtml(c.n)}</button>`).join('')}
+      </div>
+      <div id="opFb"></div>
+    </div>`;
+  window._opItem = op;
+  window._opAct = act;
+}
+function answerOp(d){
+  const op = window._opItem;
+  const act = window._opAct;
+  const ok = d === op.c;
+  document.querySelectorAll('.depto-btn').forEach(b=>{
+    b.disabled = true;
+    if(b.dataset.d === op.c) b.classList.add('correct');
+    else if(b.dataset.d === d && !ok) b.classList.add('wrong');
+  });
+  const pts = ok ? 5 : 0;
+  addScore(act.id, state.turnIdx, pts);
+  const correctName = OP_CATS.find(x=>x.id===op.c).n;
+  document.getElementById('opFb').innerHTML = `
+    <div class="feedback ${ok?'ok':'bad'}">
+      <b>${ok?'✓ Correcto':'✗ Incorrecto'} — ${pts} pts para ${escapeHtml(currentTeam().name)}</b>
+      ${ok ? 'Esta operación pertenece a <b>'+escapeHtml(correctName)+'</b>.' : 'La respuesta correcta es <b>'+escapeHtml(correctName)+'</b>.'}
+    </div>
+    <div class="act-actions"><span></span>
+      <button class="btn-next" style="background:var(--c${act.color})" onclick="nextOp()">
+        ${state.activities[act.id].stepIdx < OP_COMERCIAL.length-1 ? 'Siguiente →' : 'Finalizar reto →'}
+      </button>
+    </div>`;
+}
+function nextOp(){
+  const act = window._opAct;
+  state.activities[act.id].stepIdx++;
+  rotateTurn();
+  renderOperacion(act);
+}
+
+// =====================================================
+// FINALIZAR ACTIVIDAD GENÉRICA
+// =====================================================
+function finishActivity(act){
+  completeActivity(act.id);
+  const st = state.activities[act.id];
+  const shell = document.getElementById('activityShell');
+  const ranking = state.teams.map((t,i)=>({name:t.name, score:st.scores[i], color:t.color}))
+    .sort((a,b)=>b.score-a.score);
+  shell.innerHTML = `
+    <div class="act-head">
+      <div class="act-head-title">
+        <h2>${act.titulo}</h2>
+        <div class="sub">Reto completado</div>
+      </div>
+      <button class="btn-ghost" onclick="goDashboard()">← Tablero</button>
+    </div>
+    <div class="q-card" style="--act-color:var(--c${act.color})">
+      <div class="q-title">🏆 Resultados del reto</div>
+      <div class="ranking" style="margin-top:1rem">
+        ${ranking.map((r,i)=>`
+          <div class="rank-row" style="--team-color:${r.color}">
+            <div class="rank-pos">${i+1}</div>
+            <div class="rank-info"><b>${escapeHtml(r.name)}</b></div>
+            <div class="rank-score">${r.score}<small>pts en este reto</small></div>
+          </div>`).join('')}
+      </div>
+      <div class="act-actions"><span></span>
+        <button class="btn-next" style="background:var(--c${act.color})" onclick="goDashboard()">Volver al tablero →</button>
+      </div>
+    </div>`;
+}
+
+// =====================================================
+// RESULTADOS FINALES
+// =====================================================
+function showResults(){
+  if(!state) return;
+  const ranking = [...state.teams].map(t=>({...t})).sort((a,b)=>b.score-a.score);
+  document.getElementById('resultsIntro').textContent =
+    `Grupo: ${state.groupName} · ${state.teams.length} equipos · ${Object.values(state.activities).filter(a=>a.completed).length} de ${ACTIVITIES.length} retos completados.`;
+  document.getElementById('ranking').innerHTML = ranking.map((t,i)=>`
+    <div class="rank-row" style="--team-color:${t.color}">
+      <div class="rank-pos">${i+1}</div>
+      <div class="rank-info">
+        <b>${escapeHtml(t.name)}</b>
+        <span>Equipo ${state.teams.findIndex(x=>x.id===t.id)+1}</span>
+      </div>
+      <div class="rank-score">${t.score}<small>puntos totales</small></div>
+    </div>`).join('');
+
+  // Tabla desglose
+  let table = `<table><thead><tr><th>Reto</th>`;
+  state.teams.forEach(t=>table += `<th style="color:${t.color};text-align:right">${escapeHtml(t.name)}</th>`);
+  table += `</tr></thead><tbody>`;
+  ACTIVITIES.forEach(a=>{
+    const st = state.activities[a.id];
+    table += `<tr><td>${String(a.n).padStart(2,'0')} · ${a.titulo}</td>`;
+    st.scores.forEach(s=>table += `<td class="score">${s}</td>`);
+    table += `</tr>`;
+  });
+  table += `<tr style="background:var(--paper-deep)"><td><b>Total</b></td>`;
+  state.teams.forEach(t=>table += `<td class="score" style="color:${t.color};font-size:1.05rem">${t.score}</td>`);
+  table += `</tr></tbody></table>`;
+  document.getElementById('breakdownTable').innerHTML = table;
+  showView('view-results');
+}
+
+function exportResults(){
+  const payload = {
+    grupo: state.groupName,
+    fecha: new Date().toISOString(),
+    equipos: state.teams.map((t,i)=>({
+      equipo: i+1,
+      nombre: t.name,
+      puntaje_total: t.score,
+      por_actividad: ACTIVITIES.reduce((o,a)=>{
+        o[a.titulo] = state.activities[a.id].scores[i];
+        return o;
+      },{})
+    })),
+    actividades: ACTIVITIES.map(a=>({
+      reto: a.n,
+      titulo: a.titulo,
+      completado: state.activities[a.id].completed,
+      puntaje_maximo: a.puntosMax,
+    })),
+  };
+  const txt = formatTxtReport(payload);
+  const blob = new Blob([txt], {type:'text/plain;charset=utf-8'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Retos_U3_${(state.groupName||'grupo').replace(/[^a-zA-Z0-9]/g,'_')}_${new Date().toISOString().slice(0,10)}.txt`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+function formatTxtReport(p){
+  let out = '';
+  out += '═══════════════════════════════════════════════\n';
+  out += '  UNIDAD 3 · CREACIÓN DE EMPRESAS\n';
+  out += '  Tablero de Retos · Resultados\n';
+  out += '═══════════════════════════════════════════════\n\n';
+  out += 'Grupo: ' + p.grupo + '\n';
+  out += 'Fecha: ' + new Date(p.fecha).toLocaleString('es-CR') + '\n\n';
+  out += '─── RANKING FINAL ───\n\n';
+  const ranking = [...p.equipos].sort((a,b)=>b.puntaje_total-a.puntaje_total);
+  ranking.forEach((e,i)=>{
+    out += `  ${i+1}. ${e.nombre} — ${e.puntaje_total} pts\n`;
+  });
+  out += '\n─── DESGLOSE POR ACTIVIDAD ───\n\n';
+  p.equipos.forEach(e=>{
+    out += `▸ ${e.nombre} (Equipo ${e.equipo})\n`;
+    Object.entries(e.por_actividad).forEach(([k,v])=>{
+      out += `    · ${k}: ${v} pts\n`;
+    });
+    out += `    TOTAL: ${e.puntaje_total} pts\n\n`;
+  });
+  out += '─── ACTIVIDADES ───\n\n';
+  p.actividades.forEach(a=>{
+    out += `  ${String(a.reto).padStart(2,'0')}. ${a.titulo}${a.completado?' [COMPLETADA]':' [pendiente]'} · máx ${a.puntaje_maximo} pts\n`;
+  });
+  out += '\n═══════════════════════════════════════════════\n';
+  out += 'Herramienta: Roberto Mora Castro\n';
+  out += 'CTP Educación Comercial y de Servicios\n';
+  return out;
+}
+
+// =====================================================
+// MODAL
+// =====================================================
+function openModal(){document.getElementById('modalReset').classList.add('show')}
+function closeModal(){document.getElementById('modalReset').classList.remove('show')}
+function doReset(){closeModal();resetAll()}
+document.getElementById('modalReset').addEventListener('click',e=>{if(e.target.id==='modalReset')closeModal()});
+
+// =====================================================
+// INIT
+// =====================================================
+if(state){
+  renderTopbar();
+  goDashboard();
+}else{
+  initSetup();
+}
+</script>
+</body>
+</html>
