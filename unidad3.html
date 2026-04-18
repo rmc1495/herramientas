@@ -1,0 +1,1082 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>📱 App Edu: Creación de Empresas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        /* --- VARIABLES GLOBALES (Modo Claro / Oscuro) --- */
+        :root {
+            --primary: #6366f1;
+            --primary-hover: #4f46e5;
+            --secondary: #ec4899;
+            --bg-body: #f1f5f9;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #f8fafc;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+            --radius: 20px;
+        }
+
+        [data-theme="dark"] {
+            --primary: #818cf8;
+            --secondary: #f472b6;
+            --bg-body: #0f172a;
+            --bg-surface: #1e293b;
+            --bg-surface-hover: #334155;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --border: #334155;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Poppins', sans-serif; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            background-color: var(--bg-body);
+            color: var(--text-main);
+            transition: background-color 0.3s, color 0.3s;
+            overflow: hidden; /* Prevent body scroll, handled by main-content */
+        }
+
+        /* --- LAYOUT TIPO APP --- */
+        .app-container {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+        }
+
+        /* --- BARRA LATERAL (Desktop) --- */
+        .sidebar {
+            width: 280px;
+            background-color: var(--bg-surface);
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            padding: 2rem 1.5rem;
+            transition: all 0.3s ease;
+            z-index: 100;
+        }
+
+        .logo-area {
+            display: flex; align-items: center; gap: 15px; margin-bottom: 2.5rem;
+        }
+        .logo-icon {
+            width: 45px; height: 45px; border-radius: 12px; background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex; justify-content: center; align-items: center; color: white; font-size: 1.5rem;
+        }
+        .logo-text h1 { font-size: 1.2rem; font-weight: 800; line-height: 1.2; }
+        .logo-text p { font-size: 0.8rem; color: var(--text-muted); }
+
+        .nav-menu { display: flex; flex-direction: column; gap: 10px; flex-grow: 1; }
+        
+        .nav-item {
+            display: flex; align-items: center; gap: 15px; padding: 12px 15px;
+            border-radius: 12px; color: var(--text-muted); font-weight: 600;
+            cursor: pointer; transition: all 0.2s; border: none; background: transparent; font-size: 1rem; text-align: left;
+        }
+        .nav-item:hover { background-color: var(--bg-surface-hover); color: var(--primary); }
+        .nav-item.active { background-color: var(--primary); color: white; box-shadow: 0 4px 10px rgba(99, 102, 241, 0.3); }
+        .nav-item i { font-size: 1.2rem; width: 25px; text-align: center; }
+
+        /* Botón Modo Oscuro */
+        .theme-toggle {
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            padding: 12px; border-radius: 12px; border: 1px solid var(--border);
+            background: transparent; color: var(--text-main); cursor: pointer; font-weight: 600;
+            margin-top: auto; transition: all 0.2s;
+        }
+        .theme-toggle:hover { background: var(--bg-surface-hover); }
+
+        /* --- CONTENIDO PRINCIPAL --- */
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            scroll-behavior: smooth;
+            padding: 2rem 3rem 6rem 3rem;
+        }
+        .main-content::-webkit-scrollbar { width: 8px; }
+        .main-content::-webkit-scrollbar-thumb { background-color: var(--border); border-radius: 10px; }
+
+        /* Vistas de Resultados de Aprendizaje */
+        .ra-view { display: none; animation: fadeIn 0.4s ease; max-width: 900px; margin: 0 auto; }
+        .ra-view.active { display: block; }
+        
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Encabezados de Sección */
+        .header-section { margin-bottom: 2.5rem; }
+        .tag { display: inline-block; padding: 5px 15px; background: rgba(99, 102, 241, 0.1); color: var(--primary); border-radius: 20px; font-size: 0.85rem; font-weight: 800; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .header-section h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 10px; line-height: 1.2; }
+        .header-section p { font-size: 1.1rem; color: var(--text-muted); }
+
+        /* --- INTERACCIONES: TARJETAS EXPANDIBLES --- */
+        .expand-card {
+            background-color: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius);
+            margin-bottom: 1rem; overflow: hidden; box-shadow: var(--shadow); transition: all 0.3s;
+        }
+        .expand-card:hover { border-color: var(--primary); }
+        .expand-header {
+            padding: 1.2rem 1.5rem; display: flex; justify-content: space-between; align-items: center;
+            cursor: pointer; font-weight: 600; font-size: 1.1rem; color: var(--text-main);
+        }
+        .expand-header .icon-box {
+            width: 40px; height: 40px; border-radius: 10px; background: rgba(99, 102, 241, 0.1); color: var(--primary);
+            display: flex; justify-content: center; align-items: center; margin-right: 15px; font-size: 1.2rem;
+        }
+        .expand-title { display: flex; align-items: center; flex-grow: 1; }
+        .chevron { transition: transform 0.3s; color: var(--text-muted); }
+        
+        .expand-body {
+            max-height: 0; overflow: hidden; transition: max-height 0.4s ease-in-out;
+            background-color: var(--bg-surface-hover);
+        }
+        .expand-content { padding: 0 1.5rem 1.5rem 1.5rem; color: var(--text-muted); font-size: 0.95rem; text-align: justify; }
+        
+        .expand-card.open .expand-body { max-height: 2000px; }
+        .expand-card.open .chevron { transform: rotate(180deg); color: var(--primary); }
+
+        /* --- CANVAS MODEL GRID --- */
+        .canvas-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: minmax(120px, auto) minmax(120px, auto) auto;
+            gap: 10px;
+            margin-top: 15px;
+            background: var(--bg-body);
+            padding: 15px;
+            border-radius: var(--radius);
+        }
+        .canvas-block {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: var(--shadow);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        .canvas-block:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.1);
+            border-color: var(--primary-hover);
+        }
+        .canvas-block h5 {
+            color: var(--primary);
+            font-size: 0.9rem;
+            margin: 0 0 8px 0;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 5px;
+            text-transform: uppercase;
+        }
+        .canvas-block p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin: 0;
+            line-height: 1.4;
+            text-align: left;
+        }
+        
+        .cb-alianzas { grid-column: 1; grid-row: 1 / 3; }
+        .cb-actividades { grid-column: 2; grid-row: 1; }
+        .cb-recursos { grid-column: 2; grid-row: 2; }
+        .cb-propuesta { grid-column: 3; grid-row: 1 / 3; background: rgba(99, 102, 241, 0.05); border: 2px solid var(--primary); }
+        .cb-propuesta h5 { color: var(--text-main); }
+        .cb-relaciones { grid-column: 4; grid-row: 1; }
+        .cb-canales { grid-column: 4; grid-row: 2; }
+        .cb-segmentos { grid-column: 5; grid-row: 1 / 3; }
+        .cb-costos { grid-column: 1 / 4; grid-row: 3; }
+        .cb-ingresos { grid-column: 4 / 6; grid-row: 3; }
+
+        @media (max-width: 900px) {
+            .canvas-grid {
+                display: flex;
+                flex-direction: column;
+            }
+        }
+
+        /* Textos básicos */
+        h3 { margin: 2rem 0 1rem; font-size: 1.5rem; color: var(--text-main); }
+        h4 { margin: 1.5rem 0 0.5rem; font-size: 1.2rem; color: var(--primary); }
+        p { margin-bottom: 1rem; line-height: 1.8; text-align: justify; }
+        ul, ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-muted); }
+        li { margin-bottom: 0.5rem; text-align: justify; }
+
+        /* Imágenes */
+        .app-img { width: 100%; border-radius: var(--radius); box-shadow: var(--shadow); margin: 1.5rem 0; border: 1px solid var(--border); }
+
+        /* Tablas tipo App */
+        .app-table-wrapper { overflow-x: auto; margin: 1.5rem 0; border-radius: var(--radius); border: 1px solid var(--border); }
+        .app-table { width: 100%; border-collapse: collapse; background: var(--bg-surface); text-align: left; }
+        .app-table th { background: var(--primary); color: white; padding: 1rem; font-weight: 600; }
+        .app-table td { padding: 1rem; border-bottom: 1px solid var(--border); color: var(--text-muted); }
+        .app-table tr:last-child td { border-bottom: none; }
+
+        /* Grid Cards */
+        .app-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .grid-item { background: var(--bg-surface); padding: 1.5rem; border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow); }
+        .grid-icon { width: 50px; height: 50px; border-radius: 12px; display: flex; justify-content: center; align-items: center; font-size: 1.5rem; margin-bottom: 1rem; }
+
+        /* --- TRIÁNGULO DEL SERVICIO --- */
+        .service-triangle-wrapper {
+            display: flex; justify-content: center; align-items: center;
+            margin: 2rem 0; padding: 3rem 1rem;
+            background: var(--bg-surface); border-radius: var(--radius);
+            box-shadow: inset 0 4px 6px rgba(0,0,0,0.05);
+            border: 2px dashed var(--border);
+            overflow: hidden;
+        }
+        .triangle-diagram { position: relative; width: 320px; height: 320px; }
+        .triangle-node {
+            position: absolute; width: 110px; height: 110px;
+            background: var(--bg-surface); border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            box-shadow: var(--shadow); border: 4px solid var(--primary);
+            text-align: center; font-size: 0.8rem; font-weight: 800; color: var(--text-main);
+            z-index: 2; transition: transform 0.3s; cursor: default; padding: 10px;
+        }
+        .triangle-node:hover { transform: scale(1.1); z-index: 10; }
+        .triangle-node i { font-size: 1.8rem; margin-bottom: 5px; }
+
+        .node-center { top: 50%; left: 50%; transform: translate(-50%, -50%); background: var(--primary); color: white; width: 130px; height: 130px; border-color: var(--secondary); z-index: 3;}
+        .node-center:hover { transform: translate(-50%, -50%) scale(1.1); }
+        .node-top { top: -20px; left: 50%; transform: translateX(-50%); border-color: #3b82f6; }
+        .node-top:hover { transform: translateX(-50%) scale(1.1); }
+        .node-left { bottom: -20px; left: -20px; border-color: #14b8a6; }
+        .node-right { bottom: -20px; right: -20px; border-color: #f59e0b; }
+
+        .triangle-line { position: absolute; background: var(--border); z-index: 1; border-radius: 10px; }
+        .line-1 { width: 4px; height: 160px; top: 40px; left: 50%; transform: translateX(-50%); }
+        .line-2 { width: 180px; height: 4px; top: 65%; left: 5px; transform: rotate(30deg); }
+        .line-3 { width: 180px; height: 4px; top: 65%; right: 5px; transform: rotate(-30deg); }
+
+        /* --- PANTALLA DE BIENVENIDA --- */
+        .welcome-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: var(--bg-body); z-index: 9999;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            padding: 2rem; text-align: center; transition: opacity 0.5s ease, visibility 0.5s;
+        }
+        .welcome-screen.hidden { opacity: 0; visibility: hidden; }
+        .welcome-content {
+            max-width: 600px; width: 100%; background: var(--bg-surface); padding: 3rem 2rem;
+            border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--border);
+            animation: fadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .welcome-icon { font-size: 4rem; color: var(--primary); margin-bottom: 1.5rem; animation: float 3s ease-in-out infinite; }
+        .welcome-title { font-size: 2.2rem; font-weight: 800; color: var(--text-main); margin-bottom: 1rem; line-height: 1.2; }
+        .welcome-desc { color: var(--text-muted); font-size: 1.05rem; margin-bottom: 2rem; line-height: 1.6; text-align: center; }
+        .btn-iniciar {
+            background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white;
+            border: none; padding: 1.2rem 3rem; font-size: 1.2rem; font-weight: 800; border-radius: 50px;
+            cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; box-shadow: 0 10px 20px -5px rgba(99, 102, 241, 0.4);
+            width: 100%; max-width: 300px;
+        }
+        .btn-iniciar:hover { transform: scale(1.05); box-shadow: 0 15px 25px -5px rgba(99, 102, 241, 0.5); }
+        .btn-iniciar:active { transform: scale(0.95); }
+        .feature-list {
+            display: flex; flex-direction: column; gap: 12px; text-align: left;
+            margin-bottom: 2.5rem; background: var(--bg-body); padding: 1.5rem; border-radius: 16px;
+        }
+        .feature-item { display: flex; align-items: center; gap: 15px; color: var(--text-main); font-size: 0.95rem; font-weight: 600; }
+        .feature-item i { color: var(--primary); width: 30px; height: 30px; background: rgba(99,102,241,0.1); border-radius: 8px; display: flex; align-items: center; justify-content: center; }
+
+        /* --- BARRA DE NAVEGACIÓN INFERIOR (Mobile Only) --- */
+        .bottom-nav {
+            display: none; position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: var(--bg-surface); border-top: 1px solid var(--border);
+            padding: 10px 20px; z-index: 1000; box-shadow: 0 -5px 15px rgba(0,0,0,0.05);
+            padding-bottom: env(safe-area-inset-bottom, 10px);
+        }
+        .bottom-nav-item {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 5px;
+            color: var(--text-muted); text-decoration: none; font-size: 0.75rem; font-weight: 600; border: none; background: none;
+        }
+        .bottom-nav-item i { font-size: 1.3rem; padding: 8px 15px; border-radius: 20px; transition: all 0.2s; }
+        .bottom-nav-item.active { color: var(--primary); }
+        .bottom-nav-item.active i { background-color: rgba(99, 102, 241, 0.1); }
+
+        /* Top Bar Mobile */
+        .mobile-topbar {
+            display: none; padding: 15px 20px; background: var(--bg-surface); border-bottom: 1px solid var(--border);
+            position: sticky; top: 0; z-index: 100; align-items: center; justify-content: space-between;
+        }
+
+        /* --- RESPONSIVE --- */
+        @media (max-width: 768px) {
+            .sidebar { display: none; }
+            .bottom-nav { display: flex; justify-content: space-between; }
+            .mobile-topbar { display: flex; }
+            .main-content { padding: 1.5rem 1.5rem 7rem 1.5rem; }
+            .header-section h2 { font-size: 1.8rem; }
+            .app-container { flex-direction: column; }
+            .triangle-diagram { transform: scale(0.8); }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- PANTALLA DE BIENVENIDA -->
+    <div id="welcome-screen" class="welcome-screen">
+        <div class="welcome-content">
+            <div class="welcome-icon">
+                <i class="fa-solid fa-rocket"></i>
+            </div>
+            <div class="tag" style="margin-bottom: 1rem;">Unidad 3</div>
+            <h1 class="welcome-title">Creación de Empresas</h1>
+            <p class="welcome-desc">Aprende a estructurar, operar y enfocar tu negocio hacia el cliente de manera interactiva. En esta unidad explorarás los siguientes temas:</p>
+            
+            <div class="feature-list">
+                <div class="feature-item"><i class="fa-solid fa-building"></i> Tipos y clasificación de empresas</div>
+                <div class="feature-item"><i class="fa-solid fa-map-location-dot"></i> Estructura del Plan de Negocios (CANVAS)</div>
+                <div class="feature-item"><i class="fa-solid fa-heart"></i> Estrategias de Servicio y Enfoque al Cliente</div>
+                <div class="feature-item"><i class="fa-solid fa-laptop-code"></i> Herramientas TIC para la productividad</div>
+            </div>
+
+            <button class="btn-iniciar" onclick="iniciarApp()">
+                Iniciar Unidad <i class="fa-solid fa-arrow-right" style="margin-left: 8px;"></i>
+            </button>
+        </div>
+    </div>
+
+    <div class="app-container">
+        
+        <!-- MOBILE TOP BAR -->
+        <div class="mobile-topbar">
+            <div class="logo-area" style="margin: 0;">
+                <div class="logo-icon" style="width: 35px; height: 35px; font-size: 1.2rem;"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <h1 style="font-size: 1rem;">Empresas</h1>
+                </div>
+            </div>
+            <button class="theme-toggle" onclick="toggleTheme()" style="margin: 0; padding: 8px; border: none;">
+                <i class="fa-solid fa-moon" id="mobile-theme-icon"></i>
+            </button>
+        </div>
+
+        <!-- SIDEBAR (Desktop) -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <div class="logo-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                <div class="logo-text">
+                    <h1>Emprendimiento e Innovación</h1>
+                    <p>PEI. Roberto Mora C</p>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-item active" onclick="switchTab(event, 'ra1')">
+                    <i class="fa-solid fa-building"></i> Tipos de Empresas
+                </button>
+                <button class="nav-item" onclick="switchTab(event, 'ra2')">
+                    <i class="fa-solid fa-map-location-dot"></i> Plan de Negocios
+                </button>
+                <button class="nav-item" onclick="switchTab(event, 'ra3')">
+                    <i class="fa-solid fa-gears"></i> Operación
+                </button>
+                <button class="nav-item" onclick="switchTab(event, 'ra4')">
+                    <i class="fa-solid fa-heart"></i> Enfoque al Cliente
+                </button>
+                <button class="nav-item" onclick="switchTab(event, 'ra5')">
+                    <i class="fa-solid fa-laptop-code"></i> Herramientas TIC
+                </button>
+            </nav>
+
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <i class="fa-solid fa-moon" id="desktop-theme-icon"></i> Modo Oscuro
+            </button>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content" id="main-scroll">
+            
+            <!-- ================= RA 1 ================= -->
+            <section id="ra1" class="ra-view active">
+                <div class="header-section">
+                    <span class="tag">Unidad 3 • RA 1</span>
+                    <h2>Tipos de Empresas</h2>
+                    <p>Describir los tipos de empresas para el desarrollo de negocios.</p>
+                </div>
+
+                <img src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?q=80&w=800&auto=format&fit=crop" alt="Edificios de empresas" class="app-img">
+
+                <p>La empresa es la unidad económica básica encargada de satisfacer las necesidades del mercado mediante la utilización de recursos materiales y humanos. Aunque su función básica es la de producir bienes y servicios, también es partícipe en la creación de empleo, desarrollo de inversiones y mejora la tecnología.</p>
+                <p><strong>Toca las siguientes tarjetas para conocer los criterios de clasificación:</strong></p>
+
+                <!-- Tarjetas Interactivas de Teoría -->
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-earth-americas"></i></div>1. Según el ámbito de actividad</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Esta clasificación resulta importante cuando se quiere analizar las posibles relaciones e interacciones entre la empresa y su entorno político, económico o social. Se clasifican en:</p>
+                            <ul>
+                                <li><strong>a) Empresas Locales:</strong> Aquellas que operan en un pueblo, ciudad o municipio.</li>
+                                <li><strong>b) Empresas Provinciales:</strong> Aquellas que operan en el ámbito geográfico de una provincia o estado de un país.</li>
+                                <li><strong>c) Empresas Regionales:</strong> Son aquellas cuyas ventas involucran a varias provincias o regiones.</li>
+                                <li><strong>d) Empresas Nacionales:</strong> Cuando sus ventas se realizan en prácticamente todo el territorio de un país o nación.</li>
+                                <li><strong>e) Empresas Multinacionales:</strong> Cuando sus actividades se extienden a varios países y el destino de sus recursos puede ser cualquier país.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-piggy-bank"></i></div>2. Según el destino de sus beneficios</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Según el destino que la empresa decida otorgar a los beneficios económicos (excedente entre ingresos y gastos) que obtenga, pueden categorizarse en dos grupos:</p>
+                            <ul>
+                                <li><strong>a) Empresas con ánimo de Lucro:</strong> Cuyos excedentes pasan a poder de los propietarios, accionistas, etc.</li>
+                                <li><strong>b) Empresas sin ánimo de Lucro:</strong> En este caso los excedentes se vuelcan a la propia empresa para permitir su desarrollo.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-scale-balanced"></i></div>3. Según la forma jurídica</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <ul style="margin-top: 15px;">
+                                <li><strong>a) Sociedad Anónima:</strong> Esta es una sociedad en la que se participa como socio, por medio de una cantidad de acciones por un cierto valor y en el que el capital social es parte del patrimonio distinto al personal. En este tipo de sociedad, solo se responderá únicamente por el capital aportado, sin que su patrimonio se vea involucrado. La razón o denominación social puede ser en cualquier idioma. debe ser precedido por las palabras "Sociedad Anónima" o su abreviación "S. A.". Ejemplo: The Great Adventure, S. A.</li>
+                                <li><strong>b) Sociedad de Responsabilidad Limitada:</strong> En esta se requieren mínimo de 2 personas para su constitución a las que se les denomina cuotitas. La responsabilidad de responder solo está limitada al capital aportado, o sea, el capital aportado por los socios estará dividido en cuotas de participación, sin la necesidad de responder individualmente a las deudas o compromisos adquiridos por la sociedad. Una vez constituida la sociedad, es posible ceder estas cuotas a una sola persona. Otro punto a considerar es que todos los cuotistas, se convierten en gerentes así, no tiene la necesidad de tener una junta directiva. El nombre debe ser precedido por las palabras "Sociedad de Responsabilidad Limitada", "Limitada" o las abreviaciones "SRL." o "Ltda." e.g. The Great Adventure, SRL</li>
+                                <li><strong>c) Sociedad en nombre colectivo:</strong> La sociedad en nombre colectivo, es una razón social en el que se acuerda en manejar el capital mercantil entre los socios de una empresa. En ella, todos los socios responden tanto a las obligaciones como tienen los mismos derechos.</li>
+                                <li><strong>d) Sociedad en Comandita Simple:</strong> Se refiere a una sociedad conformada por uno o varios socios colectivos que aportan trabajo a la Sociedad y que pueden aportar, o no, capital, y también por socios comanditarios que tan solo aportan capital. Para esta sociedad se denominan dos tipos de socios:
+                                    <ul style="margin-top: 5px;">
+                                        <li><em>Socios comanditados:</em> Son aquellos responsables de las deudas sociales de manera subsidiaria, indefinida y solidariamente. Tienen la calidad de comerciantes y son sujetos a la quiebra de manera individual, cuando se produzca la cesación de pago de la sociedad.</li>
+                                        <li><em>Socio comanditario:</em> estos no son responsables de las obligaciones que contraiga la sociedad. Solo se limitan a ser responsables de las aportaciones que han realizado, ya que no tienen ni están obligados a responder más allá de los mismos.</li>
+                                    </ul>
+                                    La razón social se forma con los nombres de uno o más socios comanditados, seguido de las palabras "y compañía" en la que no figuren el nombre de todos los socios.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-landmark"></i></div>4. Según origen o procedencia de capital</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Se refiere sobre si el capital está en poder de los particulares, de organismos públicos o de ambos. En ese sentido, se clasifican en:</p>
+                            <ul>
+                                <li><strong>a) Empresa Privada:</strong> La propiedad del capital está en manos privadas.</li>
+                                <li><strong>b) Empresa Pública:</strong> Es el tipo de empresa en la que el capital le pertenece al Estado, que puede ser Nacional, Provincial o Municipal.</li>
+                                <li><strong>c) Empresa Mixta:</strong> Es el tipo de empresa en la que la propiedad del capital es compartida entre el Estado y los particulares.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-ruler"></i></div>5. Según el tamaño</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <ul style="margin-top: 15px;">
+                                <li><strong>a) Microempresa:</strong> Cuentan con un máximo de 5 trabajadores.</li>
+                                <li><strong>b) Pequeña empresa:</strong> Entre 6 y 30 trabajadores.</li>
+                                <li><strong>c) Mediana empresa:</strong> Entre 31 y 100 empleados.</li>
+                                <li><strong>d) Grandes empresas:</strong> Más de 100 empleados.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-industry"></i></div>6. Según su actividad (Materia)</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <ul style="margin-top: 15px;">
+                                <li><strong>a) Empresas del Sector Primario:</strong> También denominado extractivo, ya que el elemento básico de la actividad se obtiene directamente de la naturaleza: agricultura, ganadería, caza, pesca, extracción de áridos, agua, minerales, petróleo, energía eólica, entre otros.</li>
+                                <li><strong>b) Empresas del Sector Secundario o Industrial:</strong> Se refiere a aquellas que realizan algún proceso de transformación de la materia prima. Abarca actividades tan diversas como la construcción, la óptica, la maderera, la textil, entre otros.</li>
+                                <li><strong>c) Empresas del Sector Terciario o de Servicios:</strong> Incluye a las empresas cuyo principal elemento es la capacidad humana para realizar trabajos físicos o intelectuales. Comprende también una gran variedad de empresas, como las de transporte, bancos, comercio, seguros, hotelería, asesorías, educación, restaurantes, entre otros.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= RA 2 ================= -->
+            <section id="ra2" class="ra-view">
+                <div class="header-section">
+                    <span class="tag">Unidad 3 • RA 2</span>
+                    <h2>Plan de Negocios</h2>
+                    <p>Estructurar el negocio con el enfoque orientado al cliente.</p>
+                </div>
+
+                <div style="background: rgba(99, 102, 241, 0.1); padding: 1.5rem; border-radius: var(--radius); border-left: 5px solid var(--primary); margin-bottom: 2rem;">
+                    <h4 style="margin-top: 0;">🎯 Objetivos de un plan de negocio:</h4>
+                    <ul style="margin-bottom: 0; padding-left: 20px;">
+                        <li>Definir la oportunidad de negocio.</li>
+                        <li>Permitir un estudio de mercado que aporte la información requerida para llevar a cabo un correcto posicionamiento del producto o servicio.</li>
+                        <li>Determinar con bastante certeza la viabilidad económica del proyecto.</li>
+                    </ul>
+                </div>
+
+                <h3>Modelo de negocios (CANVAS)</h3>
+                <p>Un modelo de negocio es una representación que describe la generación de un bien o servicio que cubre las cuatro áreas principales: cliente, oferta, infraestructura y viabilidad económica.</p>
+                <p>Alrededor de estas cuatro áreas se establecen nueve módulos básicos para comprender y para representar adecuadamente la lógica que sigue la empresa, con el fin de obtener sus recursos. Se utilizará el modelo CANVAS como lienzo que facilite la presentación gráfica de las distintas interacciones.</p>
+                
+                <img src="https://images.unsplash.com/photo-1531403009284-440f080d1e12?q=80&w=800&auto=format&fit=crop" alt="Emprendedores" class="app-img">
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box"><i class="fa-solid fa-table-cells"></i></div>Ver los 9 módulos CANVAS</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <!-- NUEVO GRID CANVAS VISUAL -->
+                            <div class="canvas-grid">
+                                <div class="canvas-block cb-alianzas">
+                                    <h5><i class="fa-solid fa-handshake"></i> 8. Alianzas</h5>
+                                    <p>Algunas actividades se externalizan y algunos recursos se adquieren fuera de la empresa.</p>
+                                </div>
+                                <div class="canvas-block cb-actividades">
+                                    <h5><i class="fa-solid fa-list-check"></i> 7. Actividades</h5>
+                                    <p>Mediante la realización de una serie de actividades fundamentales.</p>
+                                </div>
+                                <div class="canvas-block cb-recursos">
+                                    <h5><i class="fa-solid fa-cubes"></i> 6. Recursos</h5>
+                                    <p>Son los medios necesarios para ofrecer y entregar los elementos descriptos anteriormente.</p>
+                                </div>
+                                <div class="canvas-block cb-propuesta">
+                                    <h5><i class="fa-solid fa-gift"></i> 2. Propuesta de Valor</h5>
+                                    <p>Trata de resolver problemas de los clientes y satisfacer las necesidades del cliente con propuestas de valor.</p>
+                                </div>
+                                <div class="canvas-block cb-relaciones">
+                                    <h5><i class="fa-solid fa-heart"></i> 4. Relaciones</h5>
+                                    <p>Se establecen y mantienen con cada segmento de cliente.</p>
+                                </div>
+                                <div class="canvas-block cb-canales">
+                                    <h5><i class="fa-solid fa-truck-fast"></i> 3. Canales</h5>
+                                    <p>Las propuestas de valor se entregan a los clientes a través de la comunicación, la distribución y los canales de venta.</p>
+                                </div>
+                                <div class="canvas-block cb-segmentos">
+                                    <h5><i class="fa-solid fa-users-viewfinder"></i> 1. Segmentos</h5>
+                                    <p>Uno o varios segmentos de clientes.</p>
+                                </div>
+                                <div class="canvas-block cb-costos">
+                                    <h5><i class="fa-solid fa-money-bill-transfer"></i> 9. Estructura de Costos</h5>
+                                    <p>Los elementos del modelo de negocio dan como resultado la estructura de costos.</p>
+                                </div>
+                                <div class="canvas-block cb-ingresos">
+                                    <h5><i class="fa-solid fa-sack-dollar"></i> 5. Flujos de Ingreso</h5>
+                                    <p>Los ingresos son el resultado de propuestas de valor ofrecidas con exito a los clientes.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Estructura del Plan de Negocios</h3>
+                
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(236, 72, 153, 0.1); color: var(--secondary);"><i class="fa-solid fa-chart-pie"></i></div>1. Estudio de mercado</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Describe aspectos relacionados con el mercado, tales como la industria a la cual va a pertenecer el negocio, el mercado objetivo al cual se va a dirigir, y la competencia que va a tener. El objetivo es mostrar información relevante procedente del mercado para demostrar en gran medida la factibilidad del negocio.</p>
+                            <ul>
+                                <li><strong>a) El análisis de la industria:</strong> describe la industria o sector, antecedentes, evolución, tamaño, actores principales, ventas pasadas/futuras, tendencias. Se obtiene de Internet, revistas, gobierno.</li>
+                                <li><strong>b) El análisis del mercado objetivo:</strong> Es la parte más importante. Describe gustos, preferencias, hábitos, dónde/cuándo compran, cuánto gastan. Usualmente se usa encuestas: - ¿Utiliza este producto? - ¿Modelos favoritos? - ¿Qué cambiaría? Otra forma es observar a los consumidores en los lugares de compra.</li>
+                                <li><strong>c) El análisis de la competencia:</strong> Describe competidores directos (productos similares) e indirectos (sustitutos). Quiénes son, ubicación, experiencia, capacidad, precios, fortalezas y debilidades. Se obtiene observando o visitando a la competencia.</li>
+                                <li><strong>d) El pronóstico de la demanda:</strong> Estimación de las ventas del futuro negocio para el periodo proyectado. Se obtiene analizando la industria, mercado y competencia (ej. cuánto están dispuestos a pagar, frecuencia de compra). Servirá para elaborar el presupuesto de ventas.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(20, 184, 166, 0.1); color: #14b8a6;"><i class="fa-solid fa-bullhorn"></i></div>2. Plan de marketing</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Señala las principales estrategias comerciales para atender el mercado objetivo. Suelen dividirse en la mezcla de marketing:</p>
+                            <ul>
+                                <li><strong>Producto:</strong> características innovadoras, servicios incluidos.</li>
+                                <li><strong>Precio:</strong> precio de introducción, precios de demanda aumentada, descuentos.</li>
+                                <li><strong>Plaza:</strong> intermediarios, puntos de venta.</li>
+                                <li><strong>Promoción:</strong> medios publicitarios, promociones de ventas.</li>
+                            </ul>
+                            <p>Para formularlas se debe tomar en cuenta el análisis de industria, mercado y competencia.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-screwdriver-wrench"></i></div>3. Estudio técnico (Operativo)</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Describe los requerimientos físicos del negocio y su funcionamiento. El objetivo es mostrar cómo serán las operaciones diarias sin ser demasiado técnico para no hacer perder el interés al lector.</p>
+                            <ul>
+                                <li><strong>a) Requerimientos físicos:</strong> Lista con edificios, terrenos, maquinaria, equipos, vehículos, mobiliario, insumos con sus costos.</li>
+                                <li><strong>b) El proceso del negocio:</strong> Descripción de etapas (compras, transformación, almacenaje, distribución). Recomendable incluir política de compras, inventario, control de calidad y flujograma.</li>
+                                <li><strong>c) El local del negocio:</strong> Infraestructura, tamaño, ubicación y razones. Recomendable incluir capacidad de producción, disposición de planta (planos).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fa-solid fa-chart-line"></i></div>4. Estudio económico</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Señala los futuros ingresos y egresos del negocio para el periodo proyectado (usualmente 3 a 5 años). Muestra al lector las proyecciones y su relación.</p>
+                            <ul>
+                                <li><strong>a) Presupuestos de ingresos:</strong> Presupuesto de ventas y cobros.</li>
+                                <li><strong>b) Presupuestos de egresos:</strong> Proyección de gastos.</li>
+                                <li><strong>c) Punto de equilibrio:</strong> Volumen de ventas en donde ingresos son iguales a egresos.</li>
+                                <li><strong>d) Flujo de caja proyectado:</strong> Presupuesto de efectivo.</li>
+                                <li><strong>e) Estado de ganancias y pérdidas:</strong> Presupuesto operativo.</li>
+                                <li><strong>f) Balance general proyectado.</strong></li>
+                                <li><strong>g) Análisis financiero:</strong> Evaluación del proyecto para demostrar rentabilidad y retorno de inversión.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <h3 style="margin-top: 3rem;">Pasos para Apertura en Costa Rica 🇨🇷</h3>
+                <div class="app-grid">
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">1</div>
+                        <h4 style="margin-top: 0;">CCSS</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Verificar estar al día o que no presente deudas con la Caja Costarricense del Seguro Social.</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">2</div>
+                        <h4 style="margin-top: 0;">Uso de Suelo</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Solicitar en la Municipalidad donde operará la empresa completando formulario.</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">3</div>
+                        <h4 style="margin-top: 0;">Permiso Sanitario</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Tramitar PSF en Ministerio de Salud (formulario, clasificación, declaración, comprobante de pago, cédula/personería). Si manipula productos animales requiere CVO de SENASA.</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">4</div>
+                        <h4 style="margin-top: 0;">Póliza INS</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Tramitar Póliza de Riesgos del Trabajo o solicitar exoneración (aplica a personas físicas/independientes).</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">5</div>
+                        <h4 style="margin-top: 0;">Ministerio Hacienda</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Inscribir actividad. a) Régimen Tradicional (factura electrónica, ATV). b) Régimen Simplificado (pequeñas empresas, ATV).</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">6</div>
+                        <h4 style="margin-top: 0;">Inscripción CCSS</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Registrarse como a) Trabajador Independiente (aporta a salud/pensión) o b) Patrono (si contrata personal).</p>
+                    </div>
+                    <div class="grid-item">
+                        <div class="grid-icon" style="background: rgba(99,102,241,0.1); color: var(--primary);">7</div>
+                        <h4 style="margin-top: 0;">Patente Municipal</h4>
+                        <p style="font-size: 0.9rem; margin-bottom: 0;">Solicitar licencia aportando todos los documentos y permisos anteriores al día.</p>
+                    </div>
+                </div>
+
+                <h3>Organización y Departamentos</h3>
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title">Ver áreas funcionales y conceptos</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;"><strong>Estructura organizativa orientada al cliente:</strong> Distribución de jerarquías para que funciones, equipos y niveles puedan desarrollar un enfoque centrado en las personas.</p>
+                            <p><strong>Unidades y departamentos:</strong></p>
+                            <ol>
+                                <li><strong>Comercial/Ventas:</strong> consigue vender los objetivos planteados.</li>
+                                <li><strong>Producción:</strong> fabrica la producción cumpliendo gastos.</li>
+                                <li><strong>Compras:</strong> adquiere materias primas a buen precio.</li>
+                                <li><strong>Administración:</strong> contabiliza facturas, cobra, paga, liquida impuestos.</li>
+                                <li><strong>Financiero:</strong> consigue financiación, planifica pagos y controla rentabilidad.</li>
+                                <li><strong>Control de Gestión:</strong> supervisa objetivos reportando a dirección.</li>
+                                <li><strong>Marketing:</strong> colabora con Comercial.</li>
+                                <li><strong>Recursos Humanos:</strong> gestiona personal, contrata, remunera y motiva.</li>
+                                <li><strong>Dirección/Gerencia:</strong> marca objetivos estratégicos y supervisa.</li>
+                            </ol>
+                            <p><strong>Procesos y procedimientos:</strong> Un proceso es una secuencia de tareas. Un procedimiento es una descripción detallada de cómo llevar a cabo un proceso.</p>
+                            <p><strong>Asociatividad:</strong> Organización voluntaria para un objetivo común. En empresas, es cooperación manteniendo independencia jurídica (excelente para PYMES).</p>
+                            <p><strong>Cluster:</strong> Grupo de compañías interconectadas geográficamente en un sector similar formando círculos virtuosos para maximizar competitividad.</p>
+                            <p><strong>Encadenamiento productivo:</strong> Rango de actividades en diseño, producción y marketing de un producto (Hacia atrás, hacia los lados, hacia delante).</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= RA 3 ================= -->
+            <section id="ra3" class="ra-view">
+                <div class="header-section">
+                    <span class="tag">Unidad 3 • RA 3</span>
+                    <h2>Operación del Negocio</h2>
+                    <p>Realizar labores en las áreas funcionales de la empresa.</p>
+                </div>
+
+                <div style="background-color: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 3rem 2rem; text-align: center; box-shadow: var(--shadow); margin-top: 2rem;">
+                    <i class="fa-solid fa-rocket" style="font-size: 5rem; color: var(--primary); margin-bottom: 1.5rem; display: block;"></i>
+                    <h3 style="margin-top: 0;">Puesta en Marcha</h3>
+                    <p style="max-width: 600px; margin: 0 auto; text-align: center;">Realizar labores en las áreas funcionales que conforman la empresa de práctica propuesta aplicando los principios de la administración y lo establecido en el plan de negocios.</p>
+                    
+                    <div style="background: rgba(236, 72, 153, 0.1); color: var(--secondary); padding: 15px; border-radius: 12px; margin-top: 2rem; display: inline-block;">
+                        <strong>Nota importante:</strong> Este apartado en la Unidad se desarrolla a través de la implementación práctica de lo estructurado en las unidades anteriores.
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= RA 4 ================= -->
+            <section id="ra4" class="ra-view">
+                <div class="header-section">
+                    <span class="tag">Unidad 3 • RA 4</span>
+                    <h2>Enfoque al Cliente</h2>
+                    <p>Aplicar principios de servicio orientado al cliente.</p>
+                </div>
+
+                <p><strong>La orientación al cliente</strong> es una visión de negocio que pone la satisfacción de las necesidades del cliente como la prioridad en sus operaciones. Precisa de una estrategia que ponga al cliente como su centro.</p>
+                <p><strong>El cliente</strong> es quien adquiere los productos/servicios. En la actualidad, los clientes son tales desde el momento en que se interesan en la oferta de un negocio, por lo que las empresas se esfuerzan por deleitarlos desde su primera interacción.</p>
+
+                <img src="https://images.pexels.com/photos/8867431/pexels-photo-8867431.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Servicio al Cliente" class="app-img" onerror="this.src='https://placehold.co/800x400/6366f1/ffffff?text=Servicio+al+Cliente'">
+
+                <h3>Servicio vs Atención</h3>
+                <div class="app-table-wrapper">
+                    <table class="app-table">
+                        <thead>
+                            <tr>
+                                <th>Atención al Cliente (Reactiva)</th>
+                                <th>Servicio al Cliente (Proactiva)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Busca resolver los problemas que el cliente manifestó.</td>
+                                <td>Busca una experiencia integral en todo momento.</td>
+                            </tr>
+                            <tr>
+                                <td>Responde a una petición específica.</td>
+                                <td>Prevé y genera acciones, anticipándose a necesidades.</td>
+                            </tr>
+                            <tr>
+                                <td>Asistencia frente a un problema (el cliente lo espera).</td>
+                                <td>Beneficio extra o asesoría (el cliente no lo espera).</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h3>El Triángulo del Servicio</h3>
+                <p>Proceso fundado por Karl Albretch sobre la importancia de la atención al cliente dentro de la empresa. Consta de cuatro elementos dinámicos:</p>
+                
+                <!-- DIAGRAMA VISUAL -->
+                <div class="service-triangle-wrapper">
+                    <div class="triangle-diagram">
+                        <!-- Conexiones -->
+                        <div class="triangle-line line-1"></div>
+                        <div class="triangle-line line-2"></div>
+                        <div class="triangle-line line-3"></div>
+                        
+                        <!-- Nodos -->
+                        <div class="triangle-node node-center">
+                            <i class="fa-solid fa-user-tie"></i>
+                            El Cliente
+                        </div>
+                        <div class="triangle-node node-top">
+                            <i class="fa-solid fa-bullseye" style="color:#3b82f6;"></i>
+                            La Estrategia
+                        </div>
+                        <div class="triangle-node node-left">
+                            <i class="fa-solid fa-users" style="color:#14b8a6;"></i>
+                            Colaboradores
+                        </div>
+                        <div class="triangle-node node-right">
+                            <i class="fa-solid fa-computer" style="color:#f59e0b;"></i>
+                            Sistemas
+                        </div>
+                    </div>
+                </div>
+
+                <div class="app-grid" style="margin-top: 0;">
+                    <div class="grid-item" style="border-top: 4px solid var(--secondary);">
+                        <h4 style="margin-top:0; color: var(--secondary);">🎯 a) El cliente</h4>
+                        <p style="font-size: 0.9rem; margin-bottom:0;">Centro y motor del triángulo. En ella debemos enfocar atención y recursos para conocer sus necesidades, problemas, intereses y características. Sólo así podremos brindarle atención de calidad.</p>
+                    </div>
+                    <div class="grid-item" style="border-top: 4px solid #14b8a6;">
+                        <h4 style="margin-top:0; color: #14b8a6;">👥 b) Los colaboradores</h4>
+                        <p style="font-size: 0.9rem; margin-bottom:0;">Deben estar correctamente capacitados y actualizados sobre estrategias, productos y características de consumidores. Su bienestar es importante pues sus experiencias se transmiten al cliente.</p>
+                    </div>
+                    <div class="grid-item" style="border-top: 4px solid #f59e0b;">
+                        <h4 style="margin-top:0; color: #f59e0b;">💻 c) Los sistemas</h4>
+                        <p style="font-size: 0.9rem; margin-bottom:0;">Recursos materiales y herramientas (físicas y tecnológicas) que facilitan y garantizan la atención sin importar horario, fecha ni ubicación.</p>
+                    </div>
+                    <div class="grid-item" style="border-top: 4px solid #3b82f6;">
+                        <h4 style="margin-top:0; color: #3b82f6;">🗺️ d) La estrategia</h4>
+                        <p style="font-size: 0.9rem; margin-bottom:0;">Abarca múltiples aristas que deben tenerse en cuenta para ofrecer atención integral. Define la propuesta de valor y los canales.</p>
+                    </div>
+                </div>
+
+                <h3>Acuerdos de Niveles de Servicio (SLA)</h3>
+                <p>Un SLA (service level agreement) es un contrato que establece las responsabilidades y obligaciones entre una empresa y su cliente, incluyendo expectativas de calidad de servicio (métricas como tiempo de actividad, entrega, respuesta y resolución).</p>
+                
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(236,72,153,0.1); color: var(--secondary);"><i class="fa-solid fa-file-contract"></i></div>Tipos de SLA y Redacción</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;"><strong>Tipos:</strong></p>
+                            <ul>
+                                <li><strong>a) Basado en el cliente:</strong> Recoge necesidades particulares. Probablemente no aplicable a otro cliente por su alto nivel de detalle.</li>
+                                <li><strong>b) Basado en el servicio:</strong> Estándar y compartido con todos los clientes con un servicio equivalente (ej. telefonía).</li>
+                                <li><strong>c) Multinivel:</strong> Combinación de los dos. Ideal para uso corporativo describiendo lo que se espera de cada departamento.</li>
+                            </ul>
+                            <p><strong>Cómo redactar un SLA:</strong></p>
+                            <ol>
+                                <li>Determinar necesidades del cliente.</li>
+                                <li>Definir objetivos del servicio.</li>
+                                <li>Establecer conceptos clave (para evitar dudas).</li>
+                                <li>Concretar métricas SMART y sistema de valoración.</li>
+                                <li>Establecer coordinaciones y revisiones periódicas.</li>
+                                <li>Atender seguridad jurídica (protección de datos, accesos).</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+
+                <h3>Evaluación y CRM</h3>
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(20,184,166,0.1); color: #14b8a6;"><i class="fa-solid fa-users-gear"></i></div>Quejas, Fidelización y CRM</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;"><strong>Evaluación:</strong> Permite obtener feedback directo y métricas objetivas para mejorar y fidelizar.</p>
+                            <p><strong>Reclamo:</strong> descontento vinculado a productos/servicios con derecho a exigir algo.<br><strong>Queja:</strong> disconformidad respecto a la atención o servicio.</p>
+                            <p><strong>Manejo de quejas:</strong> 1) Tratar confidencialmente si es grave. 2) Ser empáticos. 3) No prometer imposibles ni culpar empleados frente al cliente. 4) Prestar atención y solucionar en el momento. 5) Dar seguimiento. 6) Verificar satisfacción.</p>
+                            <p><strong>Retención vs Fidelización:</strong> Retener es mantener al comprador a plazo (se queda porque no conoce otra opción). Fidelizar es desarrollar relación positiva; el cliente vuelve a comprar, es leal y te recomienda (embajadores de marca).</p>
+                            <p><strong>CRM (Customer Relationship Management):</strong> Estrategia concentrada en el cliente. Fases:
+                                <br>1. <em>Identificar</em> a los clientes (recolectar datos).
+                                <br>2. <em>Diferenciarlos</em> (agruparlos por patrones/valor).
+                                <br>3. <em>Interactuar</em> (contacto que proporcione valor).
+                                <br>4. <em>Adaptar</em> producto/servicio al cliente (el paso más difícil).
+                            </p>
+                            <p><strong>Valores:</strong> Conjunto de principios (filosofía institucional). Ej: orientación al cliente, interés por las personas, integridad, trabajo en equipo, respeto.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- ================= RA 5 ================= -->
+            <section id="ra5" class="ra-view">
+                <div class="header-section">
+                    <span class="tag">Unidad 3 • RA 5</span>
+                    <h2>Herramientas TIC</h2>
+                    <p>Estrategias de búsqueda de información mediante tecnologías.</p>
+                </div>
+
+                <img src="https://images.unsplash.com/photo-1519389950473-47ba0277781c?q=80&w=800&auto=format&fit=crop" alt="Herramientas Tecnológicas" class="app-img">
+
+                <h3>Herramientas para la Productividad</h3>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fa-solid fa-hashtag"></i></div>Redes sociales</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Plataformas digitales que permiten conectarse con otras personas y compartir todo tipo de contenido mediante perfiles. Las marcas las usan para:</p>
+                            <ul>
+                                <li>Aumentar notoriedad de marca</li>
+                                <li>Crear relación cercana con consumidores</li>
+                                <li>Ofrecer atención al cliente</li>
+                                <li>Captar nuevos clientes</li>
+                                <li>Diseñar embudos de venta</li>
+                                <li>Educar a la audiencia</li>
+                                <li>Promocionar productos y redireccionar tráfico</li>
+                                <li>Crear campañas publicitarias</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(245, 158, 11, 0.1); color: #f59e0b;"><i class="fa-solid fa-blog"></i></div>Blog</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Página web en la que se publican regularmente artículos cortos ("posts") con contenido actualizado y novedoso. Suelen estar acompañados de fotografías, videos y gráficos. Es un espacio en internet para expresar ideas, intereses, experiencias y opiniones.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(20, 184, 166, 0.1); color: #14b8a6;"><i class="fa-brands fa-wikipedia-w"></i></div>Wikis</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <p style="margin-top: 15px;">Página web que cualquiera puede crear o editar directamente desde el navegador, sin necesidad de saber programación. Empieza con una portada y cada autor añade páginas. Es un método rápido para crear contenido como grupo (Ej. Wikipedia, escrita por voluntarios).</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="expand-card">
+                    <div class="expand-header" onclick="toggleCard(this)">
+                        <div class="expand-title"><div class="icon-box" style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6;"><i class="fa-solid fa-briefcase"></i></div>Herramientas Ofimáticas</div>
+                        <i class="fa-solid fa-chevron-down chevron"></i>
+                    </div>
+                    <div class="expand-body">
+                        <div class="expand-content">
+                            <ul style="margin-top: 15px; list-style: none; padding-left: 0;">
+                                <li><i class="fa-solid fa-file-word" style="color: #3b82f6; width: 25px;"></i> <strong>Procesador de texto:</strong> Permiten redactar documentos, modificar tipografía, aplicar corrector, etc.</li>
+                                <li><i class="fa-solid fa-file-excel" style="color: #10b981; width: 25px;"></i> <strong>Hojas de cálculo:</strong> Organizan gran volumen de datos en tablas. Permiten cálculos, gráficos y facturas.</li>
+                                <li><i class="fa-solid fa-file-powerpoint" style="color: #f97316; width: 25px;"></i> <strong>Presentaciones:</strong> Realizan presentaciones de diapositivas con recursos gráficos.</li>
+                                <li><i class="fa-solid fa-database" style="color: #64748b; width: 25px;"></i> <strong>Bases de datos:</strong> Agrupan datos de forma lógica, facilitando su actualización y gestión en oficinas.</li>
+                                <li><i class="fa-solid fa-envelope" style="color: #0ea5e9; width: 25px;"></i> <strong>Correo electrónico:</strong> Vital para empresas. Comunicación casi instantánea.</li>
+                                <li><i class="fa-solid fa-calculator" style="color: #475569; width: 25px;"></i> <strong>Calculadora:</strong> De gran utilidad para ahorrar tiempo y evitar fallos humanos en cálculos.</li>
+                                <li><i class="fa-solid fa-calendar-days" style="color: #e11d48; width: 25px;"></i> <strong>Agenda o calendario:</strong> Organiza tiempo, incluye alertas, programa reuniones y se sincroniza entre dispositivos.</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- BOTTOM NAV (Mobile Only) -->
+        <nav class="bottom-nav">
+            <button class="bottom-nav-item active" onclick="switchTab(event, 'ra1')">
+                <i class="fa-solid fa-building"></i>
+                <span>RA 1</span>
+            </button>
+            <button class="bottom-nav-item" onclick="switchTab(event, 'ra2')">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>RA 2</span>
+            </button>
+            <button class="bottom-nav-item" onclick="switchTab(event, 'ra3')">
+                <i class="fa-solid fa-gears"></i>
+                <span>RA 3</span>
+            </button>
+            <button class="bottom-nav-item" onclick="switchTab(event, 'ra4')">
+                <i class="fa-solid fa-heart"></i>
+                <span>RA 4</span>
+            </button>
+            <button class="bottom-nav-item" onclick="switchTab(event, 'ra5')">
+                <i class="fa-solid fa-laptop-code"></i>
+                <span>RA 5</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- SCRIPTS -->
+    <script>
+        // Pantalla de Bienvenida
+        function iniciarApp() {
+            const welcomeScreen = document.getElementById('welcome-screen');
+            welcomeScreen.classList.add('hidden');
+            setTimeout(() => {
+                welcomeScreen.style.display = 'none';
+            }, 500); // Espera a que termine la transición de opacidad
+        }
+
+        // Lógica de Tarjetas Expandibles
+        function toggleCard(headerElement) {
+            const card = headerElement.parentElement;
+            
+            // Si quieres que solo una tarjeta esté abierta a la vez, descomenta esto:
+            // const allCards = document.querySelectorAll('.expand-card');
+            // allCards.forEach(c => { if(c !== card) c.classList.remove('open'); });
+            
+            card.classList.toggle('open');
+        }
+
+        // Navegación por Pestañas
+        function switchTab(event, tabId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.ra-view').forEach(view => {
+                view.classList.remove('active');
+            });
+            // Quitar 'active' de todos los botones en desktop y mobile
+            document.querySelectorAll('.nav-item, .bottom-nav-item').forEach(btn => {
+                btn.classList.remove('active');
+            });
+
+            // Mostrar el seleccionado
+            document.getElementById(tabId).classList.add('active');
+            
+            // Activar botón en el menú (marcar en ambos menús si es necesario)
+            const targetClass = event.currentTarget.classList.contains('nav-item') ? '.nav-item' : '.bottom-nav-item';
+            
+            // Buscar el índice del botón clickeado para activar su homólogo en el otro menú
+            let index = Array.from(document.querySelectorAll(targetClass)).indexOf(event.currentTarget);
+            
+            if(document.querySelectorAll('.nav-item')[index]) {
+                document.querySelectorAll('.nav-item')[index].classList.add('active');
+            }
+            if(document.querySelectorAll('.bottom-nav-item')[index]) {
+                document.querySelectorAll('.bottom-nav-item')[index].classList.add('active');
+            }
+
+            // Scroll al inicio del main content
+            document.getElementById('main-scroll').scrollTop = 0;
+        }
+
+        // Modo Oscuro / Claro
+        function toggleTheme() {
+            const htmlElement = document.documentElement;
+            const currentTheme = htmlElement.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            htmlElement.setAttribute('data-theme', newTheme);
+            
+            // Cambiar ícono
+            const icons = document.querySelectorAll('#desktop-theme-icon, #mobile-theme-icon');
+            icons.forEach(icon => {
+                if(newTheme === 'dark') {
+                    icon.classList.replace('fa-moon', 'fa-sun');
+                } else {
+                    icon.classList.replace('fa-sun', 'fa-moon');
+                }
+            });
+        }
+    </script>
+</body>
+</html>
