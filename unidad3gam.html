@@ -1,0 +1,1514 @@
+<!DOCTYPE html>
+<html lang="es" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COTE-EMPRENDE </title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2563eb', // blue-600
+                        secondary: '#1e293b', // slate-800
+                        accent: '#059669', // emerald-600
+                        gameBg: '#0f172a' // slate-900
+                    },
+                    animation: {
+                        'fade-in': 'fadeIn 0.5s ease-out',
+                        'bounce-slight': 'bounceSlight 2s infinite ease-in-out',
+                        'pulse-fast': 'pulse 1s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    },
+                    keyframes: {
+                        fadeIn: {
+                            '0%': { opacity: '0', transform: 'translateY(10px)' },
+                            '100%': { opacity: '1', transform: 'translateY(0)' },
+                        },
+                        bounceSlight: {
+                            '0%, 100%': { transform: 'translateY(-5%)' },
+                            '50%': { transform: 'translateY(0)' },
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        /* SPA View Management */
+        .view-section { display: none; }
+        .view-section.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+        /* Estructura profesional del Lienzo Canvas */
+        .canvas-container { display: grid; gap: 0.5rem; grid-template-columns: repeat(1, 1fr); }
+        @media (min-width: 1024px) {
+            .canvas-container {
+                grid-template-columns: repeat(10, 1fr);
+                grid-template-rows: minmax(120px, 1fr) minmax(120px, 1fr) minmax(100px, auto);
+            }
+            .c-partners { grid-column: 1 / 3; grid-row: 1 / 3; }
+            .c-activities { grid-column: 3 / 5; grid-row: 1 / 2; }
+            .c-resources { grid-column: 3 / 5; grid-row: 2 / 3; }
+            .c-value { grid-column: 5 / 7; grid-row: 1 / 3; }
+            .c-relationships { grid-column: 7 / 9; grid-row: 1 / 2; }
+            .c-channels { grid-column: 7 / 9; grid-row: 2 / 3; }
+            .c-segments { grid-column: 9 / 11; grid-row: 1 / 3; }
+            .c-costs { grid-column: 1 / 6; grid-row: 3 / 4; }
+            .c-revenues { grid-column: 6 / 11; grid-row: 3 / 4; }
+        }
+        .canvas-block { @apply p-4 border border-slate-300 rounded-lg flex flex-col bg-white transition-all duration-300 shadow-sm; }
+        .canvas-block:hover { @apply shadow-md border-primary/50 ring-1 ring-primary/20; }
+        .canvas-title { @apply text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2 flex items-center gap-1.5 border-b border-slate-100 pb-1; }
+        .canvas-text { @apply text-xs text-slate-600 font-medium; }
+
+        /* Memory Game Cards 3D Effect */
+        .memory-card { perspective: 1000px; cursor: pointer; height: 120px; }
+        @media (min-width: 768px) { .memory-card { height: 140px; } }
+        .memory-card-inner {
+            position: relative; width: 100%; height: 100%; text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1); transform-style: preserve-3d;
+        }
+        .memory-card.flipped .memory-card-inner, .memory-card.matched .memory-card-inner { transform: rotateY(180deg); }
+        .memory-card-cover, .memory-card-content {
+            position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: 0.75rem; padding: 1rem; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        .memory-card-cover { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 2px solid #334155; color: #64748b; }
+        .memory-card-cover:hover { border-color: #2563eb; color: #3b82f6; }
+        .memory-card-content { background-color: #fff; color: #1e293b; transform: rotateY(180deg); border: 2px solid #2563eb; }
+        .memory-card.matched .memory-card-content { background-color: #d1fae5; border-color: #10b981; color: #064e3b; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased selection:bg-accent selection:text-white flex flex-col min-h-screen">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex-shrink-0 flex items-center gap-2 cursor-pointer nav-btn" data-view="home">
+                    <i class="fa-solid fa-rocket text-primary text-2xl"></i>
+                    <span class="font-bold text-xl text-secondary">COTE-EMPRENDE</span>
+                </div>
+                
+                <div class="hidden lg:flex space-x-1 text-sm font-semibold text-slate-600">
+                    <button class="nav-btn px-4 py-2 rounded-lg hover:bg-slate-100 hover:text-primary transition-colors" data-view="home">Inicio</button>
+                    <button class="nav-btn px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors" data-view="map"><i class="fa-solid fa-map mr-1"></i> Mapa de contenidos</button>
+                </div>
+
+                <div class="lg:hidden flex items-center">
+                    <button id="mobile-menu-btn" class="text-slate-600 hover:text-primary focus:outline-none">
+                        <i class="fa-solid fa-bars text-2xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-slate-200">
+            <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-sm font-medium">
+                <button class="nav-btn w-full text-left px-3 py-2 rounded-md hover:bg-slate-100" data-view="home">Inicio</button>
+                <button class="nav-btn w-full text-left px-3 py-2 rounded-md bg-primary/10 text-primary font-bold" data-view="map">Mapa de los contenidos</button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="flex-grow pt-16">
+
+        <!-- ==========================================
+             VISTA 1: INICIO (HOME)
+        =========================================== -->
+        <section id="view-home" class="view-section active h-[calc(100vh-4rem)] flex items-center bg-slate-900 text-white relative overflow-hidden">
+            <div class="absolute inset-0 z-0 opacity-20">
+                <div class="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob"></div>
+                <div class="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-2000"></div>
+                <div class="absolute -bottom-8 left-20 w-72 h-72 bg-emerald-500 rounded-full mix-blend-multiply filter blur-2xl opacity-70 animate-blob animation-delay-4000"></div>
+            </div>
+
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                <div>
+                    <span class="inline-block py-1 px-3 rounded-full bg-primary/30 text-primary-200 text-sm font-bold tracking-wider mb-6 border border-primary/50 text-blue-300">PEI. Roberto Mora C.</span>
+                    <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
+                        De la idea a la <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Acción Empresarial</span>
+                    </h1>
+                    <p class="text-lg text-slate-300 mb-8 max-w-lg leading-relaxed">
+                        Bienvenido a esta herramienta interactiva. Deberás leer con tu grupo la teoría de cada módulo y <strong>superar el desafío a ciegas para desbloquear el siguiente nivel</strong>. ¡Si no lo recuerdas, tendrás que volver a la teoría!
+                    </p>
+                    <button class="nav-btn px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-2 ring-2 ring-primary ring-offset-2 ring-offset-slate-900 animate-bounce" data-view="map">
+                        <i class="fa-solid fa-play"></i> Iniciar
+                    </button>
+                </div>
+                <div class="hidden md:flex justify-center animate-bounce-slight mt-24">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3135/3135679.png" alt="Emprendimiento" class="w-full max-w-md drop-shadow-2xl opacity-90">
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VISTA MAPA DEL CURSO (BLOQUEOS Y PROGRESO)
+        =========================================== -->
+        <section id="view-map" class="view-section bg-slate-50 min-h-[calc(100vh-4rem)] py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="text-center mb-12">
+                    <h2 class="text-4xl font-extrabold text-secondary mb-4">Tu Progreso</h2>
+                    <p class="text-slate-600 text-lg">Completa la teoría y aprueba el juego de cada módulo para abrir el candado del siguiente.</p>
+                </div>
+
+                <div class="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-1 before:bg-gradient-to-b before:from-slate-200 before:via-slate-300 before:to-slate-200">
+                    
+                    <!-- Tarjeta Módulo 1 -->
+                    <div id="map-card-1" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-purple-500 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            <i class="fa-solid fa-1 text-sm font-bold"></i>
+                        </div>
+                        <div id="map-inner-card-1" class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl shadow-md border border-purple-200 bg-white transition-all transform hover:-translate-y-1">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-purple-600 font-bold tracking-widest text-xs uppercase"><i class="fa-solid fa-map-location-dot mr-1"></i> Módulo 1</span>
+                                <i id="map-check-1" class="fa-solid fa-circle-check text-emerald-500 text-xl hidden"></i>
+                            </div>
+                            <h3 class="font-bold text-xl text-slate-800 mb-2">Tipos de Empresas</h3>
+                            <p class="text-sm text-slate-500 mb-4">Clasificación, tamaño (PYME), sectores y figura jurídica.</p>
+                            <button id="map-btn-1" class="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-bold transition-colors">Estudiar Módulo</button>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Módulo 2 -->
+                    <div id="map-card-2" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group opacity-50 grayscale transition-all duration-500">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            <i id="map-icon-2" class="fa-solid fa-lock text-sm font-bold"></i>
+                        </div>
+                        <div id="map-inner-card-2" class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl shadow-md border border-slate-200 bg-white transition-all">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-emerald-600 font-bold tracking-widest text-xs uppercase"><i class="fa-solid fa-table-cells-large mr-1"></i> Módulo 2</span>
+                                <i id="map-check-2" class="fa-solid fa-circle-check text-emerald-500 text-xl hidden"></i>
+                            </div>
+                            <h3 class="font-bold text-xl text-slate-800 mb-2">Plan y CANVAS</h3>
+                            <p class="text-sm text-slate-500 mb-4">Estudios de viabilidad y los 9 bloques del modelo de negocio.</p>
+                            <button id="map-btn-2" class="w-full py-2 bg-slate-300 text-slate-600 rounded-lg font-bold cursor-not-allowed" disabled>Bloqueado</button>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Módulo 3 -->
+                    <div id="map-card-3" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group opacity-50 grayscale transition-all duration-500">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            <i id="map-icon-3" class="fa-solid fa-lock text-sm font-bold"></i>
+                        </div>
+                        <div id="map-inner-card-3" class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl shadow-md border border-slate-200 bg-white transition-all">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-cyan-600 font-bold tracking-widest text-xs uppercase"><i class="fa-solid fa-file-signature mr-1"></i> Módulo 3</span>
+                                <i id="map-check-3" class="fa-solid fa-circle-check text-emerald-500 text-xl hidden"></i>
+                            </div>
+                            <h3 class="font-bold text-xl text-slate-800 mb-2">Estructura Legal</h3>
+                            <p class="text-sm text-slate-500 mb-4">Formalización y los 6 trámites obligatorios en Costa Rica.</p>
+                            <button id="map-btn-3" class="w-full py-2 bg-slate-300 text-slate-600 rounded-lg font-bold cursor-not-allowed" disabled>Bloqueado</button>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Módulo 4 -->
+                    <div id="map-card-4" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group opacity-50 grayscale transition-all duration-500">
+                        <div class="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            <i id="map-icon-4" class="fa-solid fa-lock text-sm font-bold"></i>
+                        </div>
+                        <div id="map-inner-card-4" class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl shadow-md border border-slate-200 bg-white transition-all">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-blue-600 font-bold tracking-widest text-xs uppercase"><i class="fa-solid fa-sitemap mr-1"></i> Módulo 4</span>
+                                <i id="map-check-4" class="fa-solid fa-circle-check text-emerald-500 text-xl hidden"></i>
+                            </div>
+                            <h3 class="font-bold text-xl text-slate-800 mb-2">Organización Interna</h3>
+                            <p class="text-sm text-slate-500 mb-4">Procesos, departamentos, asociatividad y operaciones diarias.</p>
+                            <button id="map-btn-4" class="w-full py-2 bg-slate-300 text-slate-600 rounded-lg font-bold cursor-not-allowed" disabled>Bloqueado</button>
+                        </div>
+                    </div>
+
+                    <!-- Tarjeta Módulo Final -->
+                    <div id="map-card-5" class="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group opacity-50 grayscale transition-all duration-500">
+                        <div class="flex items-center justify-center w-12 h-12 rounded-full border-4 border-white bg-slate-400 text-white shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10">
+                            <i id="map-icon-5" class="fa-solid fa-lock text-lg font-bold"></i>
+                        </div>
+                        <div id="map-inner-card-5" class="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-6 rounded-2xl shadow-md border-2 border-slate-300 bg-slate-100 transition-all">
+                            <div class="flex justify-between items-start mb-2">
+                                <span class="text-orange-600 font-bold tracking-widest text-xs uppercase"><i class="fa-solid fa-graduation-cap mr-1"></i> Examen Final</span>
+                                <i id="map-check-5" class="fa-solid fa-trophy text-yellow-500 text-xl hidden"></i>
+                            </div>
+                            <h3 class="font-bold text-2xl text-slate-800 mb-2">Auditoría Express</h3>
+                            <p class="text-sm text-slate-500 mb-4">Demuestra todo lo aprendido .</p>
+                            <button id="map-btn-5" class="w-full py-3 bg-slate-400 text-white rounded-xl font-black text-lg cursor-not-allowed" disabled>Bloqueado</button>
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- SECCIÓN BONUS (Totalmente aparte - SIEMPRE DESBLOQUEADA) -->
+                <div class="mt-24 pt-12 border-t-4 border-dashed border-pink-300 relative">
+                    <div class="absolute -top-6 left-1/2 transform -translate-x-1/2 bg-slate-50 px-4">
+                        <i class="fa-solid fa-star text-4xl text-yellow-400"></i>
+                    </div>
+                    
+                    <div class="text-center mb-10">
+                        <span class="inline-block py-1 px-4 rounded-full bg-pink-100 text-pink-700 font-bold tracking-widest text-xs uppercase mb-3 border border-pink-300">Contenido Independiente</span>
+                        <h2 class="text-4xl font-extrabold text-secondary">Módulo Extra 🚀</h2>
+                        <p class="text-slate-600 mt-2 max-w-xl mx-auto">Este módulo siempre está abierto. Puedes explorarlo si tu grupo termina antes o si necesitan repasar investigación y herramientas tecnológicas para otros proyectos.</p>
+                    </div>
+
+                    <div id="map-card-bonus" class="max-w-2xl mx-auto relative group transition-all duration-500">
+                        <div id="map-inner-card-bonus" class="p-8 rounded-3xl shadow-xl border-2 border-pink-300 bg-gradient-to-br from-white to-pink-50 hover:ring-4 ring-pink-400 ring-offset-2 transition-all">
+                            <div class="flex items-center gap-4 mb-4">
+                                <div class="w-14 h-14 bg-pink-600 text-white rounded-full flex items-center justify-center text-2xl shadow-inner shrink-0 animate-pulse">
+                                    <i id="map-icon-bonus" class="fa-solid fa-rocket"></i>
+                                </div>
+                                <div>
+                                    <h3 class="font-black text-2xl text-slate-800">Investigación, APA y Herramientas</h3>
+                                    <p class="text-sm font-bold text-pink-600 uppercase tracking-widest">Bonus Track Avanzado</p>
+                                </div>
+                            </div>
+                            <p class="text-slate-600 mb-6">Profundiza en la validación de fuentes, operadores booleanos, normativas de citación APA 7 y domina el software clave (Ofimática y Redes) para potenciar tu carrera.</p>
+                            <button onclick="navigateTo('bonus-theory')" class="w-full py-4 bg-pink-600 hover:bg-pink-700 text-white rounded-xl font-black text-lg transition-colors shadow-lg shadow-pink-600/30">¡Entrar al Módulo Extra!</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TEORÍA MÓDULO 1: TIPOS DE EMPRESAS
+        =========================================== -->
+        <section id="view-m1-theory" class="view-section bg-slate-50 py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-primary font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+
+                <div class="mb-8 border-l-4 border-purple-500 pl-5">
+                    <span class="text-purple-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 1</span>
+                    <h2 class="text-4xl font-bold text-secondary mb-2">Tipos de Empresas</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        La empresa es la unidad económica básica encargada de satisfacer las necesidades del mercado mediante la utilización de recursos materiales y humanos. Existen múltiples criterios para clasificar su naturaleza:
+                    </p>
+                </div>
+
+                <div class="space-y-8 mb-12">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-2xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-map-location-dot mr-2"></i>1. Según el ámbito de actividad</h3>
+                        <p class="text-slate-600 mb-4">Esta clasificación resulta importante cuando se quiere analizar las posibles relaciones e interacciones entre la empresa y su entorno geográfico, político y social. Se clasifican en:</p>
+                        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-slate-700">
+                            <li class="bg-slate-50 p-4 rounded-lg border border-slate-100"><strong class="text-slate-900 block text-base mb-1">Empresas Locales:</strong> Operan estrictamente en un pueblo, ciudad o municipio.</li>
+                            <li class="bg-slate-50 p-4 rounded-lg border border-slate-100"><strong class="text-slate-900 block text-base mb-1">Empresas Provinciales:</strong> Su ámbito geográfico abarca una provincia o estado completo.</li>
+                            <li class="bg-slate-50 p-4 rounded-lg border border-slate-100"><strong class="text-slate-900 block text-base mb-1">Empresas Regionales:</strong> Sus ventas involucran a varias provincias o regiones vecinas.</li>
+                            <li class="bg-slate-50 p-4 rounded-lg border border-slate-100"><strong class="text-slate-900 block text-base mb-1">Empresas Nacionales:</strong> Sus ventas se realizan en prácticamente todo el territorio de un país.</li>
+                            <li class="bg-slate-50 p-4 rounded-lg border border-slate-100 md:col-span-2"><strong class="text-slate-900 block text-base mb-1">Empresas Multinacionales:</strong> Sus actividades se extienden a varios países, y el destino de sus recursos e inversiones traspasa fronteras internacionales.</li>
+                        </ul>
+                    </div>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-hand-holding-dollar mr-2"></i>2. Según destino de los beneficios</h3>
+                            <p class="text-slate-600 mb-4 text-sm">Dependiendo hacia dónde se dirigen los excedentes económicos al final del ciclo contable:</p>
+                            <ul class="space-y-4 text-sm text-slate-700">
+                                <li class="flex items-start gap-3">
+                                    <i class="fa-solid fa-chart-line text-emerald-500 mt-1"></i>
+                                    <div><strong class="text-slate-900 block">Con ánimo de lucro:</strong> Sus excedentes pasan a poder de los propietarios o accionistas como ganancia financiera.</div>
+                                </li>
+                                <li class="flex items-start gap-3">
+                                    <i class="fa-solid fa-hand-holding-heart text-rose-500 mt-1"></i>
+                                    <div><strong class="text-slate-900 block">Sin ánimo de lucro:</strong> Los excedentes se vuelcan en la propia empresa para permitir su desarrollo social, investigación o crecimiento operativo.</div>
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-gavel mr-2"></i>3. Según la forma jurídica</h3>
+                            <p class="text-slate-600 mb-4 text-sm">Dicta la responsabilidad legal de los dueños sobre la empresa:</p>
+                            <ul class="space-y-3 text-sm text-slate-700 list-disc list-inside">
+                                <li><strong>Sociedad Anónima (S.A.):</strong> El capital está dividido en acciones. La responsabilidad de los socios se limita al capital aportado.</li>
+                                <li><strong>Soc. Responsabilidad Limitada (SRL):</strong> Similar a la S.A., pero el capital se divide en cuotas nominativas. Suele ser para menos socios.</li>
+                                <li><strong>Sociedad en nombre colectivo:</strong> Todos los socios responden de modo solidario e ilimitado.</li>
+                                <li><strong>Sociedad en Comandita Simple:</strong> Existen socios que aportan capital y responden solidariamente, y comanditarios que solo responden por su aporte.</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-2xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-users mr-2"></i>4. Según el tamaño (Condición PYME)</h3>
+                        <p class="text-slate-600 mb-4">El número de trabajadores es el indicador más claro para medir el tamaño. En Costa Rica, el MEIC otorga la condición PYME basándose en estas escalas:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl">
+                                <div class="text-3xl font-black text-blue-600 mb-2">1-5</div>
+                                <div class="text-sm font-bold text-slate-800">Microempresa</div>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                                <div class="text-3xl font-black text-emerald-600 mb-2">6-30</div>
+                                <div class="text-sm font-bold text-slate-800">Pequeña Empresa</div>
+                            </div>
+                            <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                                <div class="text-3xl font-black text-amber-600 mb-2">31-100</div>
+                                <div class="text-sm font-bold text-slate-800">Mediana Empresa</div>
+                            </div>
+                            <div class="bg-slate-100 border border-slate-200 p-4 rounded-xl">
+                                <div class="text-3xl font-black text-slate-600 mb-2">+100</div>
+                                <div class="text-sm font-bold text-slate-800">Gran Empresa</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-building-columns mr-2"></i>5. Según procedencia de capital</h3>
+                            <ul class="space-y-4 text-sm text-slate-700">
+                                <li><strong class="text-slate-900 block">Privada:</strong> El capital está en manos de particulares.</li>
+                                <li><strong class="text-slate-900 block">Pública:</strong> El capital y control es del Estado.</li>
+                                <li><strong class="text-slate-900 block">Mixta:</strong> Propiedad compartida Estado y particulares.</li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-purple-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-industry mr-2"></i>6. Según sector de actividad</h3>
+                            <ul class="space-y-4 text-sm text-slate-700">
+                                <li><strong class="text-slate-900 block">Primario:</strong> Empresas extractivas (agricultura, minería).</li>
+                                <li><strong class="text-slate-900 block">Secundario:</strong> Empresas industriales y de transformación.</li>
+                                <li><strong class="text-slate-900 block">Terciario:</strong> Empresas de servicios y comercio (educación, banca, ventas).</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-8 mt-8 border-t border-slate-200">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">¿Terminaron de leer?</h3>
+                    <p class="text-slate-600 mb-6">Al entrar al desafío, <strong>no podrán ver esta teoría</strong>. Asegúrense de haber comprendido los conceptos.</p>
+                    <button onclick="prepWordGame()" class="px-10 py-4 bg-purple-600 hover:bg-purple-700 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:-translate-y-1">¡Ir al Desafío a Ciegas!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JUEGO MÓDULO 1: DESCIFRA
+        =========================================== -->
+        <section id="view-m1-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('m1-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
+            
+            <div class="w-full max-w-4xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div id="wordgame-intro" class="text-center py-8">
+                    <div class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(147,51,234,0.5)]"><i class="fa-solid fa-spell-check"></i></div>
+                    <h3 class="text-3xl font-extrabold mb-4">Desafío 1: Descifra el Concepto</h3>
+                    <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg leading-relaxed">Pongan a prueba su memoria. Adivinen las palabras clave relacionadas con los Tipos de Empresas antes de que se acaben los 6 intentos para desbloquear el siguiente módulo.</p>
+                    <button onclick="startWordGame()" class="px-10 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(126,34,206)] active:translate-y-1 active:shadow-none">¡Iniciar Adivinanza!</button>
+                </div>
+                
+                <div id="wordgame-active" class="hidden">
+                    <div class="flex justify-between items-center text-sm font-bold mb-8 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <span class="text-purple-400 uppercase tracking-widest"><i class="fa-solid fa-spell-check mr-2"></i> Descifra</span>
+                        <span class="bg-rose-900/50 text-rose-400 px-4 py-2 rounded-lg border border-rose-500/50">Intentos Restantes: <span id="word-lives" class="text-xl ml-1 font-black">6</span></span>
+                    </div>
+                    <div class="mb-10 text-center bg-slate-900/30 p-6 rounded-2xl border border-slate-700/50">
+                        <span class="text-purple-400 font-bold text-sm uppercase tracking-widest block mb-3"><i class="fa-solid fa-lightbulb text-yellow-400 mr-1"></i> Pista de la teoría:</span>
+                        <h4 id="word-hint" class="text-xl md:text-2xl font-medium text-white leading-relaxed"></h4>
+                    </div>
+                    <div id="word-display" class="flex flex-wrap justify-center gap-3 mb-10"></div>
+                    <div id="keyboard" class="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto"></div>
+                </div>
+
+                <div id="word-overlay" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-10 backdrop-blur-sm">
+                    <div id="word-result-icon" class="text-7xl mb-6 drop-shadow-lg"></div>
+                    <h3 id="word-result-title" class="text-4xl font-black mb-4"></h3>
+                    <p id="word-result-text" class="text-slate-300 mb-8 text-xl"></p>
+                    <button id="btn-next-word" class="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(126,34,206)] active:translate-y-1 active:shadow-none"></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TEORÍA MÓDULO 2: PLAN Y CANVAS
+        =========================================== -->
+        <section id="view-m2-theory" class="view-section bg-slate-50 py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-emerald-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+
+                <div class="mb-8 border-l-4 border-emerald-500 pl-5">
+                    <span class="text-emerald-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 2</span>
+                    <h2 class="text-4xl font-bold text-secondary mb-2">Plan de Negocios y Modelo CANVAS</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Antes de lanzar una empresa, la idea debe ser validada mediante un Plan de Negocios estructurado. Sus objetivos principales son definir la oportunidad, prever el comportamiento del mercado y determinar la viabilidad económica del proyecto.
+                    </p>
+                </div>
+                
+                <div class="space-y-8 mb-12">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-2xl font-bold text-emerald-600 mb-6 border-b border-slate-100 pb-2"><i class="fa-solid fa-magnifying-glass-chart mr-2"></i>Estudios de Viabilidad Requeridos</h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                                <div class="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-users-rays"></i></div>
+                                <h4 class="font-bold text-lg text-slate-800 mb-3">Estudio de Mercado</h4>
+                                <p class="text-sm text-slate-600 mb-4 leading-relaxed">Demuestra la factibilidad comercial del negocio. Incluye:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside ml-2 marker:text-emerald-600">
+                                    <li>Análisis de la industria.</li>
+                                    <li>Análisis del mercado objetivo (perfil del consumidor).</li>
+                                    <li>Análisis de competencia.</li>
+                                    <li>Pronóstico de demanda.</li>
+                                    <li>Plan de marketing (Producto, Precio, Plaza y Promoción).</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                                <div class="w-12 h-12 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-gears"></i></div>
+                                <h4 class="font-bold text-lg text-slate-800 mb-3">Estudio Técnico</h4>
+                                <p class="text-sm text-slate-600 mb-4 leading-relaxed">El "plan operativo". Traduce las proyecciones en requerimientos físicos:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside ml-2 marker:text-emerald-600">
+                                    <li>Requerimientos físicos (infraestructura, equipos, materia prima).</li>
+                                    <li>Proceso del negocio (flujos diarios).</li>
+                                    <li>Distribución en planta y ubicación geográfica del local.</li>
+                                </ul>
+                            </div>
+
+                            <div class="bg-slate-50 border border-slate-200 rounded-xl p-6">
+                                <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-xl mb-4"><i class="fa-solid fa-sack-dollar"></i></div>
+                                <h4 class="font-bold text-lg text-slate-800 mb-3">Estudio Económico</h4>
+                                <p class="text-sm text-slate-600 mb-4 leading-relaxed">Traduce todo el plan a números para saber si es rentable a mediano plazo:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside ml-2 marker:text-emerald-600">
+                                    <li>Presupuestos de ingresos y de egresos (costos fijos/variables).</li>
+                                    <li>Cálculo del <strong>Punto de Equilibrio</strong> (cuando no hay ganancias ni pérdidas).</li>
+                                    <li>Flujo de caja y Estados proyectados.</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200 overflow-x-auto">
+                        <h3 class="text-2xl font-bold text-emerald-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-table-cells-large mr-2"></i>El Lienzo CANVAS</h3>
+                        <p class="text-slate-600 mb-8 leading-relaxed">Herramienta estratégica gráfica que permite estructurar, en un solo lienzo, las 9 variables críticas que dictan el éxito o fracaso de un negocio:</p>
+                        
+                        <div class="canvas-container bg-slate-100 p-2 md:p-4 rounded-xl border border-slate-200 min-w-[800px] shadow-inner">
+                            <div class="c-partners canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-handshake text-blue-500"></i> 8. Alianzas Clave</h4><p class="canvas-text leading-relaxed">Socios estratégicos y proveedores vitales.</p></div>
+                            <div class="c-activities canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-check-to-slot text-blue-500"></i> 7. Actividades Clave</h4><p class="canvas-text leading-relaxed">Acciones operativas más importantes.</p></div>
+                            <div class="c-value canvas-block bg-emerald-50 border-emerald-200 shadow-md transform scale-[1.02] z-10"><h4 class="canvas-title text-emerald-700 border-emerald-200"><i class="fa-solid fa-gift text-emerald-600"></i> 2. Propuesta de Valor</h4><p class="canvas-text text-emerald-900 font-bold leading-relaxed">El problema que le resolvemos al cliente o el conjunto único de bienes que le ofrecemos.</p></div>
+                            <div class="c-relationships canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-heart text-rose-500"></i> 4. Relación Clientes</h4><p class="canvas-text leading-relaxed">Tipo de trato que espera cada segmento.</p></div>
+                            <div class="c-segments canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-users-viewfinder text-purple-500"></i> 1. Segmentos</h4><p class="canvas-text leading-relaxed">Grupos específicos de personas a las que dirigimos la oferta.</p></div>
+                            <div class="c-resources canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-toolbox text-blue-500"></i> 6. Recursos Clave</h4><p class="canvas-text leading-relaxed">Activos físicos, intelectuales, humanos o financieros requeridos.</p></div>
+                            <div class="c-channels canvas-block"><h4 class="canvas-title"><i class="fa-solid fa-truck-fast text-orange-500"></i> 3. Canales</h4><p class="canvas-text leading-relaxed">Cómo distribuimos y entregamos la propuesta.</p></div>
+                            <div class="c-costs canvas-block bg-slate-50"><h4 class="canvas-title"><i class="fa-solid fa-money-bill-wave text-red-500"></i> 9. Estructura de Costos</h4><p class="canvas-text leading-relaxed">Costos fijos y variables más importantes del modelo.</p></div>
+                            <div class="c-revenues canvas-block bg-slate-50"><h4 class="canvas-title"><i class="fa-solid fa-cash-register text-green-600"></i> 5. Flujos de Ingreso</h4><p class="canvas-text leading-relaxed">Por qué valor exacto están dispuestos a pagar los clientes.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-8 mt-8 border-t border-slate-200">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">¿Estudiaron a fondo el CANVAS?</h3>
+                    <p class="text-slate-600 mb-6">Tendrán que recordar la definición exacta de cada bloque sin ver el lienzo.</p>
+                    <button onclick="prepMemoryGame()" class="px-10 py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:-translate-y-1">¡Ir al Desafío a Ciegas!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JUEGO MÓDULO 2: MATCH CORPORATIVO
+        =========================================== -->
+        <section id="view-m2-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('m2-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
+
+            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div id="memory-intro" class="text-center py-8">
+                    <div class="w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]"><i class="fa-solid fa-clone"></i></div>
+                    <h3 class="text-3xl font-extrabold mb-4">Desafío 2: Match CANVAS</h3>
+                    <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg leading-relaxed">Trabajen en equipo apoyándose solo en su memoria para encontrar los pares exactos relacionando el nombre de cada bloque o estudio con su definición teórica.</p>
+                    <button onclick="startMemoryGame()" class="px-10 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(4,120,87)] active:translate-y-1 active:shadow-none">¡Jugar Match Corporativo!</button>
+                </div>
+                
+                <div id="memory-active" class="hidden">
+                    <div class="flex justify-between items-center text-sm font-bold mb-8 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h4 class="text-emerald-400 uppercase tracking-widest"><i class="fa-solid fa-clone mr-2"></i> Empareja las cartas</h4>
+                        <div class="bg-slate-900 px-4 py-2 rounded-lg border border-slate-600">Movimientos: <span id="memory-moves" class="font-black text-xl text-white ml-2">0</span></div>
+                    </div>
+                    <div id="memory-grid" class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 mb-6"></div>
+                </div>
+
+                <div id="memory-victory" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-10 backdrop-blur-sm">
+                    <div class="w-24 h-24 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"><i class="fa-solid fa-handshake-angle"></i></div>
+                    <h3 class="text-4xl font-black text-emerald-400 mb-4">¡Modelo Completado!</h3>
+                    <p class="text-slate-300 mb-8 text-xl">Resolvieron la estructura estratégica en <span id="final-moves" class="font-bold text-white text-2xl mx-1">0</span> movimientos.</p>
+                    <button onclick="completeModuleAndReturn(2)" class="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(4,120,87)] active:translate-y-1 active:shadow-none">¡Módulo Superado! Volver al Mapa</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TEORÍA MÓDULO 3: ESTRUCTURACIÓN LEGAL
+        =========================================== -->
+        <section id="view-m3-theory" class="view-section bg-slate-50 py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-cyan-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+
+                <div class="mb-8 border-l-4 border-cyan-500 pl-5">
+                    <span class="text-cyan-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 3</span>
+                    <h2 class="text-4xl font-bold text-secondary mb-2">Estructuración Legal (Costa Rica)</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Para que la empresa opere en el marco de la ley y evite cierres o multas, debe someterse a un riguroso proceso de formalización. En Costa Rica, este proceso sigue un orden lógico institucional donde cada paso suele ser requisito para el siguiente.
+                    </p>
+                </div>
+
+                <div class="bg-white p-6 md:p-10 rounded-2xl shadow-sm border border-slate-200 mb-12">
+                    <h3 class="text-2xl font-bold text-cyan-600 mb-6 border-b border-slate-100 pb-2"><i class="fa-solid fa-file-signature mr-2"></i>Los 6 Pasos de la Formalización</h3>
+                    <p class="text-slate-600 mb-8">Deben cumplirse a cabalidad en distintas instituciones del Estado:</p>
+                    
+                    <div class="space-y-6">
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">1</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Constitución Legal</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Se debe acudir a un notario público para crear la escritura de constitución (si es sociedad) y registrar la figura jurídica elegida en el Registro Nacional de Costa Rica. Aquí nace legalmente la entidad.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">2</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Permisos de Salud</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Antes de operar, el local debe contar con un Permiso Sanitario de Funcionamiento (PSF) otorgado por el <strong>Ministerio de Salud</strong>. Si la actividad involucra manejo de animales o derivados, se requerirá un Certificado Veterinario de Operación (CVO) de SENASA.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">3</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Trámites Municipales</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Se realizan en la <strong>Municipalidad</strong> del cantón. Primero, se debe solicitar el "Certificado de Uso de Suelo" para garantizar que la actividad comercial está permitida en esa zona. Al final, se solicitará la <strong>Patente Comercial</strong>, la licencia definitiva para abrir al público.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">4</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Póliza de Seguros</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Es obligatorio proteger a los trabajadores. Se debe gestionar ante el Instituto Nacional de Seguros (INS) una Póliza de Riesgos del Trabajo.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">5</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Ministerio de Hacienda</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Para poder facturar y pagar impuestos, la empresa debe registrarse como <strong>Contribuyente</strong> a través del portal ATV. Se inscribirá en el Régimen General o en el Régimen Simplificado.</p>
+                            </div>
+                        </div>
+
+                        <div class="flex flex-col md:flex-row gap-6 p-5 rounded-xl bg-slate-50 border border-slate-100 items-start">
+                            <div class="w-12 h-12 shrink-0 bg-white border-2 border-cyan-300 text-cyan-600 rounded-full flex items-center justify-center font-black text-xl shadow-sm">6</div>
+                            <div>
+                                <h4 class="text-lg font-bold text-slate-800 mb-2">Inscripción en la CCSS</h4>
+                                <p class="text-sm text-slate-600 leading-relaxed">Garantiza la seguridad social. La empresa debe inscribirse formalmente como <strong>Patrono</strong> ante la Caja Costarricense de Seguro Social para asegurar el pago de cargas sociales, salud y pensión de sus trabajadores.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-8 mt-8 border-t border-slate-200">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">¿Memorizaron los 6 pasos y su lógica?</h3>
+                    <p class="text-slate-600 mb-6">Tendrán que construir la ruta desde cero sin ver la teoría para aprobar el módulo.</p>
+                    <button onclick="prepRouteGame()" class="px-10 py-4 bg-cyan-600 hover:bg-cyan-700 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:-translate-y-1">¡Ir al Desafío a Ciegas!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JUEGO MÓDULO 3: RUTA LEGAL
+        =========================================== -->
+        <section id="view-m3-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('m3-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
+
+            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div id="route-intro" class="text-center py-8">
+                    <div class="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(6,182,212,0.5)]"><i class="fa-solid fa-route"></i></div>
+                    <h3 class="text-3xl font-extrabold mb-4">Desafío 3: Ruta Legal</h3>
+                    <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg leading-relaxed">El orden altera el resultado en la ley. Discutan y seleccionen las tarjetas en el orden lógico estricto requerido para que la empresa consiga sus licencias.</p>
+                    <button onclick="startRouteGame()" class="px-10 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(8,145,178)] active:translate-y-1 active:shadow-none">¡Construir Ruta Legal!</button>
+                </div>
+
+                <div id="route-active" class="hidden">
+                    <div class="flex justify-between items-center mb-8 bg-slate-900/50 p-4 rounded-xl border border-slate-700">
+                        <h4 class="font-bold text-cyan-400 uppercase tracking-widest"><i class="fa-solid fa-route mr-2"></i> Ordena los Trámites</h4>
+                        <div class="bg-slate-900 px-4 py-2 rounded-lg border border-slate-600 text-rose-400 font-bold">Errores Cometidos: <span id="route-mistakes" class="text-white text-xl ml-2 font-black">0</span></div>
+                    </div>
+                    <div class="flex flex-col md:flex-row gap-8">
+                        <div class="w-full md:w-1/2 bg-slate-900/30 p-6 rounded-2xl border border-slate-700 shadow-inner">
+                            <h3 class="text-center font-bold text-slate-400 mb-4 text-xs uppercase tracking-widest"><i class="fa-solid fa-layer-group mr-1"></i> Disponibles</h3>
+                            <div id="route-pool" class="flex flex-col gap-3"></div>
+                        </div>
+                        <div class="w-full md:w-1/2 bg-slate-900/30 p-6 rounded-2xl border border-slate-700 shadow-inner relative">
+                            <div class="absolute left-1/2 top-12 bottom-12 w-1 -ml-[0.5px] bg-slate-700/50 z-0 border-l-2 border-dashed border-slate-600"></div>
+                            <h3 class="text-center font-bold text-cyan-400 mb-4 text-xs uppercase tracking-widest"><i class="fa-solid fa-bars-staggered mr-1"></i> Ruta Correcta</h3>
+                            <div id="route-slots" class="flex flex-col gap-4 relative z-10"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="route-overlay" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-20 backdrop-blur-sm">
+                    <i class="fa-solid fa-building-circle-check text-7xl text-cyan-400 mb-6 drop-shadow-[0_0_15px_rgba(6,182,212,0.5)]"></i>
+                    <h3 class="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-400 mb-4">¡Empresa Formalizada!</h3>
+                    <p class="text-slate-300 mb-8 text-xl">Lograron armar el expediente legal de la compañía cometiendo <span id="route-final-mistakes" class="font-black text-rose-400 text-2xl mx-1">0</span> equivocaciones.</p>
+                    <button onclick="completeModuleAndReturn(3)" class="px-8 py-4 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(8,145,178)] active:translate-y-1 active:shadow-none">¡Módulo Superado! Volver al Mapa</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TEORÍA MÓDULO 4: ORGANIZACIÓN Y OPERACIÓN
+        =========================================== -->
+        <section id="view-m4-theory" class="view-section bg-slate-50 py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-blue-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa del Curso</button>
+
+                <div class="mb-8 border-l-4 border-blue-500 pl-5">
+                    <span class="text-blue-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 4</span>
+                    <h2 class="text-4xl font-bold text-secondary mb-2">Organización y Operaciones</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Con la base legal cubierta, es hora de definir cómo va a trabajar el personal y cómo se ejecutarán las operaciones del día a día para que el negocio sea eficiente.
+                    </p>
+                </div>
+                
+                <div class="space-y-8 mb-12">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-blue-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-gears mr-2"></i>Sistematización</h3>
+                            <p class="text-slate-600 mb-4 text-sm leading-relaxed">Todo el trabajo debe estar escrito y documentado:</p>
+                            <ul class="space-y-4 text-sm text-slate-700">
+                                <li class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                    <strong class="text-blue-900 text-base block mb-1"><i class="fa-solid fa-diagram-project text-blue-500 mr-1"></i> Proceso</strong>
+                                    Secuencia de tareas conectadas (Ej: El <i>proceso</i> de contratación). Responde al QUÉ se debe hacer y QUIÉN lo hace.
+                                </li>
+                                <li class="bg-blue-50/50 p-4 rounded-lg border border-blue-100">
+                                    <strong class="text-blue-900 text-base block mb-1"><i class="fa-solid fa-list-check text-blue-500 mr-1"></i> Procedimiento</strong>
+                                    La descripción detallada paso a paso. Responde al CÓMO se ejecuta esa tarea con precisión milimétrica (el manual de instrucciones).
+                                </li>
+                            </ul>
+                        </div>
+
+                        <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                            <h3 class="text-xl font-bold text-blue-600 mb-4 border-b border-slate-100 pb-2"><i class="fa-solid fa-link mr-2"></i>Asociatividad Empresarial</h3>
+                            <p class="text-slate-600 mb-4 text-sm leading-relaxed">Estrategias de cooperación entre empresas independientes:</p>
+                            <ul class="space-y-4 text-sm text-slate-700">
+                                <li class="bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
+                                    <strong class="text-emerald-900 text-base block mb-1"><i class="fa-solid fa-city text-emerald-500 mr-1"></i> Clúster (Aglomeración)</strong>
+                                    Concentración geográfica de empresas que se dedican a lo mismo (ej. una zona franca dedicada a tecnología).
+                                </li>
+                                <li class="bg-emerald-50/50 p-4 rounded-lg border border-emerald-100">
+                                    <strong class="text-emerald-900 text-base block mb-1"><i class="fa-solid fa-link text-emerald-500 mr-1"></i> Encadenamiento Productivo</strong>
+                                    Asociación a lo largo de la cadena de valor: alianzas <i>hacia atrás</i> con proveedores o <i>hacia adelante</i> con distribuidores.
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800 text-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-700">
+                        <h3 class="text-xl font-bold text-blue-400 mb-4 border-b border-slate-600 pb-2"><i class="fa-solid fa-play mr-2"></i>Puesta en Operación Diaria</h3>
+                        <p class="text-slate-300 mb-6 text-sm leading-relaxed">Una vez abierta, el día a día exige un nivel de ejecución constante de actividades:</p>
+                        <div class="grid grid-cols-2 md:grid-cols-3 gap-y-4 gap-x-6 text-sm text-slate-200">
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Transacciones comerciales reales.</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Toma de decisiones basada en datos.</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Mantenimiento del Centro de operaciones.</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Reporte y pago periódico de impuestos.</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Reporte de planillas CCSS.</div>
+                            <div class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-400"></i> Conciliaciones bancarias.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="text-center py-8 mt-8 border-t border-slate-200">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">¿Analizaron bien los escenarios operacionales?</h3>
+                    <p class="text-slate-600 mb-6">Tendrán que tomar el papel del Gerente (CEO) y solucionar 3 problemas teóricos sin ayuda del texto.</p>
+                    <button onclick="prepCeoGame()" class="px-10 py-4 bg-blue-600 hover:bg-blue-700 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:-translate-y-1">¡Ir al Desafío a Ciegas!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JUEGO MÓDULO 4: RETO CEO
+        =========================================== -->
+        <section id="view-m4-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('m4-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
+
+            <div class="w-full max-w-4xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div id="ceo-intro" class="text-center py-8">
+                    <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(37,99,235,0.5)]"><i class="fa-solid fa-user-tie"></i></div>
+                    <h3 class="text-3xl font-extrabold mb-4">Desafío 4: Reto CEO</h3>
+                    <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg leading-relaxed">Enfrenten en grupo 3 escenarios gerenciales basados en el texto anterior y decidan la acción correcta usando solo su memoria.</p>
+                    <button onclick="startSimulation()" class="px-10 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(29,78,216)] active:translate-y-1 active:shadow-none">Asumir la Gerencia</button>
+                </div>
+
+                <div id="ceo-active" class="hidden">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+                        <div>
+                            <h4 class="font-bold text-blue-400 uppercase tracking-widest"><i class="fa-solid fa-user-tie mr-2"></i> Reto Situacional</h4>
+                            <span id="question-counter" class="text-slate-400 text-sm font-bold block mt-1">Escenario 1 de 3</span>
+                        </div>
+                        <div class="bg-slate-900 px-5 py-3 rounded-xl border border-slate-600 shadow-inner">Puntaje: <span id="score-display" class="font-black text-xl text-blue-400 ml-1">0</span></div>
+                    </div>
+                    <div class="bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50 mb-8">
+                        <h3 id="question-text" class="text-xl md:text-2xl font-medium leading-relaxed text-slate-100"></h3>
+                    </div>
+                    <div id="options-container" class="space-y-4 max-w-3xl mx-auto"></div>
+                </div>
+
+                <div id="feedback-overlay" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-10 backdrop-blur-sm">
+                    <div id="feedback-icon" class="text-7xl mb-6"></div>
+                    <h3 id="feedback-title" class="text-4xl font-black mb-4"></h3>
+                    <p id="feedback-explanation" class="text-slate-300 mb-8 max-w-xl text-xl leading-relaxed"></p>
+                    <button id="btn-next-ceo" class="px-8 py-4 bg-blue-600 hover:bg-blue-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(29,78,216)] active:translate-y-1 active:shadow-none"></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             VISTA MÓDULO 5: JEFE FINAL (EXAMEN)
+        =========================================== -->
+        <section id="view-m5-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('map')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos </button>
+
+            <div class="w-full max-w-4xl bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-6 md:p-12 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
+                <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+                <div id="audit-intro" class="relative z-10 text-center">
+                    <div class="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center text-5xl mx-auto mb-6 shadow-[0_0_30px_rgba(249,115,22,0.5)]"><i class="fa-solid fa-stopwatch text-white"></i></div>
+                    <h3 class="text-4xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">Contrarreloj Teórico</h3>
+                    <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-6 text-left max-w-lg mx-auto mb-8 shadow-inner">
+                        <ul class="space-y-3 text-slate-300 text-sm">
+                            <li><i class="fa-solid fa-bolt text-orange-400 w-5"></i> Tendrán <strong class="text-white">15 segundos</strong> exactos por enunciado.</li>
+                            <li><i class="fa-solid fa-scale-balanced text-orange-400 w-5"></i> Decidan si la afirmación general del curso es <strong class="text-emerald-400">Verdadera</strong> o <strong class="text-rose-400">Falsa</strong>.</li>
+                            <li><i class="fa-solid fa-star text-orange-400 w-5"></i> Entre más rápido respondan, mayor será el "Bono de Velocidad".</li>
+                        </ul>
+                    </div>
+                    <button onclick="startAuditGame()" class="px-12 py-5 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-extrabold text-xl rounded-2xl transition-all shadow-[0_6px_0_rgb(185,28,28)] active:translate-y-1 active:shadow-none hover:scale-105 animate-pulse">
+                        INICIAR AUDITORÍA FINAL
+                    </button>
+                </div>
+
+                <div id="audit-active" class="hidden relative z-10">
+                    <div class="w-full bg-slate-700 h-4 rounded-full mb-6 overflow-hidden shadow-inner border border-slate-600">
+                        <div id="audit-timer-bar" class="bg-gradient-to-r from-orange-400 to-red-500 h-full w-full transition-all duration-100 ease-linear relative"></div>
+                    </div>
+                    
+                    <div class="flex justify-between items-center text-sm font-bold text-slate-400 mb-8 uppercase tracking-widest bg-slate-800/50 p-3 rounded-lg border border-slate-700/50">
+                        <span id="audit-counter" class="text-slate-300">Evaluación 1 / 8</span>
+                        <span class="bg-slate-900 px-3 py-1 rounded border border-slate-600 text-orange-400 text-lg"><i class="fa-solid fa-stopwatch mr-1"></i> <span id="audit-time-text" class="font-black">15.0</span>s</span>
+                    </div>
+
+                    <div class="bg-slate-900/80 p-8 md:p-10 rounded-3xl border-2 border-slate-600 mb-8 min-h-[160px] flex items-center justify-center shadow-2xl transform transition-transform">
+                        <h3 id="audit-statement" class="text-xl md:text-3xl font-bold text-white text-center leading-snug drop-shadow-md"></h3>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-6">
+                        <button id="btn-audit-true" class="py-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xl md:text-2xl rounded-2xl transition-all shadow-[0_6px_0_rgb(4,120,87)] active:translate-y-1 active:shadow-none flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-check-circle text-3xl"></i> VERDADERO
+                        </button>
+                        <button id="btn-audit-false" class="py-6 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xl md:text-2xl rounded-2xl transition-all shadow-[0_6px_0_rgb(190,18,60)] active:translate-y-1 active:shadow-none flex flex-col items-center gap-2">
+                            <i class="fa-solid fa-times-circle text-3xl"></i> FALSO
+                        </button>
+                    </div>
+                </div>
+
+                <div id="audit-overlay" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-20 backdrop-blur-md">
+                    <div id="audit-result-icon" class="text-7xl mb-6"></div>
+                    <h3 id="audit-result-title" class="text-4xl font-black mb-4"></h3>
+                    <p id="audit-result-explanation" class="text-slate-200 mb-10 max-w-xl text-xl leading-relaxed"></p>
+                    <button id="btn-audit-next" class="px-10 py-4 bg-orange-500 hover:bg-orange-400 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(194,65,12)] active:translate-y-1 active:shadow-none"></button>
+                </div>
+
+                <div id="audit-results" class="hidden flex-col items-center justify-center text-center p-8 z-30 relative">
+                    <i class="fa-solid fa-graduation-cap text-8xl text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]"></i>
+                    <h2 class="text-5xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">¡Excelente!</h2>
+                    <p class="text-slate-300 mb-8 text-xl max-w-lg mx-auto">Su grupo ha demostrado dominar toda la teoría requerida sobre la Creación y Operación de Empresas.</p>
+                    
+                    <div class="bg-slate-800/80 rounded-3xl p-8 mb-10 border-2 border-slate-700 shadow-2xl relative overflow-hidden w-full max-w-sm mx-auto">
+                        <div class="absolute inset-0 bg-gradient-to-tr from-yellow-500/10 to-transparent pointer-events-none"></div>
+                        <p class="text-sm text-slate-400 uppercase tracking-widest mb-2 font-bold">Puntaje Final Acumulado</p>
+                        <h3 id="audit-final-score" class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-yellow-400">0</h3>
+                    </div>
+                    
+                    <button onclick="completeModuleAndReturn(5)" class="px-8 py-4 bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-400 hover:to-orange-400 text-slate-900 font-extrabold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(180,83,9)] active:translate-y-1 active:shadow-none animate-bounce">Desbloquear Bonus Track <i class="fa-solid fa-unlock ml-2"></i></button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             TEORÍA BONUS: INVESTIGACIÓN Y TECNOLOGÍA
+        =========================================== -->
+        <section id="view-bonus-theory" class="view-section bg-slate-50 py-12">
+            <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-pink-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos </button>
+
+                <div class="mb-8 border-l-4 border-pink-500 pl-5">
+                    <span class="text-pink-600 font-bold tracking-widest text-sm uppercase">Módulo Extra / Bonus Track</span>
+                    <h2 class="text-4xl font-bold text-secondary mb-2">Investigación, APA 7 y Herramientas</h2>
+                    <p class="text-slate-600 text-lg leading-relaxed">
+                        Es vital que todo futuro gerente sepa cómo realizar investigaciones precisas, citar bajo estándares académicos internacionales y usar la tecnología para potenciar su productividad empresarial.
+                    </p>
+                </div>
+
+                <div class="space-y-12 mb-12">
+                    
+                    <!-- 1. Búsqueda Efectiva de Información -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-3xl font-bold text-pink-600 mb-6 border-b border-slate-100 pb-3"><i class="fa-solid fa-magnifying-glass mr-2"></i>1. Búsqueda Efectiva de Información</h3>
+                        <p class="text-slate-600 mb-6 text-base leading-relaxed">En la era del internet, el problema no es la falta de información, sino filtrar los datos falsos y encontrar fuentes con autoridad académica y empresarial real. Para ello, debes dominar tres estrategias fundamentales:</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+                            <div class="border border-pink-200 bg-pink-50/30 rounded-xl p-5">
+                                <h4 class="font-bold text-pink-700 mb-3"><i class="fa-solid fa-filter mr-2"></i>A. Operadores Booleanos</h4>
+                                <p class="text-sm text-slate-600 mb-3">Comandos lógicos que le dicen a Google exactamente qué hacer:</p>
+                                <ul class="text-sm text-slate-700 space-y-2">
+                                    <li><strong class="text-slate-900 bg-yellow-200 px-1 rounded">AND</strong>: Exige que aparezcan ambas palabras. <i>(Empresas AND "Costa Rica")</i>.</li>
+                                    <li><strong class="text-slate-900 bg-yellow-200 px-1 rounded">OR</strong>: Busca una palabra u otra. <i>(PYMES OR Emprendimiento)</i>.</li>
+                                    <li><strong class="text-slate-900 bg-yellow-200 px-1 rounded">NOT / (-)</strong>: Excluye términos. <i>(Marketing -digital)</i> buscará marketing pero excluirá lo que diga digital.</li>
+                                </ul>
+                            </div>
+
+                            <div class="border border-pink-200 bg-pink-50/30 rounded-xl p-5">
+                                <h4 class="font-bold text-pink-700 mb-3"><i class="fa-solid fa-globe mr-2"></i>B. Dominios Seguros</h4>
+                                <p class="text-sm text-slate-600 mb-3">No toda página .com es confiable. Al investigar para un proyecto formal, prioriza buscar la información en sitios con terminaciones oficiales:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside">
+                                    <li><strong class="text-slate-900">.gov / .go.cr:</strong> Sitios gubernamentales oficiales.</li>
+                                    <li><strong class="text-slate-900">.edu / .ac.cr:</strong> Universidades e instituciones académicas.</li>
+                                    <li><strong class="text-slate-900">.org:</strong> Organizaciones formales (ONU, CEPAL, etc).</li>
+                                </ul>
+                            </div>
+
+                            <div class="border border-pink-200 bg-pink-50/30 rounded-xl p-5">
+                                <h4 class="font-bold text-pink-700 mb-3"><i class="fa-solid fa-microscope mr-2"></i>C. Criterios de Evaluación</h4>
+                                <p class="text-sm text-slate-600 mb-3">Toda fuente debe someterse a evaluación crítica antes de ser citada en un documento. Verifica siempre:</p>
+                                <ul class="text-sm text-slate-700 space-y-2 list-disc list-inside">
+                                    <li><strong class="text-slate-900">Autoridad:</strong> ¿El autor es un experto o institución reconocida?</li>
+                                    <li><strong class="text-slate-900">Actualidad:</strong> ¿Es un artículo de este año o está obsoleto?</li>
+                                    <li><strong class="text-slate-900">Objetividad:</strong> ¿La página te está informando o te quiere vender algo disfrazado de artículo?</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="bg-slate-800 text-white p-6 rounded-xl shadow-inner">
+                            <h4 class="font-bold text-pink-400 mb-3 uppercase tracking-widest text-sm">Repositorios Académicos Recomendados (¡Explóralos!)</h4>
+                            <div class="flex flex-wrap gap-4 text-sm">
+                                <a href="https://scholar.google.com/" target="_blank" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors"><i class="fa-solid fa-graduation-cap text-slate-300"></i> Google Scholar</a>
+                                <a href="https://www.redalyc.org/" target="_blank" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors"><i class="fa-solid fa-book-open text-slate-300"></i> Redalyc</a>
+                                <a href="https://dialnet.unirioja.es/" target="_blank" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors"><i class="fa-solid fa-database text-slate-300"></i> Dialnet</a>
+                                <a href="https://scielo.org/" target="_blank" class="flex items-center gap-2 bg-slate-700 hover:bg-slate-600 px-4 py-2 rounded-lg transition-colors"><i class="fa-solid fa-magnifying-glass-chart text-slate-300"></i> SciELO</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 2. Normas APA 7 -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-3xl font-bold text-pink-600 mb-6 border-b border-slate-100 pb-3"><i class="fa-solid fa-book-bookmark mr-2"></i>2. Formato APA (7ma Edición)</h3>
+                        <p class="text-slate-600 mb-6 text-base leading-relaxed">Para presentar reportes y planes de negocios, se exige respetar los estándares internacionales de la <i>American Psychological Association (APA)</i>. Esto evita el plagio y da formalidad profesional. Aquí las reglas básicas de la 7ma edición:</p>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                <div class="bg-slate-100 px-5 py-3 border-b border-slate-200"><h4 class="font-bold text-slate-800">Citas Textuales Cortas (Menos de 40 palabras)</h4></div>
+                                <div class="p-5">
+                                    <p class="text-sm text-slate-600 mb-3">Si vas a copiar y pegar un texto corto de un autor, debes incorporarlo en el mismo párrafo que estás escribiendo, obligatoriamente <strong>encerrado entre comillas (" ")</strong> y citando al autor al final.</p>
+                                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 text-sm text-slate-700 italic">
+                                        El marketing digital es vital hoy en día, ya que "la presencia en línea define el 80% de las ventas en empresas modernas" (García, 2023, p. 15). Esto significa que...
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm">
+                                <div class="bg-slate-100 px-5 py-3 border-b border-slate-200"><h4 class="font-bold text-slate-800">Citas en Bloque (Más de 40 palabras)</h4></div>
+                                <div class="p-5">
+                                    <p class="text-sm text-slate-600 mb-3">Si vas a copiar un texto largo, <strong>NO se usan comillas</strong>. Se debe colocar en un párrafo aparte, separado del texto principal y todo el bloque debe tener una <strong>sangría de media pulgada (1.27 cm)</strong> desde el margen izquierdo.</p>
+                                    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-3 pl-8 text-sm text-slate-700 italic">
+                                        Según Martínez (2022), las estrategias corporativas deben...<br><br>
+                                        ...este es un texto que tiene más de cuarenta palabras y por lo tanto requiere estar en un bloque independiente y con sangría izquierda en todas sus líneas para que el lector entienda visualmente que es extraído de otro autor sin necesidad de usar comillas de apertura y cierre (p. 45).
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-pink-50/50 p-6 rounded-xl border border-pink-100 text-sm">
+                            <h4 class="font-bold text-pink-800 mb-3 uppercase tracking-widest"><i class="fa-solid fa-list-ul mr-2"></i>Reglas de Formato Estructural</h4>
+                            <ul class="text-slate-700 space-y-2 list-disc list-inside">
+                                <li><strong>Márgenes estrictos:</strong> 1 pulgada (2.54 cm) en los bordes superior, inferior, izquierdo y derecho.</li>
+                                <li><strong>Interlineado:</strong> Siempre Doble (2.0) en todo el texto, incluyendo bibliografía.</li>
+                                <li><strong>Fuentes permitidas:</strong> La 7ma edición flexibilizó esto. Se permite <i>Times New Roman 12, Arial 11, Calibri 11, o Georgia 11</i>.</li>
+                                <li><strong>Estructura de Referencia (Bibliografía al final):</strong> Autor, A. A. (Año). <i>Título en cursiva</i>. Editorial o URL. <a href="https://cms.usanmarcos.ac.cr/sites/default/files/i_taller_apa_7_ed.pdf/" target="_blank" class="text-pink-600 hover:underline font-bold ml-1">Ver guía APA7- USAM <i class="fa-solid fa-external-link text-xs"></i></a></li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 3. Herramientas Digitales Ofimáticas y Redes -->
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-200">
+                        <h3 class="text-3xl font-bold text-pink-600 mb-6 border-b border-slate-100 pb-3"><i class="fa-solid fa-laptop-code mr-2"></i>3. Ecosistema de Herramientas para Productividad</h3>
+                        <p class="text-slate-600 mb-8 text-base leading-relaxed">Una empresa sin software es obsoleta. Existen aplicaciones específicas para cada proceso interno y externo de la organización. A continuación, las herramientas empresariales imprescindibles:</p>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
+                            <!-- Ofimática Expandida -->
+                            <div class="border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:border-blue-400 transition-colors">
+                                <div class="absolute -right-4 -top-4 text-blue-100 opacity-50 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-laptop-file text-9xl"></i></div>
+                                <h4 class="text-2xl font-bold text-blue-700 mb-4 relative z-10">Software Ofimático</h4>
+                                <p class="text-sm text-slate-600 mb-5 relative z-10">Los dos ecosistemas líderes mundiales son <strong>Microsoft 365</strong> y <strong>Google Workspace</strong>. Sus herramientas cubren todo el flujo interno:</p>
+                                <ul class="space-y-4 relative z-10 text-sm text-slate-700">
+                                    <li><strong class="text-blue-900 block"><i class="fa-solid fa-table mr-1"></i> Hojas de Cálculo (Excel / Sheets):</strong> Ideales para realizar el Estudio Económico, calcular el Punto de Equilibrio y manejar presupuestos automatizados.</li>
+                                    <li><strong class="text-blue-900 block"><i class="fa-solid fa-database mr-1"></i> Bases de Datos (Access / SQL):</strong> Organizan datos estructurados (ej. inventarios masivos) para actualizarlos sin que el sistema colapse.</li>
+                                    <li><strong class="text-blue-900 block"><i class="fa-solid fa-file-word mr-1"></i> Procesadores (Word / Docs):</strong> Esenciales para redactar el manual de procedimientos, cartas, contratos y memorándums con formato formal (APA).</li>
+                                </ul>
+                            </div>
+
+                            <!-- Redes Sociales Expandidas -->
+                            <div class="border border-slate-200 rounded-2xl p-6 relative overflow-hidden group hover:border-rose-400 transition-colors">
+                                <div class="absolute -right-4 -top-4 text-rose-100 opacity-50 group-hover:opacity-100 transition-opacity"><i class="fa-solid fa-share-nodes text-9xl"></i></div>
+                                <h4 class="text-2xl font-bold text-rose-600 mb-4 relative z-10">Redes Sociales (Marketing)</h4>
+                                <p class="text-sm text-slate-600 mb-5 relative z-10">No se usan para "subir fotos", se usan para crear embudos de venta. Cada red tiene un propósito y segmento específico:</p>
+                                <ul class="space-y-4 relative z-10 text-sm text-slate-700">
+                                    <li><strong class="text-rose-900 block"><i class="fa-brands fa-linkedin text-blue-600 text-lg mr-1"></i> LinkedIn:</strong> Red B2B (Business to Business). Ideal para buscar inversionistas, socios clave (para el CANVAS) y reclutar personal profesional.</li>
+                                    <li><strong class="text-rose-900 block"><i class="fa-brands fa-instagram text-pink-500 text-lg mr-1"></i> Instagram / TikTok:</strong> Redes B2C visuales. Perfectas para mostrar el producto final, crear viralidad y atacar a segmentos jóvenes.</li>
+                                    <li><strong class="text-rose-900 block"><i class="fa-brands fa-facebook text-blue-500 text-lg mr-1"></i> Facebook (Meta Ads):</strong> Su mayor poder para las empresas radica en su sistema de publicidad pagada, permitiendo micro-segmentar anuncios con precisión quirúrgica.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Blogs y Wikis -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div class="bg-orange-50 border border-orange-200 rounded-xl p-5">
+                                <h4 class="font-bold text-orange-700 text-lg mb-2"><i class="fa-solid fa-blog mr-2"></i>El Blog Corporativo</h4>
+                                <p class="text-sm text-slate-700">Páginas web (ej. WordPress, Blogger) donde se publican artículos periódicos para <strong>educar a la audiencia</strong>. Aportan gran valor SEO (posicionamiento en Google) atrayendo tráfico orgánico gratuito hacia la tienda online de la empresa.</p>
+                            </div>
+                            <div class="bg-emerald-50 border border-emerald-200 rounded-xl p-5">
+                                <h4 class="font-bold text-emerald-700 text-lg mb-2"><i class="fa-solid fa-globe mr-2"></i>Wikis Empresariales</h4>
+                                <p class="text-sm text-slate-700">Sistemas web (ej. Confluence, Notion) que permiten a todo el equipo <strong>crear y editar documentos en conjunto, al mismo tiempo, sin saber programar</strong>. Es la forma moderna de tener una base de conocimientos colaborativa y manuales internos vivos.</p>
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <div class="text-center py-8 mt-8 border-t border-slate-200">
+                    <h3 class="text-2xl font-bold text-secondary mb-4">¿Absorbieron toda esta información técnica?</h3>
+                    <p class="text-slate-600 mb-6">Tendrán que fungir como Asesores Académicos recomendando técnicas de investigación, normativas APA y software.</p>
+                    <button onclick="prepBonusGame()" class="px-10 py-4 bg-pink-600 hover:bg-pink-700 text-white font-bold text-lg rounded-xl transition-all shadow-lg hover:-translate-y-1 hover:shadow-pink-500/30">¡Iniciar Desafío Bonus!</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ==========================================
+             JUEGO BONUS: ASESOR ACADÉMICO
+        =========================================== -->
+        <section id="view-bonus-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
+            <button onclick="navigateTo('bonus-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Repasar Módulo Extra</button>
+
+            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+                <div id="bonus-intro" class="text-center py-8">
+                    <div class="w-20 h-20 bg-pink-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(219,39,119,0.5)]"><i class="fa-solid fa-headset"></i></div>
+                    <h3 class="text-3xl font-extrabold mb-4">Desafío Bonus: Asesor Investigador</h3>
+                    <p class="text-slate-300 mb-8 max-w-lg mx-auto text-lg leading-relaxed">Diferentes clientes y colegas te escriben pidiendo ayuda para su investigación académica y necesidades tecnológicas. Lee su caso y haz clic en la opción correcta para guiarlos.</p>
+                    <button onclick="startBonusGame()" class="px-10 py-4 bg-pink-600 hover:bg-pink-500 text-white font-bold text-lg rounded-2xl transition-all shadow-[0_5px_0_rgb(190,24,93)] active:translate-y-1 active:shadow-none">Abrir Consola de Asesoría</button>
+                </div>
+
+                <div id="bonus-active" class="hidden">
+                    <div class="flex justify-between items-center mb-8 border-b border-slate-700 pb-4">
+                        <div>
+                            <h4 class="font-bold text-pink-400 uppercase tracking-widest"><i class="fa-solid fa-headset mr-2"></i> Ticket de Asesoría</h4>
+                            <span id="bonus-counter" class="text-slate-400 text-sm font-bold block mt-1">Caso 1 de 6</span>
+                        </div>
+                        <div class="bg-slate-900 px-5 py-3 rounded-xl border border-slate-600 shadow-inner">Puntaje: <span id="bonus-score-display" class="font-black text-xl text-pink-400 ml-1">0</span></div>
+                    </div>
+                    
+                    <div class="bg-slate-700 p-6 rounded-2xl mb-8 relative ml-4 md:ml-12 border border-slate-600 shadow-md max-w-3xl">
+                        <div class="absolute top-6 -left-3 w-4 h-4 bg-slate-700 transform rotate-45 border-l border-b border-slate-600"></div>
+                        <div class="flex gap-4 items-start">
+                            <div class="w-10 h-10 bg-slate-500 rounded-full flex items-center justify-center shrink-0"><i class="fa-solid fa-user-graduate text-slate-300"></i></div>
+                            <div>
+                                <span class="text-xs text-slate-400 font-bold mb-1 block">Usuario en línea</span>
+                                <h3 id="bonus-question" class="text-lg md:text-xl font-medium leading-relaxed text-white"></h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <p class="text-center text-sm text-pink-400 font-bold uppercase tracking-widest mb-6">Selecciona la Respuesta Correcta:</p>
+                    <div id="bonus-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto"></div>
+                </div>
+
+                <div id="bonus-overlay" class="hidden absolute inset-0 bg-slate-900/95 flex flex-col items-center justify-center text-center p-6 z-10 backdrop-blur-sm">
+                    <div id="bonus-icon" class="text-7xl mb-6"></div>
+                    <h3 id="bonus-title" class="text-4xl font-black mb-4"></h3>
+                    <p id="bonus-explanation" class="text-slate-300 mb-8 max-w-xl text-xl leading-relaxed"></p>
+                    <button id="btn-next-bonus" class="px-8 py-4 bg-pink-600 hover:bg-pink-500 text-white font-bold text-lg rounded-xl transition-all shadow-[0_5px_0_rgb(190,24,93)] active:translate-y-1 active:shadow-none"></button>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- LOGIC SCRIPT -->
+    <script>
+        // --- SPA Navigation & Progress Logic ---
+        let highestUnlockedModule = 1;
+
+        function navigateTo(viewId) {
+            document.querySelectorAll('.view-section').forEach(el => el.classList.remove('active'));
+            document.getElementById('view-' + viewId).classList.add('active');
+            document.getElementById('mobile-menu').classList.add('hidden');
+            window.scrollTo(0,0);
+
+            if(viewId === 'map') updateMapUI();
+        }
+
+        // Preparation functions
+        function prepWordGame() {
+            navigateTo('m1-game');
+            document.getElementById('wordgame-intro').classList.remove('hidden');
+            document.getElementById('wordgame-active').classList.add('hidden');
+            document.getElementById('word-overlay').classList.add('hidden');
+        }
+
+        function prepMemoryGame() {
+            navigateTo('m2-game');
+            document.getElementById('memory-intro').classList.remove('hidden');
+            document.getElementById('memory-active').classList.add('hidden');
+            document.getElementById('memory-victory').classList.add('hidden');
+            document.getElementById('memory-grid').innerHTML = ''; 
+        }
+
+        function prepRouteGame() {
+            navigateTo('m3-game');
+            document.getElementById('route-intro').classList.remove('hidden');
+            document.getElementById('route-active').classList.add('hidden');
+            document.getElementById('route-overlay').classList.add('hidden');
+        }
+
+        function prepCeoGame() {
+            navigateTo('m4-game');
+            document.getElementById('ceo-intro').classList.remove('hidden');
+            document.getElementById('ceo-active').classList.add('hidden');
+            document.getElementById('feedback-overlay').classList.add('hidden');
+        }
+
+        function prepAuditGame() {
+            navigateTo('m5-game');
+            document.getElementById('audit-intro').classList.remove('hidden');
+            document.getElementById('audit-active').classList.add('hidden');
+            document.getElementById('audit-overlay').classList.add('hidden');
+            document.getElementById('audit-results').classList.add('hidden');
+            document.getElementById('audit-results').classList.remove('flex');
+        }
+
+        function prepBonusGame() {
+            navigateTo('bonus-game');
+            document.getElementById('bonus-intro').classList.remove('hidden');
+            document.getElementById('bonus-active').classList.add('hidden');
+            document.getElementById('bonus-overlay').classList.add('hidden');
+        }
+
+        function completeModuleAndReturn(modNumber) {
+            const nextMod = modNumber + 1;
+            if (highestUnlockedModule < nextMod) {
+                highestUnlockedModule = nextMod;
+            }
+            navigateTo('map');
+        }
+
+        function updateMapUI() {
+            for(let i=1; i<=5; i++) {
+                const card = document.getElementById(`map-card-${i}`);
+                const innerCard = document.getElementById(`map-inner-card-${i}`);
+                const icon = document.getElementById(`map-icon-${i}`);
+                const btn = document.getElementById(`map-btn-${i}`);
+                const check = document.getElementById(`map-check-${i}`);
+
+                if(!card) continue;
+
+                if (i < highestUnlockedModule) {
+                    // Completado
+                    card.classList.remove('opacity-50', 'grayscale');
+                    if(innerCard) innerCard.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+                    if(icon) { icon.classList.replace('fa-lock', 'fa-unlock'); }
+                    check.classList.remove('hidden');
+                    btn.disabled = false;
+                    btn.className = "w-full py-2 bg-emerald-100 text-emerald-700 hover:bg-emerald-200 rounded-lg font-bold transition-colors";
+                    btn.innerText = "Repasar Teoría";
+                    btn.onclick = () => navigateTo(`m${i}-theory`);
+                } else if (i === highestUnlockedModule) {
+                    // Desbloqueado / Activo
+                    card.classList.remove('opacity-50', 'grayscale');
+                    if(innerCard) innerCard.classList.add('ring-2', 'ring-primary', 'ring-offset-2');
+                    if(icon) { icon.classList.replace('fa-lock', 'fa-play'); }
+                    check.classList.add('hidden');
+                    btn.disabled = false;
+                    
+                    if(i === 5) { // Exam is now Module 5
+                        btn.className = "w-full py-3 bg-orange-500 hover:bg-orange-600 text-white rounded-xl font-black text-lg transition-colors shadow-lg animate-pulse";
+                        btn.innerText = "Hacer Examen Final";
+                        btn.onclick = () => prepAuditGame();
+                    } else {
+                        btn.className = "w-full py-2 bg-primary hover:bg-blue-700 text-white rounded-lg font-bold transition-colors shadow-md";
+                        btn.innerText = "Estudiar Módulo";
+                        btn.onclick = () => navigateTo(`m${i}-theory`);
+                    }
+                } else {
+                    // Bloqueado
+                    card.classList.add('opacity-50', 'grayscale');
+                    if(innerCard) innerCard.classList.remove('ring-2', 'ring-primary', 'ring-offset-2');
+                    if(icon) { icon.classList.replace('fa-play', 'fa-lock'); icon.classList.replace('fa-unlock', 'fa-lock'); }
+                    check.classList.add('hidden');
+                    btn.disabled = true;
+                    btn.className = "w-full py-2 bg-slate-300 text-slate-600 rounded-lg font-bold cursor-not-allowed";
+                    btn.innerText = "Bloqueado";
+                    btn.onclick = null;
+                }
+            }
+        }
+
+        // DOM Setup Nav
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const viewId = btn.getAttribute('data-view');
+                if(viewId) navigateTo(viewId);
+            });
+        });
+        document.getElementById('mobile-menu-btn').addEventListener('click', () => {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        });
+
+        /* ==========================================
+           1. JUEGO: DESCIFRA EL CONCEPTO (MÓDULO 1)
+        ========================================== */
+        const wordDictionary = [
+            { word: "PYME", hint: "Condición o categoría que otorga el Ministerio de Economía, Industria y Comercio (MEIC) a las micro, pequeñas y medianas empresas." },
+            { word: "LUCRO", hint: "Las empresas 'Con ánimo de _______' generan excedentes para sus dueños." },
+            { word: "TERCIARIO", hint: "Sector de actividad económica enfocado a prestar servicios o ejercer el comercio." },
+            { word: "NACIONAL", hint: "Empresa cuyas ventas se realizan en la totalidad del territorio de un país." },
+            { word: "LIMITADA", hint: "Tipo de Sociedad de Responsabilidad donde el capital está divido en cuotas nominativas." }
+        ];
+        let wGameArr = [], cWordIdx = 0, selWord = "", gLetters = new Set(), wMistakes = 0;
+
+        function startWordGame() {
+            document.getElementById('wordgame-intro').classList.add('hidden');
+            document.getElementById('wordgame-active').classList.remove('hidden');
+            wGameArr = [...wordDictionary].sort(() => 0.5 - Math.random());
+            cWordIdx = 0; loadWord();
+        }
+
+        function loadWord() {
+            document.getElementById('word-overlay').classList.add('hidden');
+            selWord = wGameArr[cWordIdx].word; gLetters.clear(); wMistakes = 0;
+            document.getElementById('word-lives').innerText = 6;
+            document.getElementById('word-hint').innerText = wGameArr[cWordIdx].hint;
+            renderWord(); renderKeys();
+        }
+
+        function renderWord() {
+            const cont = document.getElementById('word-display'); cont.innerHTML = '';
+            for (let c of selWord) {
+                const b = document.createElement('div');
+                b.className = 'w-10 h-12 md:w-14 md:h-16 flex items-center justify-center text-xl md:text-3xl font-black rounded-lg border-2 border-slate-600 bg-slate-800 text-white shadow-inner transition-colors duration-300';
+                if (gLetters.has(c)) { b.innerText = c; b.classList.replace('border-slate-600', 'border-purple-500'); b.classList.replace('bg-slate-800', 'bg-slate-700'); }
+                cont.appendChild(b);
+            }
+        }
+
+        function renderKeys() {
+            const k = document.getElementById('keyboard'); k.innerHTML = '';
+            'ABCDEFGHIJKLMNÑOPQRSTUVWXYZ'.split('').forEach(l => {
+                const b = document.createElement('button');
+                b.className = 'w-9 h-12 md:w-11 md:h-14 text-sm md:text-base font-bold rounded-lg bg-slate-700 text-white hover:bg-purple-600 hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed transition-all';
+                b.innerText = l;
+                if (gLetters.has(l)) {
+                    b.disabled = true;
+                    if(selWord.includes(l)) {
+                        b.classList.replace('bg-slate-700', 'bg-emerald-600');
+                        b.classList.add('shadow-inner');
+                    } else {
+                        b.classList.replace('bg-slate-700', 'bg-rose-900/80');
+                        b.classList.add('text-rose-400');
+                    }
+                }
+                b.addEventListener('click', () => {
+                    gLetters.add(l);
+                    if (!selWord.includes(l)) { wMistakes++; document.getElementById('word-lives').innerText = 6 - wMistakes; }
+                    renderWord(); renderKeys();
+                    let won = [...selWord].every(c => gLetters.has(c));
+                    if(won) setTimeout(()=>endWord(true), 200); else if(wMistakes >= 6) setTimeout(()=>endWord(false), 200);
+                });
+                k.appendChild(b);
+            });
+        }
+
+        function endWord(win) {
+            const o = document.getElementById('word-overlay');
+            const i = document.getElementById('word-result-icon');
+            const t = document.getElementById('word-result-title');
+            document.getElementById('word-result-text').innerHTML = `La palabra correcta era <span class="font-black text-white text-2xl mx-1 tracking-widest">${selWord}</span>.`;
+            
+            if(win){ i.innerHTML='<i class="fa-solid fa-trophy text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]"></i>'; t.innerText="¡Descifrado!"; t.className="text-4xl font-black mb-4 text-emerald-400"; }
+            else { i.innerHTML='<i class="fa-solid fa-skull-crossbones text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"></i>'; t.innerText="¡Te quedaste sin intentos!"; t.className="text-4xl font-black mb-4 text-rose-400"; }
+            
+            const btn = document.getElementById('btn-next-word');
+            if(cWordIdx >= 2) { 
+                btn.innerHTML = '¡Módulo Superado! Volver al Mapa';
+                btn.onclick = () => { o.classList.add('hidden'); completeModuleAndReturn(1); };
+            } else {
+                btn.innerHTML = 'Siguiente Concepto <i class="fa-solid fa-arrow-right ml-2"></i>';
+                btn.onclick = () => { cWordIdx++; loadWord(); };
+            }
+            o.classList.remove('hidden');
+        }
+
+        /* ==========================================
+           2. JUEGO: MATCH CORPORATIVO (MÓDULO 2)
+        ========================================== */
+        const memPairs = [
+            { id: 1, text: "Prop. de Valor" }, { id: 1, text: "Conjunto único de productos que resuelve un problema del cliente" },
+            { id: 2, text: "Segmentos de Mercado" }, { id: 2, text: "Grupos específicos de personas a las que nos dirigimos" },
+            { id: 3, text: "Estructura de Costos" }, { id: 3, text: "Cálculo de todos los gastos fijos y variables necesarios para operar" },
+            { id: 4, text: "Alianzas Claves" }, { id: 4, text: "Red de socios estratégicos y proveedores que optimizan el negocio" },
+            { id: 5, text: "Estudio de Mercado" }, { id: 5, text: "Analiza a la competencia, la industria y pronostica la demanda" },
+            { id: 6, text: "Estudio Técnico" }, { id: 6, text: "Define el proceso de operación y los requerimientos físicos del local" }
+        ];
+        let fCard=null, sCard=null, lBoard=false, mMoves=0, mPairs=0;
+
+        function startMemoryGame() {
+            document.getElementById('memory-intro').classList.add('hidden');
+            document.getElementById('memory-active').classList.remove('hidden');
+            document.getElementById('memory-victory').classList.add('hidden');
+            const grid = document.getElementById('memory-grid'); grid.innerHTML='';
+            mMoves=0; mPairs=0; document.getElementById('memory-moves').innerText=0;
+            fCard=null; sCard=null; lBoard=false;
+
+            [...memPairs].sort(()=>0.5-Math.random()).forEach((item, i) => {
+                const c = document.createElement('div'); c.className='memory-card'; c.dataset.id=item.id;
+                c.innerHTML=`<div class="memory-card-inner"><div class="memory-card-cover"><i class="fa-solid fa-clone text-3xl mb-2 text-slate-500"></i><span class="text-[10px] uppercase font-bold tracking-widest text-slate-600">EduEmpresa</span></div><div class="memory-card-content"><p class="text-xs md:text-sm font-bold leading-snug">${item.text}</p></div></div>`;
+                c.addEventListener('click', function() {
+                    if(lBoard || this===fCard) return;
+                    this.classList.add('flipped');
+                    if(!fCard) { fCard=this; return; }
+                    sCard=this; mMoves++; document.getElementById('memory-moves').innerText=mMoves;
+                    if(fCard.dataset.id === sCard.dataset.id) {
+                        fCard.classList.add('matched'); sCard.classList.add('matched');
+                        fCard.removeEventListener('click',arguments.callee); sCard.removeEventListener('click',arguments.callee);
+                        mPairs++; if(mPairs === memPairs.length/2) setTimeout(()=>{ document.getElementById('final-moves').innerText=mMoves; document.getElementById('memory-victory').classList.remove('hidden'); }, 600);
+                        fCard=null; sCard=null;
+                    } else {
+                        lBoard=true; setTimeout(()=>{ fCard.classList.remove('flipped'); sCard.classList.remove('flipped'); fCard=null; sCard=null; lBoard=false; }, 1200);
+                    }
+                });
+                grid.appendChild(c);
+            });
+        }
+
+        /* ==========================================
+           3. JUEGO: RUTA LEGAL (MÓDULO 3)
+        ========================================== */
+        const routeData = [
+            { id: 1, title: "Constitución Legal", desc: "Registrar la figura jurídica." },
+            { id: 2, title: "Permisos de Salud", desc: "Permiso Sanitario del Min. Salud." },
+            { id: 3, title: "Municipalidad", desc: "Uso de Suelo y Patente Comercial." },
+            { id: 4, title: "Pólizas INS", desc: "Pólizas de Riesgos del Trabajo." },
+            { id: 5, title: "Hacienda", desc: "Registro de Contribuyente." },
+            { id: 6, title: "CCSS", desc: "Inscripción final como Patrono." }
+        ];
+        let rExpId = 1, rMistakes = 0;
+
+        function startRouteGame() {
+            document.getElementById('route-intro').classList.add('hidden');
+            document.getElementById('route-active').classList.remove('hidden');
+            document.getElementById('route-overlay').classList.add('hidden');
+            rExpId=1; rMistakes=0; document.getElementById('route-mistakes').innerText=0;
+            const pool=document.getElementById('route-pool'), slots=document.getElementById('route-slots');
+            pool.innerHTML=''; slots.innerHTML='';
+
+            for(let i=1;i<=6;i++) slots.innerHTML+=`<div id="rs-${i}" class="w-full min-h-[4rem] border-2 border-dashed border-slate-600 bg-slate-800/30 rounded-xl flex items-center justify-center text-slate-500 font-bold text-sm">Paso ${i}</div>`;
+            
+            [...routeData].sort(()=>0.5-Math.random()).forEach(s => {
+                const c = document.createElement('button'); c.className='w-full text-left p-4 rounded-xl border border-slate-600 bg-slate-800 hover:border-cyan-400 hover:bg-slate-700 transition-all cursor-pointer shadow-md group block relative z-20';
+                c.innerHTML=`<p class="font-bold text-cyan-300 text-sm md:text-base group-hover:text-cyan-400 transition-colors">${s.title}</p><p class="text-xs text-slate-400 mt-1 leading-snug">${s.desc}</p>`;
+                c.addEventListener('click', () => {
+                    if(s.id === rExpId) {
+                        const slot = document.getElementById(`rs-${s.id}`);
+                        slot.className='w-full min-h-[4rem] p-3 rounded-xl border border-emerald-500 bg-emerald-900/50 flex flex-col justify-center animate-fade-in shadow-lg relative z-20';
+                        slot.innerHTML=`<p class="font-bold text-emerald-400 text-sm md:text-base"><i class="fa-solid fa-check-circle mr-1"></i> Paso ${s.id}: ${s.title}</p>`;
+                        c.remove(); rExpId++;
+                        if(rExpId>6) setTimeout(()=>{ document.getElementById('route-final-mistakes').innerText=rMistakes; document.getElementById('route-overlay').classList.remove('hidden'); },500);
+                    } else {
+                        rMistakes++; document.getElementById('route-mistakes').innerText=rMistakes;
+                        c.classList.add('bg-rose-900/80','border-rose-500'); setTimeout(()=>c.classList.remove('bg-rose-900/80','border-rose-500'), 500);
+                    }
+                });
+                pool.appendChild(c);
+            });
+        }
+
+        /* ==========================================
+           4. JUEGO: RETO CEO (MÓDULO 4)
+        ========================================== */
+        const ceoQs = [
+            { s: "Has redactado un documento paso a paso donde explicas con gran detalle CÓMO el empleado debe ingresar una factura al sistema. Esto es:", o: ["La Política", "El Proceso", "Un Procedimiento"], c: 2, e: "Un Procedimiento es el manual detallado del 'CÓMO' se realiza una tarea con precisión." },
+            { s: "Mudas tu negocio a una zona donde hay otras empresas del mismo rubro, atrayendo mejores proveedores en conjunto. Esto es:", o: ["Clúster", "Encadenamiento", "Sindicato"], c: 0, e: "El Clúster es la concentración geográfica de empresas interconectadas." },
+            { s: "Es fin de mes. ¿Quién es responsable de asegurar el reporte de planillas y el pago a la CCSS?", o: ["Recursos Humanos", "Marketing", "Producción"], c: 0, e: "RR.HH. / Finanzas controla la nómina, planillas y obligaciones patronales de la CCSS." }
+        ];
+        let ceoIdx = 0, ceoScore = 0;
+
+        function startSimulation() {
+            document.getElementById('ceo-intro').classList.add('hidden');
+            document.getElementById('ceo-active').classList.remove('hidden');
+            ceoIdx=0; ceoScore=0; document.getElementById('score-display').innerText=0; loadCeoQ();
+        }
+
+        function loadCeoQ() {
+            document.getElementById('feedback-overlay').classList.add('hidden');
+            const q = ceoQs[ceoIdx];
+            document.getElementById('question-text').innerText = q.s;
+            document.getElementById('question-counter').innerText = `Escenario ${ceoIdx+1} / 3`;
+            const cont = document.getElementById('options-container'); cont.innerHTML='';
+            q.o.forEach((opt, i) => {
+                const b = document.createElement('button');
+                b.className='w-full text-left p-4 rounded-2xl border-2 border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700 hover:border-blue-500 transition-all text-sm md:text-base flex items-center gap-4 shadow-md';
+                b.innerHTML=`<span class="w-8 h-8 rounded-full bg-slate-900 border border-slate-600 flex justify-center items-center font-black shrink-0">${String.fromCharCode(65+i)}</span> <span>${opt}</span>`;
+                b.addEventListener('click', () => {
+                    cont.querySelectorAll('button').forEach(btn=>{ btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed'); });
+                    if(i===q.c) { b.classList.remove('opacity-50'); b.classList.add('bg-emerald-900/80','border-emerald-500','text-emerald-300'); showCeoFeedback(true, q.e); }
+                    else { b.classList.remove('opacity-50'); b.classList.add('bg-rose-900/80','border-rose-500','text-rose-300'); cont.children[q.c].classList.remove('opacity-50'); cont.children[q.c].classList.add('bg-emerald-900/80','border-emerald-500','text-emerald-300'); showCeoFeedback(false, q.e); }
+                });
+                cont.appendChild(b);
+            });
+        }
+
+        function showCeoFeedback(win, exp) {
+            document.getElementById('feedback-icon').innerHTML = win ? '<i class="fa-solid fa-check-circle text-emerald-500"></i>' : '<i class="fa-solid fa-times-circle text-rose-500"></i>';
+            document.getElementById('feedback-title').innerText = win ? '¡Decisión Correcta!' : 'Mala Decisión';
+            document.getElementById('feedback-title').className = win ? 'text-3xl font-black mb-2 text-emerald-400' : 'text-3xl font-black mb-2 text-rose-400';
+            document.getElementById('feedback-explanation').innerText = exp;
+            
+            const nBtn = document.getElementById('btn-next-ceo');
+            if(ceoIdx >= ceoQs.length-1) { nBtn.innerHTML = '¡Módulo Superado! Volver al Mapa'; nBtn.onclick = () => { document.getElementById('feedback-overlay').classList.add('hidden'); completeModuleAndReturn(4); }; }
+            else { nBtn.innerHTML = 'Siguiente Escenario <i class="fa-solid fa-arrow-right ml-2"></i>'; nBtn.onclick = () => { ceoIdx++; loadCeoQ(); }; }
+            setTimeout(()=>document.getElementById('feedback-overlay').classList.remove('hidden'), 500);
+        }
+
+        /* ==========================================
+           5. JUEGO FINAL: AUDITORÍA EXPRESS
+        ========================================== */
+        const auditQs = [
+            { t: "Una empresa con 120 empleados es considerada legalmente como una Mediana Empresa.", isT: false, e: "Falso. A partir de los 101 trabajadores se considera Gran Empresa." },
+            { t: "El estudio de mercado proyecta los costos y calcula el Punto de Equilibrio financiero.", isT: false, e: "Falso. Ese es el Estudio Económico/Financiero." },
+            { t: "El Permiso Sanitario de Funcionamiento es emitido por el Ministerio de Salud.", isT: true, e: "Verdadero. La Municipalidad emite la Patente, no el PSF." },
+            { t: "En una Sociedad Anónima (S.A.), la responsabilidad de los socios es ilimitada y solidaria.", isT: false, e: "Falso. Se limita al capital aportado por ellos." },
+            { t: "El bloque 'Alianzas Clave' del CANVAS define los proveedores externos vitales.", isT: true, e: "Verdadero." },
+            { t: "Las empresas del sector primario son extractivas (minería, pesca, agricultura).", isT: true, e: "Verdadero. Se basan en obtención directa de recursos." },
+            { t: "El INS se encarga de procesar la inscripción patronal de la planilla de los empleados.", isT: false, e: "Falso. La inscripción de planillas la hace la CCSS." },
+            { t: "Una empresa mixta combina capital gubernamental del Estado y capital de particulares.", isT: true, e: "Verdadero." }
+        ];
+        let aArr=[], aIdx=0, aScore=0, aTimer, aTime=15.0;
+
+        function startAuditGame() {
+            document.getElementById('audit-intro').classList.add('hidden');
+            document.getElementById('audit-active').classList.remove('hidden');
+            document.getElementById('audit-results').classList.add('hidden');
+            aArr=[...auditQs].sort(()=>0.5-Math.random()).slice(0,8); aIdx=0; aScore=0; loadAudit();
+        }
+
+        function loadAudit() {
+            document.getElementById('audit-overlay').classList.add('hidden');
+            document.getElementById('btn-audit-true').disabled=false; document.getElementById('btn-audit-false').disabled=false;
+            document.getElementById('audit-statement').innerText = `"${aArr[aIdx].t}"`;
+            document.getElementById('audit-counter').innerText = `Evaluación ${aIdx+1} de ${aArr.length}`;
+            aTime=15.0; document.getElementById('audit-timer-bar').style.width="100%";
+            clearInterval(aTimer); aTimer = setInterval(updateAuditTimer, 100);
+        }
+
+        function updateAuditTimer() {
+            aTime -= 0.1;
+            if(aTime<=0) { aTime=0; clearInterval(aTimer); checkAudit(null); }
+            document.getElementById('audit-time-text').innerText=aTime.toFixed(1);
+            document.getElementById('audit-timer-bar').style.width=`${(aTime/15)*100}%`;
+            document.getElementById('audit-timer-bar').className = aTime<4 ? "bg-red-600 h-full transition-all duration-100 ease-linear relative" : "bg-gradient-to-r from-orange-400 to-red-500 h-full transition-all duration-100 ease-linear relative";
+        }
+
+        document.getElementById('btn-audit-true').addEventListener('click', ()=>checkAudit(true));
+        document.getElementById('btn-audit-false').addEventListener('click', ()=>checkAudit(false));
+
+        function checkAudit(ans) {
+            clearInterval(aTimer);
+            document.getElementById('btn-audit-true').disabled=true; document.getElementById('btn-audit-false').disabled=true;
+            const isCor = ans === aArr[aIdx].isT;
+            let pts = 0; if(isCor) { pts = 100 + Math.floor(aTime*10); aScore += pts; }
+            
+            const i=document.getElementById('audit-result-icon'), t=document.getElementById('audit-result-title');
+            if(ans===null) { i.innerHTML='<i class="fa-solid fa-clock text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"></i>'; t.innerText="¡Tiempo Agotado!"; t.className="text-4xl font-black mb-2 text-rose-400"; }
+            else if(isCor) { i.innerHTML='<i class="fa-solid fa-check-double text-emerald-500 drop-shadow-[0_0_15px_rgba(16,185,129,0.5)]"></i>'; t.innerText=`¡Correcto! (+${pts} pts)`; t.className="text-4xl font-black mb-2 text-emerald-400"; }
+            else { i.innerHTML='<i class="fa-solid fa-times-circle text-rose-500 drop-shadow-[0_0_15px_rgba(244,63,94,0.5)]"></i>'; t.innerText="¡Incorrecto!"; t.className="text-4xl font-black mb-2 text-rose-400"; }
+            
+            document.getElementById('audit-result-explanation').innerText = aArr[aIdx].e;
+            
+            const nBtn = document.getElementById('btn-audit-next');
+            if(aIdx >= aArr.length-1) { 
+                nBtn.innerHTML='Ver Resultados <i class="fa-solid fa-flag-checkered ml-2"></i>'; 
+                nBtn.onclick=()=> { 
+                    document.getElementById('audit-overlay').classList.add('hidden'); 
+                    document.getElementById('audit-active').classList.add('hidden'); 
+                    document.getElementById('audit-final-score').innerText=aScore; 
+                    document.getElementById('audit-results').classList.remove('hidden'); 
+                    document.getElementById('audit-results').classList.add('flex'); 
+                    completeModuleAndReturn(5); 
+                }; 
+            }
+            else { nBtn.innerHTML='Siguiente <i class="fa-solid fa-arrow-right ml-2"></i>'; nBtn.onclick=()=>{ aIdx++; loadAudit(); }; }
+            
+            setTimeout(()=>document.getElementById('audit-overlay').classList.remove('hidden'), 300);
+        }
+
+        /* ==========================================
+           6. JUEGO BONUS: ASESOR ACADÉMICO
+        ========================================== */
+        const bonusQs = [
+            { q: "¡Hola! Estoy armando un documento académico con formato APA 7ma edición. ¿Cuáles son los márgenes exactos que debo aplicar a todas las páginas?", options: [{name:"2.0 cm en todos los lados", correct:false}, {name:"1 pulgada (2.54 cm) en todos los lados", correct:true}, {name:"3 cm a la izquierda, 2 cm resto", correct:false}, {name:"No hay regla para márgenes", correct:false}], exp: "La normativa APA 7 especifica estrictamente márgenes de 1 pulgada (2.54 cm) en todos los bordes de la página." },
+            { q: "Quiero buscar información exacta sobre 'Marketing Digital' pero Google me arroja resultados solo de 'Marketing'. ¿Qué operador booleano o truco debo usar?", options: [{name:"Escribir la palabra AND en medio", correct:false}, {name:"Escribir la palabra OR al principio", correct:false}, {name:"Encerrar la frase en comillas dobles", correct:true}, {name:"Usar el signo de menos (-)", correct:false}], exp: "Encerrar la frase en comillas dobles exige al buscador que arroje la frase exactamente como está escrita, sin separar las palabras." },
+            { q: "Quiero citar un párrafo de otro autor, pero el texto tiene 55 palabras. Según APA 7, ¿cómo debo estructurarlo?", options: [{name:"Entre comillas dentro de mi propio párrafo.", correct:false}, {name:"En cursiva y con negrita al final de la hoja.", correct:false}, {name:"En un párrafo aparte, con sangría izquierda de 1.27 cm y sin comillas.", correct:true}, {name:"No se permite copiar más de 40 palabras.", correct:false}], exp: "Las citas textuales largas (más de 40 palabras) van en bloque aparte, con sangría y SIN comillas." },
+            { q: "Necesitamos potenciar las ventas B2B (de empresa a empresa) y reclutar personal profesional, no tanto buscar adolescentes. ¿Qué red social nos recomiendas?", options: [{name:"TikTok", correct:false}, {name:"LinkedIn", correct:true}, {name:"Pinterest", correct:false}, {name:"Snapchat", correct:false}], exp: "LinkedIn es la red social profesional por excelencia, ideal para el networking corporativo, alianzas B2B y reclutamiento." },
+            { q: "Queremos crear un documento online donde varios gerentes de la empresa podamos redactar y editar juntos el manual corporativo al mismo tiempo. ¿Qué plataforma usamos?", options: [{name:"Una Base de Datos (SQL)", correct:false}, {name:"Una Wiki (ej. Notion/Confluence)", correct:true}, {name:"Un Blog (Blogger)", correct:false}, {name:"Una red social (Instagram)", correct:false}], exp: "Las Wikis y plataformas colaborativas (como Google Docs o Notion) permiten la edición simultánea por múltiples usuarios sin saber programación." },
+            { q: "Encontré un estudio muy bueno para nuestra investigación de mercado, pero el dominio web termina en .com y parece ser patrocinado por una marca. ¿Qué criterio falla aquí?", options: [{name:"Falla el criterio de Autoridad.", correct:false}, {name:"Falla el criterio de Actualidad.", correct:false}, {name:"Falla el criterio de Objetividad.", correct:true}, {name:"No falla ningún criterio.", correct:false}], exp: "Si el sitio es comercial y patrocinado, falla la Objetividad, pues los datos podrían estar sesgados para venderte algo. En la academia se prefieren sitios .edu, .gov o repositorios como Google Scholar." }
+        ];
+        let bonusIdx = 0, bonusScore = 0;
+
+        function startBonusGame() {
+            document.getElementById('bonus-intro').classList.add('hidden');
+            document.getElementById('bonus-active').classList.remove('hidden');
+            bonusIdx=0; bonusScore=0; document.getElementById('bonus-score-display').innerText=0; loadBonusQ();
+        }
+
+        function loadBonusQ() {
+            document.getElementById('bonus-overlay').classList.add('hidden');
+            const q = bonusQs[bonusIdx];
+            document.getElementById('bonus-question').innerText = `"${q.q}"`;
+            document.getElementById('bonus-counter').innerText = `Caso ${bonusIdx+1} de ${bonusQs.length}`;
+            
+            const cont = document.getElementById('bonus-options'); cont.innerHTML='';
+            const shuffledOptions = [...q.options].sort(() => 0.5 - Math.random());
+
+            shuffledOptions.forEach((opt) => {
+                const b = document.createElement('button');
+                b.className='w-full p-4 rounded-xl border-2 border-slate-600 bg-slate-800 text-slate-200 hover:border-pink-400 hover:bg-slate-700 transition-all text-sm md:text-base font-bold shadow-md';
+                b.innerText = opt.name;
+                b.addEventListener('click', () => {
+                    cont.querySelectorAll('button').forEach(btn=>{ btn.disabled=true; btn.classList.add('opacity-50','cursor-not-allowed'); btn.classList.remove('hover:border-pink-400','hover:bg-slate-700'); });
+                    if(opt.correct) { b.classList.remove('opacity-50'); b.classList.add('bg-emerald-900/80','border-emerald-500','text-emerald-400'); bonusScore+=50; document.getElementById('bonus-score-display').innerText=bonusScore; showBonusFeedback(true, q.exp); }
+                    else { 
+                        b.classList.remove('opacity-50'); b.classList.add('bg-rose-900/80','border-rose-500','text-rose-400');
+                        const correctBtnIndex = shuffledOptions.findIndex(o => o.correct);
+                        cont.children[correctBtnIndex].classList.remove('opacity-50'); cont.children[correctBtnIndex].classList.add('bg-emerald-900/80','border-emerald-500','text-emerald-400');
+                        showBonusFeedback(false, q.exp); 
+                    }
+                });
+                cont.appendChild(b);
+            });
+        }
+
+        function showBonusFeedback(win, exp) {
+            document.getElementById('bonus-icon').innerHTML = win ? '<i class="fa-solid fa-check-circle text-emerald-500 drop-shadow-[0_0_10px_rgba(16,185,129,0.5)]"></i>' : '<i class="fa-solid fa-times-circle text-rose-500 drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]"></i>';
+            document.getElementById('bonus-title').innerText = win ? '¡Respuesta Perfecta!' : 'Asesoramiento Incorrecto';
+            document.getElementById('bonus-title').className = win ? 'text-4xl font-black mb-4 text-emerald-400' : 'text-4xl font-black mb-4 text-rose-400';
+            document.getElementById('bonus-explanation').innerText = exp;
+            
+            const nBtn = document.getElementById('btn-next-bonus');
+            if(bonusIdx >= bonusQs.length-1) { nBtn.innerHTML = 'Finalizar Bonus Track <i class="fa-solid fa-flag-checkered ml-2"></i>'; nBtn.onclick = () => { document.getElementById('bonus-overlay').classList.add('hidden'); navigateTo('map'); }; }
+            else { nBtn.innerHTML = 'Siguiente Caso <i class="fa-solid fa-arrow-right ml-2"></i>'; nBtn.onclick = () => { bonusIdx++; loadBonusQ(); }; }
+            setTimeout(()=>document.getElementById('bonus-overlay').classList.remove('hidden'), 500);
+        }
+    </script>
+</body>
+</html>
