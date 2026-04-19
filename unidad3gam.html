@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>COTE-EMPRENDE </title>
+    <title>COTE-EMPRENDE | Contenidos Interactivos</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- FontAwesome -->
@@ -96,7 +96,7 @@
                 
                 <div class="hidden lg:flex space-x-1 text-sm font-semibold text-slate-600">
                     <button class="nav-btn px-4 py-2 rounded-lg hover:bg-slate-100 hover:text-primary transition-colors" data-view="home">Inicio</button>
-                    <button class="nav-btn px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors" data-view="map"><i class="fa-solid fa-map mr-1"></i> Mapa de contenidos</button>
+                    <button class="nav-btn px-4 py-2 rounded-lg bg-primary/10 text-primary hover:bg-primary hover:text-white transition-colors" data-view="map"><i class="fa-solid fa-map mr-1"></i> Mapa de Contenidos</button>
                 </div>
 
                 <div class="lg:hidden flex items-center">
@@ -109,7 +109,7 @@
         <div id="mobile-menu" class="hidden lg:hidden bg-white border-b border-slate-200">
             <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 text-sm font-medium">
                 <button class="nav-btn w-full text-left px-3 py-2 rounded-md hover:bg-slate-100" data-view="home">Inicio</button>
-                <button class="nav-btn w-full text-left px-3 py-2 rounded-md bg-primary/10 text-primary font-bold" data-view="map">Mapa de los contenidos</button>
+                <button class="nav-btn w-full text-left px-3 py-2 rounded-md bg-primary/10 text-primary font-bold" data-view="map">Mapa de Contenidos</button>
             </div>
         </div>
     </nav>
@@ -128,7 +128,7 @@
 
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                 <div>
-                    <span class="inline-block py-1 px-3 rounded-full bg-primary/30 text-primary-200 text-sm font-bold tracking-wider mb-6 border border-primary/50 text-blue-300">PEI. Roberto Mora C.</span>
+                    <span class="inline-block py-1 px-3 rounded-full bg-primary/30 text-primary-200 text-sm font-bold tracking-wider mb-6 border border-primary/50 text-blue-300">UNIDAD 3: EMPRENDIMIENTO</span>
                     <h1 class="text-5xl md:text-6xl font-extrabold tracking-tight mb-6 leading-tight">
                         De la idea a la <span class="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400">Acción Empresarial</span>
                     </h1>
@@ -136,7 +136,7 @@
                         Bienvenido a esta herramienta interactiva. Deberás leer con tu grupo la teoría de cada módulo y <strong>superar el desafío a ciegas para desbloquear el siguiente nivel</strong>. ¡Si no lo recuerdas, tendrás que volver a la teoría!
                     </p>
                     <button class="nav-btn px-8 py-4 bg-primary text-white font-bold rounded-xl hover:bg-blue-700 transition-colors shadow-lg shadow-primary/30 flex items-center justify-center gap-2 ring-2 ring-primary ring-offset-2 ring-offset-slate-900 animate-bounce" data-view="map">
-                        <i class="fa-solid fa-play"></i> Iniciar
+                        <i class="fa-solid fa-play"></i> Entrar a los Contenidos
                     </button>
                 </div>
                 <div class="hidden md:flex justify-center animate-bounce-slight mt-24">
@@ -232,7 +232,7 @@
                                 <i id="map-check-5" class="fa-solid fa-trophy text-yellow-500 text-xl hidden"></i>
                             </div>
                             <h3 class="font-bold text-2xl text-slate-800 mb-2">Auditoría Express</h3>
-                            <p class="text-sm text-slate-500 mb-4">Demuestra todo lo aprendido .</p>
+                            <p class="text-sm text-slate-500 mb-4">Demuestra todo lo aprendido bajo presión para aprobar la unidad.</p>
                             <button id="map-btn-5" class="w-full py-3 bg-slate-400 text-white rounded-xl font-black text-lg cursor-not-allowed" disabled>Bloqueado</button>
                         </div>
                     </div>
@@ -276,7 +276,7 @@
         =========================================== -->
         <section id="view-m1-theory" class="view-section bg-slate-50 py-12">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-primary font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-primary font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
                 <div class="mb-8 border-l-4 border-purple-500 pl-5">
                     <span class="text-purple-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 1</span>
@@ -385,7 +385,7 @@
         <section id="view-m1-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
             <button onclick="navigateTo('m1-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
             
-            <div class="w-full max-w-4xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-4xl mx-auto bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div id="wordgame-intro" class="text-center py-8">
                     <div class="w-20 h-20 bg-purple-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(147,51,234,0.5)]"><i class="fa-solid fa-spell-check"></i></div>
                     <h3 class="text-3xl font-extrabold mb-4">Desafío 1: Descifra el Concepto</h3>
@@ -420,7 +420,7 @@
         =========================================== -->
         <section id="view-m2-theory" class="view-section bg-slate-50 py-12">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-emerald-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-emerald-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
                 <div class="mb-8 border-l-4 border-emerald-500 pl-5">
                     <span class="text-emerald-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 2</span>
@@ -504,7 +504,7 @@
         <section id="view-m2-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
             <button onclick="navigateTo('m2-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
 
-            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-5xl mx-auto bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div id="memory-intro" class="text-center py-8">
                     <div class="w-20 h-20 bg-emerald-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(16,185,129,0.5)]"><i class="fa-solid fa-clone"></i></div>
                     <h3 class="text-3xl font-extrabold mb-4">Desafío 2: Match CANVAS</h3>
@@ -534,7 +534,7 @@
         =========================================== -->
         <section id="view-m3-theory" class="view-section bg-slate-50 py-12">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-cyan-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos</button>
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-cyan-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
                 <div class="mb-8 border-l-4 border-cyan-500 pl-5">
                     <span class="text-cyan-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 3</span>
@@ -613,7 +613,7 @@
         <section id="view-m3-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
             <button onclick="navigateTo('m3-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
 
-            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-5xl mx-auto bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div id="route-intro" class="text-center py-8">
                     <div class="w-20 h-20 bg-cyan-500 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(6,182,212,0.5)]"><i class="fa-solid fa-route"></i></div>
                     <h3 class="text-3xl font-extrabold mb-4">Desafío 3: Ruta Legal</h3>
@@ -653,7 +653,7 @@
         =========================================== -->
         <section id="view-m4-theory" class="view-section bg-slate-50 py-12">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-blue-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa del Curso</button>
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-blue-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
                 <div class="mb-8 border-l-4 border-blue-500 pl-5">
                     <span class="text-blue-600 font-bold tracking-widest text-sm uppercase">Lectura: Módulo 4</span>
@@ -724,7 +724,7 @@
         <section id="view-m4-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
             <button onclick="navigateTo('m4-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Rendirse y repasar teoría</button>
 
-            <div class="w-full max-w-4xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-4xl mx-auto bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div id="ceo-intro" class="text-center py-8">
                     <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(37,99,235,0.5)]"><i class="fa-solid fa-user-tie"></i></div>
                     <h3 class="text-3xl font-extrabold mb-4">Desafío 4: Reto CEO</h3>
@@ -759,9 +759,9 @@
              VISTA MÓDULO 5: JEFE FINAL (EXAMEN)
         =========================================== -->
         <section id="view-m5-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
-            <button onclick="navigateTo('map')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos </button>
+            <button onclick="navigateTo('map')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
-            <div class="w-full max-w-4xl bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-6 md:p-12 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-4xl mx-auto bg-gradient-to-br from-slate-900 to-slate-800 rounded-[2rem] p-6 md:p-12 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div class="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-orange-500/10 rounded-full blur-3xl pointer-events-none"></div>
                 <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-64 h-64 bg-red-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -813,7 +813,7 @@
 
                 <div id="audit-results" class="hidden flex-col items-center justify-center text-center p-8 z-30 relative">
                     <i class="fa-solid fa-graduation-cap text-8xl text-yellow-400 mb-6 drop-shadow-[0_0_20px_rgba(250,204,21,0.6)]"></i>
-                    <h2 class="text-5xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">¡Excelente!</h2>
+                    <h2 class="text-5xl font-black mb-4 text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 to-yellow-600">¡Unidad Aprobada!</h2>
                     <p class="text-slate-300 mb-8 text-xl max-w-lg mx-auto">Su grupo ha demostrado dominar toda la teoría requerida sobre la Creación y Operación de Empresas.</p>
                     
                     <div class="bg-slate-800/80 rounded-3xl p-8 mb-10 border-2 border-slate-700 shadow-2xl relative overflow-hidden w-full max-w-sm mx-auto">
@@ -832,7 +832,7 @@
         =========================================== -->
         <section id="view-bonus-theory" class="view-section bg-slate-50 py-12">
             <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-pink-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de contenidos </button>
+                <button onclick="navigateTo('map')" class="mb-6 text-slate-500 hover:text-pink-600 font-bold text-sm transition-colors"><i class="fa-solid fa-arrow-left mr-2"></i>Volver al Mapa de Contenidos</button>
 
                 <div class="mb-8 border-l-4 border-pink-500 pl-5">
                     <span class="text-pink-600 font-bold tracking-widest text-sm uppercase">Módulo Extra / Bonus Track</span>
@@ -926,7 +926,7 @@
                                 <li><strong>Márgenes estrictos:</strong> 1 pulgada (2.54 cm) en los bordes superior, inferior, izquierdo y derecho.</li>
                                 <li><strong>Interlineado:</strong> Siempre Doble (2.0) en todo el texto, incluyendo bibliografía.</li>
                                 <li><strong>Fuentes permitidas:</strong> La 7ma edición flexibilizó esto. Se permite <i>Times New Roman 12, Arial 11, Calibri 11, o Georgia 11</i>.</li>
-                                <li><strong>Estructura de Referencia (Bibliografía al final):</strong> Autor, A. A. (Año). <i>Título en cursiva</i>. Editorial o URL. <a href="https://cms.usanmarcos.ac.cr/sites/default/files/i_taller_apa_7_ed.pdf/" target="_blank" class="text-pink-600 hover:underline font-bold ml-1">Ver guía APA7- USAM <i class="fa-solid fa-external-link text-xs"></i></a></li>
+                                <li><strong>Estructura de Referencia (Bibliografía al final):</strong> Autor, A. A. (Año). <i>Título en cursiva</i>. Editorial o URL. <a href="https://cms.usanmarcos.ac.cr/sites/default/files/i_taller_apa_7_ed.pdf" target="_blank" class="text-pink-600 hover:underline font-bold ml-1">Ver guía de aplicación APA 7ma Ed. <i class="fa-solid fa-external-link text-xs"></i></a></li>
                             </ul>
                         </div>
                     </div>
@@ -992,7 +992,7 @@
         <section id="view-bonus-game" class="view-section min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center py-12 px-4 relative">
             <button onclick="navigateTo('bonus-theory')" class="absolute top-6 left-6 text-slate-400 hover:text-white transition-colors text-sm font-bold uppercase tracking-widest"><i class="fa-solid fa-arrow-left mr-2"></i>Repasar Módulo Extra</button>
 
-            <div class="w-full max-w-5xl bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
+            <div class="w-full max-w-5xl mx-auto bg-slate-800/80 rounded-3xl p-6 md:p-10 shadow-2xl border border-slate-700 relative overflow-hidden">
                 <div id="bonus-intro" class="text-center py-8">
                     <div class="w-20 h-20 bg-pink-600 rounded-full flex items-center justify-center text-4xl mx-auto mb-6 shadow-[0_0_20px_rgba(219,39,119,0.5)]"><i class="fa-solid fa-headset"></i></div>
                     <h3 class="text-3xl font-extrabold mb-4">Desafío Bonus: Asesor Investigador</h3>
@@ -1272,7 +1272,7 @@
 
             [...memPairs].sort(()=>0.5-Math.random()).forEach((item, i) => {
                 const c = document.createElement('div'); c.className='memory-card'; c.dataset.id=item.id;
-                c.innerHTML=`<div class="memory-card-inner"><div class="memory-card-cover"><i class="fa-solid fa-clone text-3xl mb-2 text-slate-500"></i><span class="text-[10px] uppercase font-bold tracking-widest text-slate-600">EduEmpresa</span></div><div class="memory-card-content"><p class="text-xs md:text-sm font-bold leading-snug">${item.text}</p></div></div>`;
+                c.innerHTML=`<div class="memory-card-inner"><div class="memory-card-cover"><i class="fa-solid fa-clone text-3xl mb-2 text-slate-500"></i><span class="text-[10px] uppercase font-bold tracking-widest text-slate-600">COTE-EMPRENDE</span></div><div class="memory-card-content"><p class="text-xs md:text-sm font-bold leading-snug">${item.text}</p></div></div>`;
                 c.addEventListener('click', function() {
                     if(lBoard || this===fCard) return;
                     this.classList.add('flipped');
