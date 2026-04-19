@@ -1,0 +1,1456 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BINGO - Legislación Laboral CR</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES Y CONFIGURACIÓN BASE
+           ========================================================================== */
+        :root {
+            --bg-main: #0a0e27;
+            --bg-panel: #1a1f3a;
+            --border-color: #2a3f5f;
+            --text-main: #ffffff;
+            --text-sec: #b0b9cc;
+            --accent-cyan: #00d4ff;
+            --success-green: #00ff88;
+            --error-red: #ff3366;
+            --warn-orange: #ffaa00;
+            --font-main: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-main);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            min-height: 100vh; /* Permite que crezca si es necesario */
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+            overflow-y: auto; /* Permite scroll vertical para evitar que se amontonen las cosas en pantallas pequeñas */
+        }
+
+        /* ==========================================================================
+           HEADER Y BOTÓN BINGO ÉPICO
+           ========================================================================== */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: rgba(26, 31, 58, 0.8);
+            border-bottom: 2px solid var(--border-color);
+            height: 100px;
+        }
+
+        .header-info h1 {
+            color: var(--accent-cyan);
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .header-info p {
+            color: var(--text-sec);
+            font-size: 14px;
+        }
+
+        .mode-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, var(--warn-orange), #ffcc00);
+            color: #000;
+            padding: 12px 35px;
+            border-radius: 30px;
+            font-weight: 900;
+            font-size: 26px; /* Letra gigante para el proyector */
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-top: 15px;
+            box-shadow: 0 0 25px rgba(255, 170, 0, 0.6);
+            border: 3px solid #fff;
+            transition: all 0.3s;
+            animation: pulseMode 2s infinite;
+        }
+
+        @keyframes pulseMode {
+            0% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 170, 0, 0.4); }
+            50% { transform: scale(1.02); box-shadow: 0 0 35px rgba(255, 170, 0, 0.8); }
+            100% { transform: scale(1); box-shadow: 0 0 20px rgba(255, 170, 0, 0.4); }
+        }
+
+        .header-controls {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        #musicToggle {
+            background: transparent;
+            border: 2px solid var(--border-color);
+            color: var(--text-sec);
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        #musicToggle.on {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            box-shadow: 0 0 10px rgba(0, 212, 255, 0.3);
+        }
+
+        /* EL BOTÓN GIGANTE */
+        #bingoBtn {
+            background: linear-gradient(135deg, #ff3366, #ff0044);
+            color: white;
+            border: 4px solid #ffaa00;
+            padding: 15px 40px;
+            font-size: 32px;
+            font-weight: bold;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 0 20px rgba(255, 51, 102, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: pulseBingo 0.4s infinite alternate;
+            transition: transform 0.1s;
+            height: 80px;
+        }
+
+        #bingoBtn:active {
+            transform: scale(0.95) !important;
+        }
+
+        #bingoBtn.pressed {
+            animation: bingoExplosion 0.5s forwards;
+        }
+
+        @keyframes pulseBingo {
+            0% { opacity: 0.8; transform: scale(1); box-shadow: 0 0 15px rgba(255, 51, 102, 0.5); }
+            100% { opacity: 1; transform: scale(1.02); box-shadow: 0 0 30px rgba(255, 170, 0, 0.8); }
+        }
+
+        @keyframes bingoExplosion {
+            0% { transform: scale(1); filter: hue-rotate(0deg); }
+            50% { transform: scale(1.2); filter: hue-rotate(45deg); box-shadow: 0 0 50px white; }
+            100% { transform: scale(1); filter: hue-rotate(90deg); }
+        }
+
+        /* ==========================================================================
+           LAYOUT PRINCIPAL (GRID 3 COLUMNAS)
+           ========================================================================== */
+        main {
+            display: grid;
+            grid-template-columns: 4fr 3fr 3fr; /* Usa fracciones para evitar desborde horizontal con los espacios */
+            flex: 1;
+            gap: 20px;
+            padding: 20px;
+            /* Eliminado el height restrictivo para que crezca según el contenido */
+        }
+
+        .panel {
+            background-color: var(--bg-panel);
+            border: 1px solid var(--border-color);
+            border-radius: 15px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+
+        /* Columna 1: Número GIGANTE */
+        .col-number {
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            position: relative;
+        }
+
+        .number-display {
+            font-size: 180px;
+            font-weight: bold;
+            color: var(--text-sec);
+            text-shadow: 0 0 20px rgba(0,0,0,0.5);
+            line-height: 1;
+            margin-bottom: 20px;
+            transition: all 0.3s;
+        }
+
+        .number-display.active {
+            color: var(--success-green);
+            text-shadow: 0 0 40px rgba(0, 255, 136, 0.6);
+            animation: popIn 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .causa-title {
+            font-size: 24px;
+            color: var(--accent-cyan);
+            margin-bottom: 15px;
+            min-height: 60px;
+        }
+
+        .key-info {
+            background: rgba(0, 212, 255, 0.1);
+            border-left: 5px solid var(--accent-cyan);
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 0 10px 10px 0;
+            width: 100%;
+        }
+
+        /* Columna 2: Contexto */
+        .col-context h2 {
+            color: var(--text-sec);
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            text-align: center;
+            text-transform: uppercase;
+        }
+
+        .badge.green { background: rgba(0, 255, 136, 0.2); color: var(--success-green); border: 1px solid var(--success-green); }
+        .badge.red { background: rgba(255, 51, 102, 0.2); color: var(--error-red); border: 1px solid var(--error-red); }
+        .badge.cyan { background: rgba(0, 212, 255, 0.2); color: var(--accent-cyan); border: 1px solid var(--accent-cyan); }
+
+        .context-detail {
+            margin-bottom: 15px;
+            font-size: 16px;
+            line-height: 1.5;
+        }
+
+        .context-detail strong {
+            color: var(--accent-cyan);
+            display: block;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        /* Columna 3: Preguntas */
+        .col-questions h2 {
+            color: var(--text-sec);
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .question-card {
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 15px;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .question-card:hover {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .q-text {
+            padding: 15px;
+            font-weight: bold;
+            color: var(--warn-orange);
+            font-size: 16px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .a-text {
+            padding: 0 15px;
+            max-height: 0;
+            overflow: hidden;
+            background: rgba(0,0,0,0.2);
+            color: var(--text-main);
+            transition: all 0.3s ease-out;
+            font-size: 16px;
+            line-height: 1.4;
+        }
+
+        .question-card.open .a-text {
+            padding: 15px;
+            max-height: 150px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* ==========================================================================
+           ÁREA INFERIOR (CONTROLES Y GRILLA)
+           ========================================================================== */
+        .bottom-section {
+            background-color: var(--bg-panel);
+            border-top: 2px solid var(--border-color);
+            display: flex;
+            padding: 25px 30px;
+            gap: 50px;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap; /* Permite que el contenido se acomode si la pantalla es estrecha */
+        }
+
+        .draw-controls {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 250px;
+            justify-content: center;
+        }
+
+        #drawBtn {
+            background-color: var(--success-green);
+            color: #000;
+            border: none;
+            padding: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(0, 255, 136, 0.3);
+        }
+
+        #drawBtn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0, 255, 136, 0.4); }
+        #drawBtn:active { transform: translateY(2px); }
+        #drawBtn:disabled { background-color: #555; color: #888; cursor: not-allowed; transform: none; box-shadow: none;}
+
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            color: var(--text-sec);
+            font-size: 16px;
+            padding: 0 5px;
+            font-weight: bold;
+        }
+
+        .grid-container-numbers {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            gap: 8px;
+            width: 250px;
+            height: 250px;
+            margin: 0; /* Removido margin auto para que flexbox lo alinee perfectamente junto al botón */
+            background: rgba(0, 212, 255, 0.05); /* Le da un fondo tenue de cartón */
+            padding: 12px;
+            border-radius: 12px;
+            border: 2px solid var(--accent-cyan);
+            box-shadow: 0 0 20px rgba(0, 212, 255, 0.15);
+        }
+
+        .grid-number {
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: bold;
+            color: #4a5b7c;
+            transition: all 0.3s;
+        }
+
+        .grid-number.drawn {
+            background: rgba(0, 255, 136, 0.1);
+            color: var(--success-green);
+            border-color: var(--success-green);
+            box-shadow: 0 0 10px rgba(0, 255, 136, 0.3);
+            animation: pulseGrid 2s infinite;
+        }
+
+        .grid-number.just-drawn {
+            background: var(--success-green);
+            color: #000;
+            transform: scale(1.1);
+        }
+
+        @keyframes pulseGrid {
+            0% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); }
+            50% { box-shadow: 0 0 15px rgba(0, 255, 136, 0.5); }
+            100% { box-shadow: 0 0 5px rgba(0, 255, 136, 0.2); }
+        }
+
+        /* ==========================================================================
+           MODAL DE CELEBRACIÓN Y CONFETTI
+           ========================================================================== */
+        #confettiCanvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        #celebrationModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        #celebrationModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-content {
+            text-align: center;
+            transform: scale(0.5);
+            transition: transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        #celebrationModal.show .modal-content {
+            transform: scale(1);
+        }
+
+        .bingo-text {
+            font-size: 150px;
+            font-weight: bold;
+            background: linear-gradient(to right, #ff3366, #ffaa00, #00ff88, #00d4ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 10px 30px rgba(255,255,255,0.2);
+            margin-bottom: 20px;
+        }
+
+        .bingo-emoji {
+            font-size: 100px;
+            animation: bounce 1s infinite alternate;
+        }
+
+        @keyframes bounce {
+            from { transform: translateY(0); }
+            to { transform: translateY(-30px); }
+        }
+
+        /* ==========================================================================
+           MODAL DE SELECCIÓN DE MODO DE JUEGO
+           ========================================================================== */
+        #modeSelectModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.98);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #modeSelectModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .mode-content {
+            background: var(--bg-panel);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(0, 212, 255, 0.3);
+            max-width: 600px;
+            width: 90%;
+            transform: scale(0.9);
+            transition: transform 0.3s;
+        }
+
+        #modeSelectModal.show .mode-content {
+            transform: scale(1);
+        }
+
+        .mode-content h2 {
+            color: var(--accent-cyan);
+            margin-bottom: 25px;
+            font-size: 32px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .mode-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Ajustado a 3 columnas para los 3 modos iniciales */
+            gap: 15px;
+        }
+
+        .mode-btn {
+            background: rgba(0, 212, 255, 0.05);
+            border: 1px solid var(--accent-cyan);
+            color: var(--text-main);
+            padding: 20px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .mode-btn:hover {
+            background: var(--accent-cyan);
+            color: #000;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 212, 255, 0.4);
+        }
+
+        /* ==========================================================================
+           MODAL DE CONFIRMACIÓN (SEGUIR O REINICIAR)
+           ========================================================================== */
+        #confirmModal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 14, 39, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1001;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        #confirmModal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .confirm-content {
+            background: var(--bg-panel);
+            border: 2px solid var(--accent-cyan);
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0, 212, 255, 0.2);
+            max-width: 500px;
+            transform: translateY(20px);
+            transition: transform 0.3s;
+        }
+
+        #confirmModal.show .confirm-content {
+            transform: translateY(0);
+        }
+
+        .confirm-content h2 {
+            color: var(--success-green);
+            margin-bottom: 15px;
+            font-size: 28px;
+        }
+
+        .confirm-content p {
+            color: var(--text-sec);
+            margin-bottom: 30px;
+            font-size: 18px;
+        }
+
+        .confirm-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-continue, .btn-reset {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-continue {
+            background: var(--accent-cyan);
+            color: #000;
+        }
+
+        .btn-continue:hover {
+            box-shadow: 0 0 15px var(--accent-cyan);
+            transform: translateY(-2px);
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: 2px solid var(--error-red);
+            color: var(--error-red);
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 51, 102, 0.1);
+            box-shadow: 0 0 15px rgba(255, 51, 102, 0.4);
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- CABECERA -->
+    <header>
+        <div class="header-info">
+            <h1>Legislación Laboral - Bingo</h1>
+            <p>CTP Educación Comercial y de Servicios | Prof. Roberto Mora Castro</p>
+            <div id="activeModeBadge" class="mode-badge" style="display: none;">
+                🎯 Modo de Juego: <span id="activeModeText">Cartón Lleno</span>
+            </div>
+        </div>
+        <div class="header-controls">
+            <button id="musicToggle">🔇 Música Off</button>
+            <button id="bingoBtn">BINGOOOOOOO!!!!</button>
+        </div>
+    </header>
+
+    <!-- ÁREA PRINCIPAL -->
+    <main>
+        <!-- Columna 1: Número GIGANTE -->
+        <div class="panel col-number">
+            <div id="displayNumber" class="number-display">--</div>
+            <div id="displayTitle" class="causa-title">Esperando sorteo...</div>
+            <div id="displayKeyInfo" class="key-info" style="opacity: 0;"></div>
+        </div>
+
+        <!-- Columna 2: Contexto -->
+        <div class="panel col-context">
+            <h2>Contexto Legal</h2>
+            <div id="displayBadge" class="badge" style="display: none;"></div>
+            
+            <div class="context-detail">
+                <strong>Clasificación:</strong>
+                <span id="displayClassText">-</span>
+            </div>
+            
+            <div class="context-detail">
+                <strong>Responsable:</strong>
+                <span id="displayResponsible">-</span>
+            </div>
+
+            <div class="context-detail">
+                <strong>Explicación:</strong>
+                <span id="displayExplanation">-</span>
+            </div>
+        </div>
+
+        <!-- Columna 3: Preguntas -->
+        <div class="panel col-questions">
+            <h2>Preguntas de Reflexión</h2>
+            <div id="questionsContainer">
+                <p style="color: var(--text-sec); font-style: italic;">Saca un número para ver las preguntas.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- ÁREA INFERIOR -->
+    <section class="bottom-section">
+        <div class="draw-controls">
+            <button id="drawBtn">🎲 SACAR NÚMERO</button>
+            <div class="stats-row">
+                <span>Sorteados: <b id="statDrawn" style="color: var(--accent-cyan)">0</b>/25</span>
+                <span>Faltan: <b id="statRemaining">25</b></span>
+            </div>
+        </div>
+        <div class="grid-container-numbers" id="numberGrid">
+            <!-- Se llena con JS -->
+        </div>
+    </section>
+
+    <!-- EFECTOS VISUALES -->
+    <canvas id="confettiCanvas"></canvas>
+    <div id="celebrationModal">
+        <div class="modal-content">
+            <div class="bingo-text">¡¡¡BINGO!!!</div>
+            <div class="bingo-emoji">🎉🏆🥳</div>
+        </div>
+    </div>
+
+    <!-- MODAL DE CONFIRMACIÓN -->
+    <div id="confirmModal">
+        <div class="confirm-content">
+            <h2>¡Celebración Terminada!</h2>
+            <p>¿Qué deseas hacer ahora?</p>
+            <div class="confirm-buttons">
+                <button id="btnContinue" class="btn-continue">Seguir Jugando (Cartón Lleno)</button>
+                <button id="btnResetSame" class="btn-reset">Reiniciar (Mismo Modo)</button>
+                <button id="btnResetNew" class="btn-reset">Cambiar Modo</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE SELECCIÓN DE MODO AL INICIO -->
+    <div id="modeSelectModal">
+        <div class="mode-content">
+            <h2>Selecciona el Modo de Juego Inicial</h2>
+            <div class="mode-grid">
+                <button class="mode-btn" data-mode="4 Esquinas">🔳 4 Esquinas</button>
+                <button class="mode-btn" data-mode="Línea Recta">➖ Línea Recta</button>
+                <button class="mode-btn" data-mode="Diagonal">🔀 Diagonal</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT PRINCIPAL -->
+    <script>
+        /* ==========================================================================
+           BASE DE DATOS DE LAS 25 CAUSALES
+           ========================================================================== */
+        const causalesDb = [
+            { id: 1, type: "green",
+              badge: "TERMINACIÓN SIN RESPONSABILIDAD", resp: "EVENTO",
+              title: "Falta de materia prima",
+              exp: "El contrato termina o se suspende porque falta material para trabajar, sin que sea culpa del patrono.",
+              key: "Es causa ajena a voluntades. Nadie es culpable.",
+              q: [
+                  { q: "¿Quién es responsable si falta materia prima?", a: "NINGUNO. Es causa ajena a voluntades." },
+                  { q: "¿Hay indemnización?", a: "NO. Es sin responsabilidad para ninguna de las partes." }
+              ]
+            },
+            { id: 2, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Conducta inmoral del trabajador",
+              exp: "El trabajador comete actos inmorales o injurias contra el patrono durante el trabajo.",
+              key: "Conducta inmoral permite despido SIN indemnización.",
+              q: [
+                  { q: "¿Qué es conducta abiertamente inmoral?", a: "Acciones que violan la moral: palabrotas graves, actos obscenos, insultos." },
+                  { q: "¿Recibe indemnización al ser despedido?", a: "NO. Es falta grave del trabajador. Despido limpio." }
+              ]
+            },
+            { id: 3, type: "green",
+              badge: "TERMINACIÓN SIN RESPONSABILIDAD", resp: "EVENTO LEGAL",
+              title: "Arresto seguido de absolución",
+              exp: "El trabajador es arrestado pero luego declarado inocente.",
+              key: "El contrato se SUSPENDE durante el arresto, no se rompe.",
+              q: [
+                  { q: "¿Se le paga salario mientras está arrestado?", a: "NO, el contrato se suspende." },
+                  { q: "¿Qué pasa al ser absuelto?", a: "Debe ser reinstalado en su puesto sin perder antigüedad." }
+              ]
+            },
+            { id: 4, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Delito o falta contra propiedad",
+              exp: "El trabajador comete delitos contra la propiedad o perjudica los bienes del patrono intencionalmente.",
+              key: "Daño intencional = Despido justificado inmediato.",
+              q: [
+                  { q: "¿Un robo pequeño justifica el despido?", a: "SÍ. La pérdida de confianza es absoluta." },
+                  { q: "¿Debe el patrono pagar preaviso?", a: "NO. Al ser falta grave, se pierde ese derecho." }
+              ]
+            },
+            { id: 5, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Revelación de secretos",
+              exp: "El trabajador revela secretos técnicos, comerciales o de fabricación del patrono.",
+              key: "Violar la confidencialidad destruye el contrato laboral.",
+              q: [
+                  { q: "¿Qué se considera un secreto comercial?", a: "Fórmulas, listas de clientes, estrategias no públicas." },
+                  { q: "¿Aplica si se lo cuenta a la competencia?", a: "ESPECIALMENTE sí. Es una falta gravísima." }
+              ]
+            },
+            { id: 6, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Imprudencia compromete seguridad",
+              exp: "El trabajador, por descuido inexcusable, compromete la seguridad del lugar o las personas.",
+              key: "No seguir reglas de seguridad puede costar el empleo.",
+              q: [
+                  { q: "¿Qué pasa si no usa el equipo de protección?", a: "Constituye una imprudencia grave y causal de despido." },
+                  { q: "¿Necesita causar un accidente real?", a: "NO. Con solo poner en PELIGRO el lugar es suficiente." }
+              ]
+            },
+            { id: 7, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Inasistencia sin causa",
+              exp: "Ausencia injustificada de 2 días consecutivos o 3 alternos en el mismo mes.",
+              key: "El abandono de trabajo rompe la relación laboral.",
+              q: [
+                  { q: "¿Cuántos días seguidos permiten el despido?", a: "Dos días consecutivos completos sin justificación." },
+                  { q: "¿Y si faltó lunes, miércoles y viernes?", a: "También es despido (3 días alternos en un mes calendario)." }
+              ]
+            },
+            { id: 8, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Negarse a medidas preventivas",
+              exp: "Rechazo del trabajador a seguir protocolos médicos o de seguridad obligatorios.",
+              key: "La salud ocupacional es una orden, no una sugerencia.",
+              q: [
+                  { q: "¿Puede negarse a un examen médico ordenado?", a: "NO, si es política de salud ocupacional." },
+                  { q: "¿Tiene derecho a prestaciones si lo despiden por esto?", a: "NO, pierde cesantía y preaviso." }
+              ]
+            },
+            { id: 9, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Reincidencia",
+              exp: "Cometer una falta leve reiteradamente después de haber sido amonestado.",
+              key: "Las advertencias previas acumulan gravedad.",
+              q: [
+                  { q: "¿Una llegada tardía es despido directo?", a: "No, pero la REINCIDENCIA constante sí lo es." },
+                  { q: "¿Qué necesita el patrono para probarlo?", a: "Amonestaciones escritas previas (apercibimientos)." }
+              ]
+            },
+            { id: 10, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Engaño al contratar",
+              exp: "El trabajador presentó títulos o referencias falsas para obtener el empleo.",
+              key: "El contrato se anula si nació de un engaño (fraude).",
+              q: [
+                  { q: "¿Qué pasa si mintió en el currículum?", a: "El patrono puede despedirlo sin responsabilidad." },
+                  { q: "¿Hay un límite de tiempo para aplicar esto?", a: "Generalmente en los primeros 30 días de descubierto el engaño." }
+              ]
+            },
+            { id: 11, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Prisión por sentencia",
+              exp: "El trabajador recibe una condena de cárcel firme y ejecutoriada.",
+              key: "La imposibilidad física de trabajar por delito termina el contrato.",
+              q: [
+                  { q: "¿El despido es automático al ser sentenciado?", a: "SÍ, al quedar firme la sentencia ejecutoria." },
+                  { q: "¿El patrono debe pagar liquidación completa?", a: "Solo aguinaldo y vacaciones. Pierde preaviso y cesantía." }
+              ]
+            },
+            { id: 12, type: "red",
+              badge: "SIN RESPONSABILIDAD PATRONAL", resp: "TRABAJADOR",
+              title: "Incumplimiento servicios huelga",
+              exp: "No mantener los servicios mínimos requeridos legalmente durante una huelga.",
+              key: "El derecho a huelga no permite abandonar servicios esenciales.",
+              q: [
+                  { q: "¿Qué son servicios mínimos?", a: "Servicios que no pueden detenerse (ej. emergencias médicas)." },
+                  { q: "¿Qué pasa si el trabajador los abandona?", a: "Puede ser despedido justificadamente." }
+              ]
+            },
+            { id: 13, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "No pago de salario",
+              exp: "El patrono no paga el salario completo en la fecha y lugar convenidos.",
+              key: "No pagar salario es VIOLACIÓN GRAVE. Trabajador tiene derechos.",
+              q: [
+                  { q: "¿Qué pasa si el patrono no paga salario?", a: "El trabajador puede TERMINAR el contrato y reclamar indemnización." },
+                  { q: "¿Necesita dar preaviso el trabajador?", a: "NO. Puede terminar inmediatamente por culpa patronal." }
+              ]
+            },
+            { id: 14, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Falta de probidad patronal",
+              exp: "El patrono comete actos inmorales o faltas graves de respeto hacia el trabajador.",
+              key: "El respeto es mutuo. El patrono también puede ser culpable.",
+              q: [
+                  { q: "¿Qué hace el trabajador si es insultado gravemente?", a: "Rompe el contrato con responsabilidad para el patrono." },
+                  { q: "¿Qué pagos recibe el trabajador?", a: "Preaviso, cesantía, vacaciones y aguinaldo completo." }
+              ]
+            },
+            { id: 15, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Actos de dependiente",
+              exp: "Un jefe o representante del patrono comete faltas contra el trabajador (tolerado por patrono).",
+              key: "El patrono responde por las acciones de sus jefaturas.",
+              q: [
+                  { q: "¿Si un gerente acosa al empleado, quién paga?", a: "La empresa asume la responsabilidad patronal." },
+                  { q: "¿Debe el patrono estar enterado?", a: "Sí, o que haya ocurrido dentro de las labores de representación." }
+              ]
+            },
+            { id: 16, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Daño malicioso a herramientas",
+              exp: "El patrono daña intencionalmente las herramientas de trabajo que pertenecen al empleado.",
+              key: "Destruir equipo del trabajador genera indemnización.",
+              q: [
+                  { q: "¿Aplica si el daño fue un accidente?", a: "No, la ley habla de daño MALICIOSO (intencional)." },
+                  { q: "¿Qué debe hacer el patrono además de indemnizar?", a: "Debe reponer el valor de las herramientas." }
+              ]
+            },
+            { id: 17, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Injuria fuera del trabajo",
+              exp: "El patrono injuria o calumnia gravemente al trabajador fuera de las horas laborales.",
+              key: "El respeto se mantiene incluso fuera del horario de oficina.",
+              q: [
+                  { q: "¿Un insulto en fin de semana en el mall cuenta?", a: "SÍ, si hace imposible la convivencia laboral posterior." },
+                  { q: "¿Qué gana el trabajador al renunciar por esto?", a: "Se considera 'despido indirecto'. Cobra todo como si lo echaran." }
+              ]
+            },
+            { id: 18, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Enfermedad contagiosa",
+              exp: "El patrono o un compañero sufre enfermedad contagiosa y obliga al contacto.",
+              key: "Nadie está obligado a trabajar en riesgo inminente de contagio.",
+              q: [
+                  { q: "¿El trabajador puede retirarse?", a: "Sí, para proteger su salud, rompiendo el contrato con indemnización." },
+                  { q: "¿Aplica para un resfriado común?", a: "No, deben ser enfermedades graves o estipuladas por salud pública." }
+              ]
+            },
+            { id: 19, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Peligro para seguridad",
+              exp: "Falta de higiene o seguridad grave en el centro de trabajo que pone en riesgo la vida.",
+              key: "Un lugar de trabajo insalubre es ilegal.",
+              q: [
+                  { q: "¿Si hay peligro de derrumbe y no lo arreglan?", a: "El trabajador puede dar por roto el contrato por culpa patronal." },
+                  { q: "¿Qué pasa con la indemnización?", a: "El patrono debe pagar cesantía y preaviso." }
+              ]
+            },
+            { id: 20, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Imprudencia patronal",
+              exp: "El patrono comete imprudencias que comprometen la seguridad del trabajador.",
+              key: "El patrono es garante de la seguridad de sus empleados.",
+              q: [
+                  { q: "¿Qué es una imprudencia patronal?", a: "Obligar a usar maquinaria dañada sabiendo que es peligrosa." },
+                  { q: "¿Qué derecho tiene el empleado?", a: "Negarse y romper contrato cobrando sus derechos completos." }
+              ]
+            },
+            { id: 21, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Violación de prohibiciones",
+              exp: "El patrono viola prohibiciones legales del Código de Trabajo.",
+              key: "Violar la ley laboral = trabajador puede romper contrato.",
+              q: [
+                  { q: "¿Ejemplo de prohibición patronal?", a: "Exigir a empleados comprar en tiendas específicas (chantaje)." },
+                  { q: "¿Consecuencia para el patrono?", a: "Pago de indemnización completa al trabajador." }
+              ]
+            },
+            { id: 22, type: "cyan",
+              badge: "CON DERECHO A INDEMNIZACIÓN", resp: "PATRONO",
+              title: "Actos discriminatorios",
+              exp: "Discriminación por edad, etnia, género, religión o condiciones como VIH.",
+              key: "La discriminación está penada y rompe el contrato a favor del empleado.",
+              q: [
+                  { q: "¿Puede un trabajador renunciar si es discriminado?", a: "Sí, es despido indirecto. El patrono paga indemnización." },
+                  { q: "¿Existen multas adicionales?", a: "Sí, además de pagar al empleado, el Ministerio aplica multas." }
+              ]
+            },
+            { id: 23, type: "green",
+              badge: "TERMINACIÓN SIN RESPONSABILIDAD", resp: "EVENTO NATURAL",
+              title: "Muerte del trabajador",
+              exp: "El trabajador fallece, poniendo fin natural al contrato laboral.",
+              key: "Muere el trabajador. Herederos reciben prestaciones.",
+              q: [
+                  { q: "¿Qué pasa con el dinero acumulado?", a: "Aguinaldo, vacaciones y a veces cesantía pasan a herederos." },
+                  { q: "¿Quién cobra estos rubros?", a: "Esposa/o, hijos menores o dependientes económicos directos." }
+              ]
+            },
+            { id: 24, type: "green",
+              badge: "TERMINACIÓN SIN RESPONSABILIDAD", resp: "EVENTO",
+              title: "Fuerza mayor o Quiebra",
+              exp: "Incendio, terremoto o quiebra total de la empresa que imposibilita seguir operando.",
+              key: "Fuerza mayor termina contrato; patrono liquida según posibilidad.",
+              q: [
+                  { q: "¿Se paga preaviso en caso de incendio total?", a: "Generalmente no hay obligación si la empresa se destruye." },
+                  { q: "¿Y si la empresa quiebra legalmente?", a: "Los trabajadores tienen prioridad de cobro sobre otros deudores." }
+              ]
+            },
+            { id: 25, type: "green",
+              badge: "TERMINACIÓN SIN RESPONSABILIDAD", resp: "ACUERDO MUTUO",
+              title: "Mutuo consentimiento",
+              exp: "Ambas partes acuerdan libremente dar por terminada la relación laboral.",
+              key: "Si ambos están de acuerdo, el contrato termina pacíficamente.",
+              q: [
+                  { q: "¿El patrono está obligado a pagar cesantía aquí?", a: "Legalmente NO, solo vacaciones y aguinaldo." },
+                  { q: "¿Se puede negociar un bono?", a: "SÍ, las partes pueden pactar un arreglo económico voluntario." }
+              ]
+            }
+        ];
+
+        /* ==========================================================================
+           SISTEMA DE AUDIO (WEB AUDIO API)
+           ========================================================================== */
+        let audioCtx;
+        let bgOscillator;
+        let bgGain;
+        let isMusicPlaying = false;
+        let bgInterval;
+        let modoActual = "";
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // 1. Música de fondo
+        function toggleMusic() {
+            initAudio();
+            const btn = document.getElementById('musicToggle');
+            
+            if (isMusicPlaying) {
+                clearInterval(bgInterval);
+                isMusicPlaying = false;
+                btn.innerHTML = '🔇 Música Off';
+                btn.classList.remove('on');
+            } else {
+                isMusicPlaying = true;
+                btn.innerHTML = '🔊 Música On';
+                btn.classList.add('on');
+                playBackgroundLoop();
+            }
+        }
+
+        function playBackgroundLoop() {
+            if (!isMusicPlaying) return;
+            
+            const notes = [220, 261.63, 329.63, 261.63]; // A3, C4, E4, C4
+            let noteIndex = 0;
+
+            bgInterval = setInterval(() => {
+                if (!isMusicPlaying) return;
+                
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                
+                osc.type = 'sine';
+                osc.frequency.value = notes[noteIndex] / 2; // Octava más baja para ambiente
+                
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                
+                const now = audioCtx.currentTime;
+                osc.start(now);
+                
+                // Envolvente suave (Volumen máximo 0.1 para que no estorbe la voz)
+                gain.gain.setValueAtTime(0, now);
+                gain.gain.linearRampToValueAtTime(0.05, now + 0.5);
+                gain.gain.linearRampToValueAtTime(0, now + 1.5);
+                
+                osc.stop(now + 1.5);
+                
+                noteIndex = (noteIndex + 1) % notes.length;
+            }, 1500); // Toca una nota cada 1.5s
+        }
+
+        // 2. Sonido al sacar número (Ping metálico)
+        function playDrawSound() {
+            initAudio();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            
+            osc.type = 'sine';
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            // Barrido de frecuencia 800 -> 1200
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            
+            // Volumen
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.3, now + 0.05);
+            gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            
+            osc.start(now);
+            osc.stop(now + 0.2);
+        }
+
+        // 3. Fanfarre Épica para el BINGO
+        function playBingoFanfare() {
+            initAudio();
+            
+            // Acordes: C major, F major, G major, C major (agudo)
+            const chords = [
+                { f: [261.6, 329.6, 392.0], time: 0, dur: 0.6 }, // Do Mi Sol
+                { f: [329.6, 392.0, 523.2], time: 0.6, dur: 0.6 }, // Mi Sol Do
+                { f: [392.0, 493.8, 587.3], time: 1.2, dur: 0.6 }, // Sol Si Re
+                { f: [523.2, 659.2, 783.9], time: 1.8, dur: 1.2 }  // Do Mi Sol (Agudo)
+            ];
+
+            const now = audioCtx.currentTime;
+
+            chords.forEach(chord => {
+                chord.f.forEach(freq => {
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    
+                    osc.type = 'square'; // Sonido más brillante/fanfarre
+                    osc.frequency.value = freq;
+                    
+                    // Lowpass filter para quitar aspereza del square wave
+                    const filter = audioCtx.createBiquadFilter();
+                    filter.type = 'lowpass';
+                    filter.frequency.value = 2000;
+
+                    osc.connect(filter);
+                    filter.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    
+                    const st = now + chord.time;
+                    osc.start(st);
+                    
+                    // Volumen: fuerte 0.5 dividido entre notas del acorde
+                    const maxGain = 0.5 / chord.f.length;
+                    gain.gain.setValueAtTime(0, st);
+                    gain.gain.linearRampToValueAtTime(maxGain, st + 0.05);
+                    gain.gain.setValueAtTime(maxGain, st + chord.dur - 0.1);
+                    gain.gain.linearRampToValueAtTime(0, st + chord.dur);
+                    
+                    osc.stop(st + chord.dur);
+                });
+            });
+        }
+
+        // 4. Aplausos sintetizados
+        function playApplause() {
+            initAudio();
+            const dur = 3;
+            const bufferSize = audioCtx.sampleRate * dur;
+            const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const data = buffer.getChannelData(0);
+            
+            // Generar ruido blanco
+            for (let i = 0; i < bufferSize; i++) {
+                data[i] = Math.random() * 2 - 1;
+            }
+            
+            const noiseSrc = audioCtx.createBufferSource();
+            noiseSrc.buffer = buffer;
+            
+            // Filtrar para que suene como palmas (bandpass)
+            const filter = audioCtx.createBiquadFilter();
+            filter.type = 'bandpass';
+            filter.frequency.value = 1000;
+            
+            const gain = audioCtx.createGain();
+            
+            noiseSrc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            noiseSrc.start(now);
+            
+            // Envolvente de volumen con pequeñas variaciones para simular palmas
+            gain.gain.setValueAtTime(0, now);
+            gain.gain.linearRampToValueAtTime(0.4, now + 0.2);
+            gain.gain.setValueAtTime(0.4, now + dur - 1);
+            gain.gain.linearRampToValueAtTime(0, now + dur);
+        }
+
+        /* ==========================================================================
+           LÓGICA DEL JUEGO BINGO
+           ========================================================================== */
+        let numerosDisponibles = Array.from({length: 25}, (_, i) => i + 1);
+        let numerosSorteados = [];
+
+        // Inicializar grilla
+        function initGrid() {
+            const grid = document.getElementById('numberGrid');
+            for(let i = 1; i <= 25; i++) {
+                const div = document.createElement('div');
+                div.className = 'grid-number';
+                div.id = 'grid-num-' + i;
+                div.innerText = i;
+                grid.appendChild(div);
+            }
+        }
+
+        // Función Principal: Sacar Número
+        function sacarNumero() {
+            if (numerosDisponibles.length === 0) return;
+            
+            // Remover highlight del anterior
+            document.querySelectorAll('.just-drawn').forEach(el => el.classList.remove('just-drawn'));
+
+            // Seleccionar random
+            const randomIndex = Math.floor(Math.random() * numerosDisponibles.length);
+            const numero = numerosDisponibles[randomIndex];
+            
+            // Actualizar arrays
+            numerosDisponibles.splice(randomIndex, 1);
+            numerosSorteados.push(numero);
+
+            // Obtener info de la base de datos
+            const info = causalesDb.find(c => c.id === numero);
+
+            // AUDIO Y ANIMACIÓN
+            playDrawSound();
+            actualizarUI(info);
+            actualizarEstadisticas();
+
+            // Deshabilitar botón si se acaban
+            if (numerosDisponibles.length === 0) {
+                document.getElementById('drawBtn').disabled = true;
+                document.getElementById('drawBtn').innerText = "JUEGO TERMINADO";
+            }
+        }
+
+        function actualizarUI(info) {
+            // 1. Actualizar Número Gigante con animación
+            const displayNum = document.getElementById('displayNumber');
+            displayNum.classList.remove('active');
+            void displayNum.offsetWidth; // Trigger reflow
+            displayNum.innerText = info.id;
+            displayNum.classList.add('active');
+
+            // 2. Título y Key Info
+            document.getElementById('displayTitle').innerText = info.title;
+            const keyInfo = document.getElementById('displayKeyInfo');
+            keyInfo.innerText = info.key;
+            keyInfo.style.opacity = 1;
+
+            // 3. Contexto (Columna 2)
+            const badge = document.getElementById('displayBadge');
+            badge.innerText = info.badge;
+            badge.className = 'badge ' + info.type;
+            badge.style.display = 'inline-block';
+
+            let classText = "";
+            if(info.type === 'green') classText = "Contrato termina sin culpables.";
+            if(info.type === 'red') classText = "Trabajador incumple. Despido sin pago.";
+            if(info.type === 'cyan') classText = "Patrono incumple. Trabajador cobra derechos.";
+
+            document.getElementById('displayClassText').innerText = classText;
+            document.getElementById('displayResponsible').innerText = info.resp;
+            document.getElementById('displayExplanation').innerText = info.exp;
+
+            // 4. Preguntas (Columna 3)
+            const qContainer = document.getElementById('questionsContainer');
+            qContainer.innerHTML = ''; // Limpiar
+            
+            info.q.forEach((item, index) => {
+                const qDiv = document.createElement('div');
+                qDiv.className = 'question-card open'; // <-- Agregada la clase 'open' por defecto
+                qDiv.innerHTML = `
+                    <div class="q-text">
+                        <span>${item.q}</span>
+                        <span>▲</span> <!-- Flecha indicando que ya está abierto -->
+                    </div>
+                    <div class="a-text">${item.a}</div>
+                `;
+                // Interactividad: abrir/cerrar respuesta (por si quieres cerrarlas manualmente)
+                qDiv.addEventListener('click', () => {
+                    qDiv.classList.toggle('open');
+                    const icon = qDiv.querySelector('.q-text span:last-child');
+                    icon.innerText = qDiv.classList.contains('open') ? '▲' : '▼';
+                });
+                qContainer.appendChild(qDiv);
+            });
+
+            // 5. Actualizar Grilla Inferior
+            const gridItem = document.getElementById('grid-num-' + info.id);
+            gridItem.classList.add('drawn');
+            gridItem.classList.add('just-drawn');
+        }
+
+        function actualizarEstadisticas() {
+            document.getElementById('statDrawn').innerText = numerosSorteados.length;
+            document.getElementById('statRemaining').innerText = numerosDisponibles.length;
+        }
+
+        /* ==========================================================================
+           BINGO ÉPICO (BOTÓN Y CONFETTI)
+           ========================================================================== */
+        function triggerBingo() {
+            const btn = document.getElementById('bingoBtn');
+            btn.classList.add('pressed');
+            
+            playBingoFanfare();
+            playApplause();
+            startConfetti();
+
+            const modal = document.getElementById('celebrationModal');
+            modal.classList.add('show');
+
+            setTimeout(() => {
+                modal.classList.remove('show');
+                btn.classList.remove('pressed');
+                stopConfetti();
+                
+                // Mostrar el modal de confirmación después de la celebración
+                document.getElementById('confirmModal').classList.add('show');
+            }, 4000);
+        }
+
+        // Lógicas de Confirmación (Continuar o Reiniciar)
+        function continueGame() {
+            document.getElementById('confirmModal').classList.remove('show');
+            // Al continuar, automáticamente el modo pasa a ser Cartón Lleno
+            modoActual = "Cartón Lleno";
+            document.getElementById('activeModeText').innerText = "Cartón Lleno";
+        }
+
+        function seleccionarModo(modo) {
+            modoActual = modo;
+            document.getElementById('activeModeText').innerText = modo;
+            document.getElementById('activeModeBadge').style.display = 'inline-block';
+            document.getElementById('modeSelectModal').classList.remove('show');
+        }
+
+        function resetGame(cambiarModo = false) {
+            document.getElementById('confirmModal').classList.remove('show');
+            
+            // 1. Reiniciar arrays
+            numerosDisponibles = Array.from({length: 25}, (_, i) => i + 1);
+            numerosSorteados = [];
+            
+            // 2. Limpiar Panel Principal
+            document.getElementById('displayNumber').innerText = '--';
+            document.getElementById('displayNumber').classList.remove('active');
+            document.getElementById('displayTitle').innerText = 'Esperando sorteo...';
+            document.getElementById('displayKeyInfo').style.opacity = 0;
+            
+            // 3. Limpiar Contexto
+            document.getElementById('displayBadge').style.display = 'none';
+            document.getElementById('displayClassText').innerText = '-';
+            document.getElementById('displayResponsible').innerText = '-';
+            document.getElementById('displayExplanation').innerText = '-';
+            
+            // 4. Limpiar Preguntas
+            document.getElementById('questionsContainer').innerHTML = '<p style="color: var(--text-sec); font-style: italic;">Saca un número para ver las preguntas.</p>';
+            
+            // 5. Reiniciar Grilla
+            document.querySelectorAll('.grid-number').forEach(el => {
+                el.classList.remove('drawn', 'just-drawn');
+            });
+            
+            // 6. Reiniciar Contadores y Botón
+            actualizarEstadisticas();
+            const drawBtn = document.getElementById('drawBtn');
+            drawBtn.disabled = false;
+            drawBtn.innerHTML = '🎲 SACAR NÚMERO';
+
+            // 7. Si eligió cambiar modo, mostrar la pantalla inicial
+            if(cambiarModo) {
+                document.getElementById('modeSelectModal').classList.add('show');
+                document.getElementById('activeModeBadge').style.display = 'none';
+            }
+        }
+
+        // Sistema de Confetti con Canvas
+        const canvas = document.getElementById('confettiCanvas');
+        const ctx = canvas.getContext('2d');
+        let particles = [];
+        let confettiAnimationId;
+        const colors = ['#00d4ff', '#00ff88', '#ff3366', '#ffaa00', '#ffffff'];
+
+        function resizeCanvas() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        function createParticles() {
+            particles = [];
+            for(let i=0; i<150; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * -canvas.height,
+                    r: Math.random() * 6 + 4,
+                    dx: Math.random() * 4 - 2,
+                    dy: Math.random() * 5 + 5,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    tilt: Math.floor(Math.random() * 10) - 10,
+                    tiltAngle: 0,
+                    tiltAngleInc: (Math.random() * 0.07) + 0.05
+                });
+            }
+        }
+
+        function drawConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            particles.forEach(p => {
+                p.tiltAngle += p.tiltAngleInc;
+                p.y += (Math.cos(p.tiltAngle) + p.dy);
+                p.x += Math.sin(p.tiltAngle) * p.dx;
+
+                ctx.beginPath();
+                ctx.lineWidth = p.r;
+                ctx.strokeStyle = p.color;
+                ctx.moveTo(p.x + p.tilt + p.r, p.y);
+                ctx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r);
+                ctx.stroke();
+
+                // Reposicionar arriba si caen
+                if(p.y > canvas.height) {
+                    p.y = -10;
+                    p.x = Math.random() * canvas.width;
+                }
+            });
+            confettiAnimationId = requestAnimationFrame(drawConfetti);
+        }
+
+        function startConfetti() {
+            createParticles();
+            drawConfetti();
+        }
+
+        function stopConfetti() {
+            cancelAnimationFrame(confettiAnimationId);
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+        }
+
+        /* ==========================================================================
+           EVENT LISTENERS E INICIALIZACIÓN
+           ========================================================================== */
+        document.addEventListener('DOMContentLoaded', () => {
+            initGrid();
+            
+            document.getElementById('drawBtn').addEventListener('click', sacarNumero);
+            document.getElementById('musicToggle').addEventListener('click', toggleMusic);
+            document.getElementById('bingoBtn').addEventListener('click', triggerBingo);
+            
+            // Listeners de confirmación
+            document.getElementById('btnContinue').addEventListener('click', continueGame);
+            document.getElementById('btnResetSame').addEventListener('click', () => resetGame(false));
+            document.getElementById('btnResetNew').addEventListener('click', () => resetGame(true));
+
+            // Listeners de selección de modo
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => seleccionarModo(e.currentTarget.dataset.mode));
+            });
+
+            // Mostrar modal de modos de juego obligatoriamente al inicio
+            document.getElementById('modeSelectModal').classList.add('show');
+        });
+
+    </script>
+</body>
+</html>
