@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ESCAPE ROOM - Legislación Laboral</title>
+    <style>
+        /* ==========================================================================
+           VARIABLES Y RESET (PALETA DE COLORES PROFESIONAL)
+           ========================================================================== */
+        :root {
+            --bg-dark: #0a0e27;
+            --panel-bg: #1a1f3a;
+            --border-color: #2a3f5f;
+            --text-main: #ffffff;
+            --text-muted: #b0b9cc;
+            
+            --accent-cyan: #00d4ff;
+            --success-green: #00ff88;
+            --error-red: #ff3366;
+            --warning-orange: #ffaa00;
+            
+            --glow-cyan: rgba(0, 212, 255, 0.3);
+            --glow-cyan-strong: rgba(0, 212, 255, 0.6);
+            --glow-green: rgba(0, 255, 136, 0.3);
+            --glow-red: rgba(255, 51, 102, 0.3);
+            
+            /* Colores de equipo dinámicos */
+            --team-0: #42a5f5; /* Azul */
+            --team-1: #00ff88; /* Verde neón */
+            --team-2: #ff3366; /* Rojo magenta */
+            --team-3: #ffa500; /* Naranja */
+            --team-4: #9b59b6; /* Púrpura */
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            user-select: none;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        button {
+            cursor: pointer;
+            border: none;
+            outline: none;
+            font-weight: bold;
+            font-family: inherit;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            filter: grayscale(100%);
+        }
+
+        /* Barra de scroll personalizada */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-dark); }
+        ::-webkit-scrollbar-thumb { background: var(--border-color); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-cyan); }
+
+        /* ==========================================================================
+           ANIMACIONES CSS
+           ========================================================================== */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(30px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        @keyframes pulseGlow {
+            0% { box-shadow: 0 0 10px var(--accent-cyan); }
+            50% { box-shadow: 0 0 30px var(--accent-cyan); }
+            100% { box-shadow: 0 0 10px var(--accent-cyan); }
+        }
+
+        @keyframes flickerRed {
+            0%, 100% { opacity: 1; color: var(--error-red); text-shadow: 0 0 20px var(--error-red); }
+            50% { opacity: 0.5; color: #fff; text-shadow: none; }
+        }
+
+        @keyframes updatePop {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); background-color: rgba(255,255,255,0.1); }
+            100% { transform: scale(1); }
+        }
+
+        @keyframes confetti-fall {
+            0% { transform: translateY(-5vh) rotate(0deg) scale(1); opacity: 1; }
+            100% { transform: translateY(105vh) rotate(720deg) scale(0.6); opacity: 0; }
+        }
+
+        @keyframes crown-bounce {
+            0%, 100% { transform: scale(1) translateY(0); }
+            50% { transform: scale(1.3) translateY(-8px); filter: drop-shadow(0 0 10px gold); }
+        }
+
+        .confetti {
+            position: fixed;
+            top: -20px;
+            width: 12px;
+            height: 24px;
+            z-index: 9999;
+            pointer-events: none;
+            animation: confetti-fall linear forwards;
+            border-radius: 3px;
+        }
+
+        .fade-in { animation: fadeIn 0.5s ease forwards; }
+        .slide-up { animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
+        
+        .stagger-0 { animation-delay: 0.0s; }
+        .stagger-1 { animation-delay: 0.1s; }
+        .stagger-2 { animation-delay: 0.2s; }
+        .stagger-3 { animation-delay: 0.3s; }
+        .stagger-4 { animation-delay: 0.4s; }
+
+        /* ==========================================================================
+           LAYOUT PRINCIPAL Y PANTALLAS
+           ========================================================================== */
+        .screen {
+            display: none;
+            width: 100vw;
+            height: 100vh;
+            padding: 30px;
+        }
+
+        .screen.active {
+            display: grid;
+        }
+
+        /* --- PANTALLA SETUP --- */
+        #setup-screen {
+            grid-template-columns: 1fr;
+            place-items: center;
+            background: radial-gradient(circle at center, var(--panel-bg), var(--bg-dark));
+        }
+
+        .setup-box {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 40px;
+            width: 100%;
+            max-width: 650px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+
+        .setup-title {
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: var(--accent-cyan);
+            margin-bottom: 20px;
+            text-shadow: 0 0 15px var(--glow-cyan);
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 15px 20px;
+            font-size: 18px;
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            color: white;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 15px var(--glow-cyan);
+            outline: none;
+        }
+
+        .btn-primary {
+            background-color: var(--accent-cyan);
+            color: var(--bg-dark);
+            padding: 15px 30px;
+            font-size: 18px;
+            border-radius: 8px;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--glow-cyan);
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 0 20px var(--glow-cyan-strong);
+            background-color: #33e0ff;
+        }
+
+        .team-list {
+            list-style: none;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .team-item {
+            display: flex;
+            align-items: center;
+            font-size: 20px;
+            padding: 15px;
+            background-color: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .btn-massive {
+            width: 100%;
+            padding: 20px;
+            font-size: 24px;
+            background-color: var(--success-green);
+            color: #000;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: all 0.3s;
+            box-shadow: 0 0 15px var(--glow-green);
+        }
+
+        .btn-massive:hover:not(:disabled) {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(0, 255, 136, 0.6);
+        }
+
+        /* --- PANTALLA JUEGO --- */
+        #game-screen {
+            grid-template-columns: 65% calc(35% - 20px);
+            gap: 20px;
+        }
+
+        .col-left, .col-right {
+            background-color: var(--panel-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            overflow-y: auto;
+            position: relative;
+        }
+
+        /* Cabecera Izquierda */
+        .game-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+
+        .team-title {
+            font-size: 48px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-shadow: 0 0 15px rgba(255,255,255,0.2);
+        }
+
+        .timer-box {
+            border: 2px solid var(--border-color);
+            border-radius: 15px;
+            padding: 10px 30px;
+            background-color: rgba(0,0,0,0.4);
+            transition: all 0.3s;
+        }
+
+        .timer-display {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 110px;
+            font-weight: bold;
+            line-height: 1;
+            letter-spacing: 5px;
+            color: var(--text-main);
+            transition: color 0.3s;
+            text-shadow: 0 0 20px rgba(255,255,255,0.3);
+        }
+
+        .timer-warning { color: var(--warning-orange) !important; text-shadow: 0 0 20px rgba(255, 170, 0, 0.5) !important; }
+        .timer-critical { animation: flickerRed 0.4s infinite; }
+        .timer-pulse { animation: pulseGlow 0.6s infinite; border-color: var(--accent-cyan); }
+
+        .problem-meta {
+            font-size: 18px;
+            color: var(--text-muted);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        .case-box {
+            background-color: rgba(0,0,0,0.3);
+            border-left: 4px solid var(--accent-cyan);
+            padding: 20px;
+            border-radius: 8px;
+            font-size: 20px;
+            line-height: 1.8;
+            color: var(--text-main);
+            margin-bottom: 30px;
+            box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
+        }
+
+        /* Preguntas */
+        .question-block {
+            margin-bottom: 35px;
+        }
+
+        .q-text {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--text-main);
+            margin-bottom: 15px;
+            line-height: 1.4;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+
+        .option-btn {
+            display: flex;
+            align-items: center;
+            background-color: rgba(255,255,255,0.03);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 15px 20px;
+            font-size: 17px;
+            color: var(--text-main);
+            text-align: left;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+        }
+
+        .shape-icon {
+            font-size: 22px;
+            margin-right: 15px;
+            min-width: 30px;
+            text-align: center;
+            font-weight: bold;
+            color: var(--accent-cyan);
+        }
+
+        .option-btn:hover { 
+            background-color: rgba(0, 212, 255, 0.1); 
+            border-color: var(--accent-cyan); 
+            box-shadow: 0 0 15px rgba(0, 212, 255, 0.3); 
+        }
+
+        .option-btn.selected { 
+            transform: scale(1.02); 
+            background-color: rgba(0, 212, 255, 0.2); 
+            border-color: var(--accent-cyan); 
+            box-shadow: 0 0 15px var(--glow-cyan);
+        }
+
+        /* Estados Finales de Evaluación */
+        .option-btn.correct-reveal {
+            background-color: rgba(0, 255, 136, 0.3) !important;
+            border-color: var(--success-green) !important;
+            box-shadow: inset 0 0 20px var(--glow-green) !important;
+        }
+
+        .option-btn.incorrect-reveal {
+            background-color: rgba(255, 51, 102, 0.2) !important;
+            border-color: var(--error-red) !important;
+            opacity: 0.8;
+        }
+
+        /* Indicador de resultado a la derecha del texto */
+        .eval-icon {
+            margin-left: auto;
+            font-size: 24px;
+            font-weight: bold;
+        }
+        .correct-reveal .eval-icon { color: var(--success-green); }
+        .incorrect-reveal .eval-icon { color: var(--error-red); }
+
+        .feedback-box {
+            padding: 25px;
+            border-radius: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+            line-height: 1.5;
+        }
+
+        .points-breakdown {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            font-size: 18px;
+            text-align: left;
+            border-left: 5px solid var(--accent-cyan);
+        }
+
+        .points-breakdown-total {
+            font-size: 26px;
+            color: var(--accent-cyan);
+            border-top: 1px solid var(--border-color);
+            padding-top: 15px;
+            margin-top: 10px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* Columna Derecha */
+        .right-section {
+            margin-bottom: 25px;
+        }
+
+        .mini-timer-label { font-size: 18px; color: var(--text-muted); text-transform: uppercase; }
+        .mini-timer-val { font-family: 'Courier New', Courier, monospace; font-size: 32px; font-weight: bold; color: white; }
+
+        .btn-action {
+            width: 100%;
+            padding: 25px;
+            font-size: 32px;
+            border-radius: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            transition: all 0.3s;
+        }
+
+        #btn-submit {
+            background-color: var(--error-red);
+            color: white;
+        }
+
+        #btn-submit:not(:disabled):hover {
+            background-color: #ff4d79;
+            box-shadow: 0 0 20px var(--glow-red);
+            transform: scale(1.02);
+        }
+
+        #btn-next {
+            background-color: var(--success-green);
+            color: #000;
+            display: none;
+        }
+        
+        #btn-next:hover {
+            box-shadow: 0 0 20px var(--glow-green);
+            transform: scale(1.02);
+        }
+
+        .points-round {
+            font-size: 20px;
+            color: var(--warning-orange);
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+            height: 30px;
+            text-shadow: 0 0 10px rgba(255, 170, 0, 0.4);
+        }
+
+        .leaderboard-container {
+            flex: 1;
+            background-color: rgba(0,0,0,0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .leaderboard-title {
+            font-size: 22px;
+            font-weight: bold;
+            text-align: center;
+            padding-bottom: 15px;
+            border-bottom: 2px solid var(--border-color);
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .leaderboard-list {
+            list-style: none;
+            flex: 1;
+        }
+
+        .lb-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            background-color: rgba(255,255,255,0.05);
+            margin-bottom: 10px;
+            border-radius: 6px;
+            font-size: 18px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .lb-item .lb-pos { color: var(--text-muted); width: 30px; }
+        .lb-item .lb-score { color: var(--accent-cyan); }
+
+        .progress-indicator {
+            text-align: center;
+            font-size: 16px;
+            color: var(--text-muted);
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        /* --- PANTALLA FINAL --- */
+        #final-screen {
+            grid-template-columns: 1fr;
+            place-items: center;
+            background: radial-gradient(circle at center, #001a1a, var(--bg-dark));
+        }
+
+        .final-box {
+            background-color: rgba(0,0,0,0.7);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 20px;
+            padding: 50px;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            box-shadow: 0 0 50px var(--glow-cyan);
+            backdrop-filter: blur(10px);
+        }
+
+        .final-title {
+            font-size: 64px;
+            color: var(--success-green);
+            text-shadow: 0 0 20px var(--glow-green);
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+
+        .final-ranking {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+
+        .final-row {
+            display: grid;
+            grid-template-columns: 60px 1fr 150px 150px;
+            background-color: rgba(255,255,255,0.05);
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            font-weight: bold;
+            align-items: center;
+            text-align: left;
+            border: 1px solid transparent;
+        }
+
+        .final-row.winner {
+            background-color: rgba(0, 212, 255, 0.15);
+            border-color: var(--accent-cyan);
+            box-shadow: 0 0 20px var(--glow-cyan);
+            transform: scale(1.05);
+            font-size: 28px;
+            margin: 15px 0;
+            z-index: 10;
+        }
+
+        .stat-col { text-align: center; font-family: 'Courier New', Courier, monospace; }
+
+        .audio-toggle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: transparent;
+            color: var(--text-muted);
+            font-size: 24px;
+            z-index: 100;
+        }
+        .audio-toggle:hover { color: white; }
+
+    </style>
+</head>
+<body>
+
+    <button id="btn-audio-toggle" class="audio-toggle">🔊</button>
+
+    <!-- PANTALLA 1: SETUP -->
+    <div id="setup-screen" class="screen active">
+        <div class="setup-box fade-in">
+            <h1 class="setup-title">ESCAPE ROOM COMPETITIVO<br><span style="font-size: 24px; color: white; text-shadow: none;">Legislación Laboral Costarricense</span></h1>
+            
+            <p style="font-size: 18px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5;">
+                <strong>MÁXIMA COMPETITIVIDAD:</strong> Opciones aleatorias en cada turno.<br>
+                Cada segundo cuenta para obtener un mayor multiplicador.<br>
+                ¡Cuidado! Las respuestas incorrectas no suman puntos. La precisión lo es todo.
+            </p>
+
+            <div class="input-group">
+                <input type="text" id="team-input" placeholder="Nombre del equipo..." maxlength="15" autocomplete="off">
+                <button class="btn-primary" id="btn-add">Añadir</button>
+            </div>
+
+            <ul class="team-list" id="team-list-ui"></ul>
+
+            <button class="btn-massive" id="btn-start" disabled>🚀 INICIAR COMPETENCIA</button>
+        </div>
+    </div>
+
+    <!-- PANTALLA 2: JUEGO EN VIVO -->
+    <div id="game-screen" class="screen">
+        <div class="col-left">
+            <div class="game-header">
+                <div>
+                    <div class="team-title" id="ui-team-name">TEAM AZUL</div>
+                    <div class="problem-meta" id="ui-problem-meta">Problema 1 de 5 • Riesgos del Trabajo</div>
+                </div>
+                <div class="timer-box" id="ui-timer-box">
+                    <div class="timer-display" id="ui-timer">2:00</div>
+                </div>
+            </div>
+
+            <div class="case-box slide-up" id="ui-case-text">
+                Cargando caso descriptivo...
+            </div>
+
+            <div id="questions-container">
+                <!-- Preguntas dinámicas inyectadas aquí -->
+            </div>
+
+            <div class="feedback-box" id="ui-feedback"></div>
+        </div>
+
+        <div class="col-right">
+            <div class="right-section fade-in">
+                <div class="mini-timer-label">Tiempo Restante</div>
+                <div class="mini-timer-val" id="ui-mini-timer">2:00</div>
+            </div>
+
+            <div class="right-section slide-up" style="animation-delay: 0.1s;">
+                <button class="btn-action" id="btn-submit" disabled>ENVIAR RESPUESTAS</button>
+                <button class="btn-action" id="btn-next">SIGUIENTE EQUIPO ➔</button>
+                <div class="points-round" id="ui-round-points"></div>
+            </div>
+
+            <div class="leaderboard-container slide-up" style="animation-delay: 0.2s;">
+                <div class="leaderboard-title">🏆 Tabla de Líderes</div>
+                <ul class="leaderboard-list" id="ui-leaderboard"></ul>
+                <div class="progress-indicator" id="ui-progress">
+                    Avance Global: 0 / 0
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PANTALLA 3: FINAL -->
+    <div id="final-screen" class="screen">
+        <div class="final-box slide-up">
+            <h1 class="final-title">¡TIEMPO FINALIZADO!</h1>
+            <p style="font-size: 22px; color: var(--text-muted); margin-bottom: 30px;">Resultados Oficiales de Legislación Laboral</p>
+            
+            <div class="final-ranking" id="ui-final-ranking"></div>
+
+            <button class="btn-primary" onclick="location.reload()" style="font-size: 24px; padding: 20px 40px;">NUEVO JUEGO</button>
+        </div>
+    </div>
+
+    <!-- ==========================================================================
+         LÓGICA JAVASCRIPT
+         ========================================================================== -->
+    <script>
+        /* --- BANCO DE PROBLEMAS --- */
+        const bancoProblemas = [
+            {
+                tema: "RIESGOS DEL TRABAJO",
+                variantes: [
+                    {
+                        caso: "Juan trabajaba en una construcción cuando cayó de un andamio a 3 metros de altura mientras instalaba tuberías de agua. Sufrió fractura de tibia y peroné en la pierna izquierda, además de heridas profundas en el abdomen. Fue trasladado en ambulancia al hospital donde pasó 15 días internado en la unidad de cuidados intensivos. Después requirió cirugía reconstructiva. Ahora necesita fisioterapia intensiva 3 veces por semana y no puede trabajar por los próximos 2 meses mínimo mientras se recupera. Su patrón le dice que es su problema personal y que no tiene obligación de nada más. Juan sabe que tiene derechos como trabajador pero no sabe a dónde ir, quién lo puede ayudar, ni qué protección lo cubre en esta situación.",
+                        questions: [
+                            { text: "¿Qué tipo de protección laboral cubre el caso de Juan?", options: ["Pensión de vejez", "Protección de maternidad", "Protección por riesgos del trabajo", "Asistencia social del IMAS"], correctIndex: 2 },
+                            { text: "¿Quién es responsable legal de pagar los gastos médicos de Juan?", options: ["Juan debe pagar de su bolsillo con sus ahorros", "El patrón debe pagar completamente de su fondo", "CCSS/INS cubre todos los gastos", "Solo el Ministerio de Salud interviene, es servicio público"], correctIndex: 2 },
+                            { text: "¿Cuál institución costarricense es responsable de este caso?", options: ["PANI (Patronato Nacional de la Infancia)", "INAMU (Instituto Nacional de las Mujeres)", "CCSS/INS (Caja Costarricense + Instituto Nacional de Seguros)", "IMAS (Instituto Mixto de Ayuda Social)"], correctIndex: 2 },
+                            { text: "Si el patrón se niega a reportar el accidente, ¿qué puede hacer Juan?", options: ["Nada, debe aceptar la negativa del patrón", "Denunciar al Ministerio de Trabajo y Seguridad Social", "Dejar el trabajo inmediatamente y buscar otro empleo", "Solicitar un préstamo al banco para pagar gastos médicos"], correctIndex: 1 }
+                        ],
+                        feedback: "Juan tiene protección laboral completa. CCSS/INS debe cubrir hospitalización, cirugía, medicinas e incapacidad pagada. El patrón que no reporte enfrenta sanciones legales."
+                    },
+                    {
+                        caso: "Carlos trabajaba en la cocina de un restaurante de 4 estrellas como chef de pastelería. Mientras preparaba caramelo para un postre, se quemó severamente la mano derecha con aceite caliente a 180 grados Celsius. La quemadura fue de segundo grado sobre un 25% de la mano. Requirió cirugía de injerto de piel, vendajes especiales que se cambian diariamente en el hospital. Está en recuperación intensiva. No puede usar la mano por al menos 3 meses. Su jefe le dice que como no puede cocinar, busque otro trabajo porque la cocina no lo necesita en otro rol. Carlos es padre de 2 hijos pequeños y está preocupado porque es su sustento único y no sabe si tiene alguna protección laboral.",
+                        questions: [
+                            { text: "¿Qué tipo de protección recibe Carlos por esta quemadura que ocurrió en el trabajo?", options: ["Pensión por vejez anticipada", "Protección de maternidad (no aplica hombres)", "Protección por riesgos del trabajo", "Asistencia social del IMAS para familias pobres"], correctIndex: 2 },
+                            { text: "¿Qué debe hacer el restaurante legalmente después del accidente?", options: ["Nada, es accidente de Carlos y es su responsabilidad", "Reportar a CCSS/INS dentro del plazo legal establecido", "Llamar solo a un médico privado a expensas del restaurante", "Llamar a la policía para reportar el incidente criminal"], correctIndex: 1 },
+                            { text: "¿Quién financia la cirugía de injerto de piel y recuperación de Carlos?", options: ["El restaurante de su bolsillo debe asumir todo", "Carlos debe pagar porque fue su culpa", "CCSS/INS cubre por riesgos laborales", "La familia de Carlos debe donar sangre para el injerto"], correctIndex: 2 },
+                            { text: "¿Carlos puede recibir dinero mientras se recupera y no puede trabajar?", options: ["No, debe esperar a volver a trabajar para ganar dinero", "Sí, CCSS/INS proporciona incapacidad pagada", "Solo si tiene ahorros personales suficientes", "No hay protección económica, es su problema"], correctIndex: 1 }
+                        ],
+                        feedback: "Carlos tiene derecho a cobertura médica completa, cirugía, medicinas, vendajes y salario por incapacidad durante su recuperación financiado por la seguridad social."
+                    },
+                    {
+                        caso: "Javier trabajaba en obras de construcción civil. Cayó desde un andamio de 5 metros de altura mientras instalaba estructuras metálicas de techo. Sufrió lesión grave en la columna vertebral, múltiples fracturas en costillas, brazos y piernas, además de traumatismo craneoencefálico. Fue trasladado de emergencia a cuidados intensivos. Después de 3 semanas de hospitalización, quedó con secuelas neurológicas que le impiden trabajar nuevamente en construcción o cualquier trabajo físico. Su patrón NUNCA reportó el accidente a las autoridades. Javier no sabe si pierde toda protección por culpa del patrón.",
+                        questions: [
+                            { text: "¿Esta lesión grave ocurrida en el trabajo está cubierta por seguridad social?", options: ["No, es accidente personal que sucedió en horario laboral", "Sí, por riesgos del trabajo", "Solo parcialmente si el patrón lo reporta", "Depende completamente de si reportan a autoridades"], correctIndex: 1 },
+                            { text: "¿Qué puede hacer Javier si el patrón nunca reportó el accidente?", options: ["Nada, se perdió toda la protección automáticamente", "Puede reportar él mismo directamente a CCSS/INS", "Solo queda sin protección porque patrón no reportó", "Debe demandar civil al patrón personalmente"], correctIndex: 1 },
+                            { text: "¿Si Javier queda con incapacidad permanente para trabajar?", options: ["No tiene protección, debe buscarse trabajo igual", "Puede solicitar pensión por invalidez", "Solo asistencia social del IMAS para pobres", "Debe esperar a los 65 para pensión de vejez"], correctIndex: 1 },
+                            { text: "¿Qué consecuencias legales enfrenta el patrón por no reportar?", options: ["Ninguna, es responsabilidad del trabajador", "Solo pagar multas administrativas menores", "Sí, multas y sanciones penales graves", "Solo una advertencia formal"], correctIndex: 2 }
+                        ],
+                        feedback: "Javier está protegido incluso si el patrón no reportó. Puede solicitar protección y pensión directamente. El patrón enfrenta sanciones penales por la omisión."
+                    }
+                ]
+            },
+            {
+                tema: "PROTECCIÓN DE MATERNIDAD",
+                variantes: [
+                    {
+                        caso: "María trabaja como cocinera hace exactamente 3 años en un restaurante familiar. Hace una semana descubrió que está embarazada de 2 meses. Está asustada porque acaba de comunicarle a su jefa. Su jefa inmediatamente le dijo que si toma licencia por maternidad va a ser despedida sin aviso previo. María está muy asustada porque necesita el dinero para mantener a su hijo mayor de 8 años de un matrimonio anterior. Ella sabe que tiene derechos laborales pero no sabe exactamente cuáles son ni quién la protege legalmente. El restaurante dice que no puede perder personal en medio de temporada alta de turismo.",
+                        questions: [
+                            { text: "¿Qué rama específica de la seguridad social protege a María?", options: ["Riesgos del trabajo (accidentes)", "Protección de maternidad", "Pensión de vejez (no tiene edad)", "Protección de invalidez"], correctIndex: 1 },
+                            { text: "¿Cuánto tiempo total de licencia tiene derecho María por embarazo y parto?", options: ["2 semanas antes y 2 después del parto", "3 semanas totales de licencia", "4 semanas antes y 4 después del parto (8 semanas totales)", "12 semanas totales de licencia"], correctIndex: 2 },
+                            { text: "¿La jefa PUEDE despedir a María por tomar licencia de maternidad?", options: ["Sí, es derecho de la patrona despedir empleados", "No, sería discriminación y violación grave de derechos", "Solo si le avisa con 15 días de anticipación", "Solo si paga indemnización completa por despido"], correctIndex: 1 },
+                            { text: "¿Quién financia los gastos médicos del embarazo, parto y cuidado del bebé?", options: ["María debe pagar todos los gastos de su bolsillo", "El restaurante debe pagar completamente", "CCSS (Caja Costarricense de Seguro Social) financia todo", "Solo Ministerio de Salud en hospitales públicos"], correctIndex: 2 }
+                        ],
+                        feedback: "María tiene derecho a licencia de maternidad PAGADA, cobertura de salud total y protección absoluta contra el despido. La CCSS asume los costos médicos."
+                    },
+                    {
+                        caso: "Rosa trabaja como vendedora en una tienda departamental hace 5 años. Está en el sexto mes de embarazo. Su cuerpo está cambiando mucho, tiene hinchazón de piernas y tiene dificultad estar parada 8 horas diarias consecutivas bajo presión de ventas. Su jefe le dice que debe cumplir horario completo sin reducción o buscar otro trabajo. Rosa es madre soltera de un hijo de 4 años y es su único ingreso familiar. Quiere saber qué derechos tiene durante el embarazo y después del parto.",
+                        questions: [
+                            { text: "¿Rosa tiene derecho a protección especial y adaptaciones durante el embarazo?", options: ["No hay protecciones especiales, debe trabajar normal", "Sí, licencias y adaptaciones de trabajo médicamente justificadas", "Solo después del parto tiene derechos", "Debe trabajar hasta el último día antes de parir"], correctIndex: 1 },
+                            { text: "¿Pueden cambiar o reducir el puesto de trabajo de Rosa durante embarazo?", options: ["No, debe hacer exactamente lo mismo que antes", "Sí, pueden asignar puesto más fácil si médico lo justifica", "Sí, pueden despedirla si tiene dificultad", "Sí, sin compensación ni justificación médica"], correctIndex: 1 },
+                            { text: "¿Después del parto cuánto tiempo descansa con sueldo completo?", options: ["1 semana de descanso pagado", "2 semanas de descanso pagado", "4 semanas de descanso pagado", "Debe volver al día siguiente sin pago"], correctIndex: 2 },
+                            { text: "¿Qué institución costarricense la protege?", options: ["IMAS (solo para pobres)", "PANI (para niños)", "CCSS (Caja Costarricense de Seguro Social)", "INAMU (solo mujeres)"], correctIndex: 2 }
+                        ],
+                        feedback: "Rosa tiene protección completa en el embarazo. El empleador debe facilitar adaptaciones si hay justificación médica y la CCSS cubre las licencias pagadas."
+                    },
+                    {
+                        caso: "Ana está en el tercer mes de embarazo y trabaja como asistente contable en una oficina de servicios contables. El jefe quiere que ella viaje a dos provincias diferentes para auditorías que durarán 1 semana cada una. Ana está muy mareada por el embarazo, tiene náuseas constantes durante el día, su médico personalmente le recomendó reposo relativo y evitar viajes. El jefe insiste que es 'obligación' viajar como parte de sus funciones. Ana necesita saber si tiene derechos y quién la protege.",
+                        questions: [
+                            { text: "¿Ana puede ser obligada a viajar durante el embarazo?", options: ["Sí, es trabajo normal de su puesto", "No, tiene derechos de protección durante embarazo", "Solo si viaja a lugares cercanos", "Depende completamente de lo que diga el patrón"], correctIndex: 1 },
+                            { text: "¿Qué institución brinda la protección de maternidad?", options: ["PANI (para infancia)", "IMAS (para pobres)", "CCSS (Caja Costarricense de Seguro Social)", "INAMU (para mujeres en general)"], correctIndex: 2 },
+                            { text: "¿Ana puede solicitar licencia médica por náuseas del embarazo?", options: ["No, las náuseas son normales", "Sí, con certificado médico que lo justifique", "Solo si está muy grave", "Debe trabajar igual aunque esté enferma"], correctIndex: 1 },
+                            { text: "¿Quién financia la licencia médica de Ana durante embarazo?", options: ["Ana debe usar expectativas personales", "El patrón", "CCSS (Caja Costarricense de Seguro Social) financia", "Ministerio de Salud solamente"], correctIndex: 2 }
+                        ],
+                        feedback: "Ana está protegida. No puede ser obligada a realizar tareas que pongan en riesgo su salud o su embarazo, y las licencias médicas son cubiertas por la CCSS."
+                    }
+                ]
+            },
+            {
+                tema: "PROTECCIÓN A LA VEJEZ",
+                variantes: [
+                    {
+                        caso: "Don Eduardo trabajó en la misma fábrica durante 40 años de forma continua. Subió desde obrero hasta supervisor. Ahora tiene exactamente 65 años de edad y desea jubilarse finalmente para descansar después de 40 años de trabajo duro. Su patrón le dice simplemente que se vaya, que no tiene obligación de nada más allá del último mes de sueldo. Don Eduardo no sabe si tiene derechos a pensión, cómo obtenerla, qué instituciones lo ayudan, cómo tramitarla, ni cuánto dinero recibirá. Además tiene problemas de corazón y necesita medicinas constantemente para vivir con calidad.",
+                        questions: [
+                            { text: "¿Don Eduardo tiene derecho legal a jubilarse a los 65 años?", options: ["No, debe seguir trabajando hasta los 75 años", "Sí, a los 65 años si tiene suficientes aportes", "Solo si su patrón da permiso", "No, porque no fue ejecutivo o profesional"], correctIndex: 1 },
+                            { text: "¿Quién es responsable de calcular y pagar la pensión de vejez?", options: ["Su patrón personalmente", "El Ministerio de Trabajo y Seguridad Social", "CCSS (Caja Costarricense de Seguro Social)", "Él mismo debe ahorrar para su pensión"], correctIndex: 2 },
+                            { text: "¿Don Eduardo puede acceder a medicina y atención médica después de jubilarse?", options: ["No, ya no es trabajador activo", "Sí, CCSS continúa brindándole salud de por vida", "Solo si paga privadamente", "Solo mediante el IMAS para pobres"], correctIndex: 1 },
+                            { text: "¿Quién específicamente calcula el monto de su pensión mensual?", options: ["Su patrón basado en criterios propios", "CCSS basado en años de aporte y promedio de salario", "El Ministerio de Salud", "Una notaría pública"], correctIndex: 1 }
+                        ],
+                        feedback: "Don Eduardo tiene pleno derecho a su pensión de vejez tras cumplir la edad y cuotas, además de mantener atención de salud vitalicia por parte de la CCSS."
+                    },
+                    {
+                        caso: "Doña Esperanza trabajó 35 años en el sector público como maestra de primaria. Ahora tiene 64 años de edad y está cansada mentalmente de la enseñanza. Hizo aportes a CCSS durante todo este tiempo. Su empleador público le dice que debe esperar obligatoriamente 1 año más hasta cumplir los 65 años para jubilarse. Ella quiere jubilarse ya porque tiene artritis avanzada en las rodillas de tanto estar parada en clase y le duele mucho caminar.",
+                        questions: [
+                            { text: "¿Doña Esperanza puede jubilarse a los 64 años?", options: ["No, debe esperar obligatoriamente a los 65", "Sí, si tiene suficientes años de contribución", "Nunca antes de los 65 años de edad", "Depende de la decisión del patrón público"], correctIndex: 1 },
+                            { text: "¿Qué institución aprueba y tramita la jubilación?", options: ["El empleador público", "CCSS (Caja Costarricense de Seguro Social)", "El Tribunal del Trabajo", "El Banco Nacional de Costa Rica"], correctIndex: 1 },
+                            { text: "¿Doña Esperanza sigue recibiendo atención de salud después de jubilarse?", options: ["No, pierde toda cobertura", "Sí, CCSS continúa brindándole salud", "Solo emergencias", "Solo privada pagada"], correctIndex: 1 },
+                            { text: "¿El patrón debe pagarle algo adicional al jubilarse?", options: ["No, nada adicional", "Sí, aguinaldo y vacaciones pendientes", "Solo si ella solicita formalmente", "Depende del presupuesto público"], correctIndex: 1 }
+                        ],
+                        feedback: "La ley permite jubilaciones anticipadas si se cumplen las cuotas requeridas. Ella tramitará su pensión en la CCSS y su patrono debe liquidar derechos pendientes."
+                    },
+                    {
+                        caso: "Don Raúl tiene 68 años, se jubiló hace exactamente 3 años de su trabajo en una empresa privada, y recibe su pensión de vejez de CCSS mensualmente. Ahora necesita medicinas constantemente para la presión arterial (hipertensión), tiene que visitar al cardiólogo cada mes para seguimiento, y requiere análisis de sangre y laboratorio regularmente. Su pensión es pequeña y se pregunta si CCSS sigue pagando la salud o si debe pagarlo privadamente ahora que es jubilado.",
+                        questions: [
+                            { text: "¿CCSS sigue pagando por cobertura de salud a Don Raúl como jubilado?", options: ["No, solo cubre a trabajadores activos", "Sí, de por vida a jubilados", "Solo si paga una cuota extra", "Solo emergencias, no controles regulares"], correctIndex: 1 },
+                            { text: "¿Quién paga las medicinas constantes de Don Raúl?", options: ["Don Raúl debe pagar completamente", "CCSS cubre según su plan", "Su familia debe ayudar a comprar", "No hay cobertura farmacéutica para jubilados"], correctIndex: 1 },
+                            { text: "¿Los controles médicos mensuales y análisis son gratis?", options: ["No, Don Raúl debe pagar", "Sí, CCSS los cubre", "Medio precio para jubilados", "Depende si es público o privado"], correctIndex: 1 },
+                            { text: "¿Si Don Raúl necesita una cirugía del corazón?", options: ["Debe pagar completamente", "CCSS cubre la cirugía", "Parcialmente compartida", "Solo si es en hospital público"], correctIndex: 1 }
+                        ],
+                        feedback: "El sistema solidario garantiza que Don Raúl, como pensionado, reciba cobertura de salud, especialistas, cirugías y medicinas 100% financiadas por la CCSS de por vida."
+                    }
+                ]
+            },
+            {
+                tema: "PROTECCIÓN POR INVALIDEZ",
+                variantes: [
+                    {
+                        caso: "Sofía trabajaba como recepcionista en una clínica dental durante 15 años. A los 58 años fue diagnosticada con artritis reumatoide grave que afecta sus manos, muñecas y rodillas severamente. Sus manos se inflaman constantemente, duelen mucho y no puede digitar ni levantar objetos. No puede trabajar en su puesto de recepcionista. Su empresa le dice que renuncie inmediatamente. Sofía no tiene edad para jubilarse (falta 7 años para los 65) pero tampoco puede seguir trabajando. Necesita saber si tiene opciones de protección laboral o si pierde todo.",
+                        questions: [
+                            { text: "¿Qué tipo de protección específica podría aplicar a Sofía?", options: ["Pensión de vejez (todavía no tiene edad legal)", "Pensión por invalidez", "Solo asistencia social del IMAS", "Protección de maternidad"], correctIndex: 1 },
+                            { text: "¿Quién determina oficialmente si Sofía está 'inválida' según la ley?", options: ["Su doctor privado", "CCSS mediante evaluación médica completa", "El patrón de la clínica", "Ella misma puede declararse inválida"], correctIndex: 1 },
+                            { text: "¿Sofía puede trabajar parcialmente mientras recibe pensión por invalidez?", options: ["No, está absolutamente prohibido trabajar", "Sí, pero con restricciones estrictas de ingresos", "Sí, puede trabajar sin ningún límite", "Depende de la enfermedad específica"], correctIndex: 1 },
+                            { text: "¿La invalidez de Sofía es permanente para toda la vida?", options: ["Siempre es temporal, máximo 1 año", "Se revisa periódicamente para confirmar estado", "Permanente de por vida, nunca se revisa", "Depende del patrón original"], correctIndex: 1 }
+                        ],
+                        feedback: "Sofía puede optar por la pensión por invalidez de la CCSS tras una evaluación formal, protegiéndola económicamente sin haber alcanzado la edad de vejez."
+                    },
+                    {
+                        caso: "Miguel trabajaba como conductor de camión de carga para una empresa transportista hace 12 años. A los 45 años sufrió un accidente laboral grave que le causó lesión en la médula espinal. Quedó con limitación severa para caminar y no puede volver a trabajar como conductor. Tiene esposa y 2 hijos pequeños de 6 y 8 años. Necesita saber si tiene protección laboral porque está incapacitado para trabajar.",
+                        questions: [
+                            { text: "¿Miguel tiene derecho a protección por invalidez aunque sea joven?", options: ["No, solo para mayores de 50 años", "Sí, aunque sea joven tiene derecho", "Solo si fuera accidente de trabajo", "Depende de si tiene hijos"], correctIndex: 1 },
+                            { text: "¿Quién valida y certifica la invalidez de Miguel?", options: ["El patrón de la transportista", "Su médico personal solamente", "CCSS con evaluación médica profesional", "El Ministerio de Trabajo"], correctIndex: 2 },
+                            { text: "¿Miguel recibe pensión mientras está incapacitado?", options: ["No, debe buscar otro trabajo", "Sí, pensión por invalidez", "Solo asistencia social temporal", "Préstamo del banco"], correctIndex: 1 },
+                            { text: "¿Qué protección se extiende a la familia de Miguel?", options: ["No reciben protección", "CCSS también protege a sus sobrevivientes", "Solo pensión de Miguel", "Depende de la edad de los hijos"], correctIndex: 1 }
+                        ],
+                        feedback: "La edad no es limitante para la invalidez. Miguel recibirá pensión, y la protección del régimen incluye beneficios para su esposa e hijos."
+                    },
+                    {
+                        caso: "Carmen trabajaba en una fábrica textil 20 años. Por exposición crónica a químicos peligrosos sin equipo de protección adecuado, desarrolló enfermedad respiratoria ocupacional muy grave. A los 52 años necesita oxígeno constantemente, no puede respirar bien, su médico dice que no puede seguir trabajando en la fábrica. Carmen quiere saber si sus 20 años de trabajo la protegen.",
+                        questions: [
+                            { text: "¿Carmen tiene derecho a invalidez siendo enfermedad ocupacional?", options: ["No, no es accidente", "Sí, enfermedad ocupacional da derecho", "Solo accidentes agudos", "Depende de la químicas"], correctIndex: 1 },
+                            { text: "¿Quién reconoce y valida una enfermedad ocupacional?", options: ["La empresa textil", "CCSS/INS oficialmente", "El sindicato textil", "Ella misma"], correctIndex: 1 },
+                            { text: "¿Carmen recibe pensión por invalidez?", options: ["No", "Sí, por invalidez laboral", "Solo medicina", "Préstamo"], correctIndex: 1 },
+                            { text: "¿Tiene el patrón responsabilidad legal?", options: ["No", "Sí, por no proteger salud", "Depende", "Parcial"], correctIndex: 1 }
+                        ],
+                        feedback: "Las enfermedades crónicas generadas en el trabajo otorgan derecho a pensión por invalidez por riesgos de trabajo. El patrón tiene gran responsabilidad legal."
+                    }
+                ]
+            },
+            {
+                tema: "INDEMNIZACIÓN POR DESPIDO",
+                variantes: [
+                    {
+                        caso: "Roberto trabajó para la misma empresa de servicios de consultoría durante exactamente 8 años de forma continua. Sin previo aviso formal, fue despedido por 'reestructuración de personal' por email. Su patrón solo le pagó lo correspondiente al mes actual. Roberto reclama que le deben: (1) Vacaciones acumuladas no disfrutadas de 8 años, (2) Aguinaldo proporcional por los 8 años, (3) Indemnización por despido sin justa causa. El patrón le dice que ya fue liquidado y no tiene más obligaciones legales. Roberto está confundido, asustado y no sabe sus derechos.",
+                        questions: [
+                            { text: "¿Roberto tiene derecho legal a recibir vacaciones no utilizadas?", options: ["No, las pierde automáticamente", "Sí, el patrón debe pagarlas en efectivo", "Solo si negocia directamente", "No, fueron cortesía del patrón"], correctIndex: 1 },
+                            { text: "¿Debe recibir aguinaldo al ser despedido?", options: ["No, solo si termina año laboralmente", "Sí, proporcional a meses trabajados", "Solo si es mutuo acuerdo", "El patrón decide si paga"], correctIndex: 1 },
+                            { text: "¿Roberto recibe indemnización por despido sin justa causa?", options: ["No, nunca hay indemnización", "Sí, indemnización (cesantía) según años de servicio", "Solo 1 mes de salario", "No, porque fue reestructuración"], correctIndex: 1 },
+                            { text: "¿A dónde puede acudir Roberto para reclamar legalmente?", options: ["Directamente con el patrón (negociación)", "Juzgado de Trabajo o Ministerio de Trabajo", "Ministerio de Hacienda", "Banco Nacional"], correctIndex: 1 }
+                        ],
+                        feedback: "Roberto fue despedido sin justa causa, tiene derecho irrenunciable al pago de preaviso, cesantía, aguinaldo proporcional y vacaciones acumuladas."
+                    },
+                    {
+                        caso: "María trabajó como gerente de tienda durante 12 años en una tienda minorista. Un día el dueño original vende toda la tienda a un nuevo propietario. El nuevo dueño llama a María y le dice que ella no continúa en el cargo. María había acumulado vacaciones no tomadas desde hace 3 años de tiempo acumulado. También tiene aguinaldo pendiente por los años trabajados. El nuevo propietario le dice que no es su problema porque él no fue quien la contrató originalmente.",
+                        questions: [
+                            { text: "¿María tiene derecho a que le paguen vacaciones acumuladas?", options: ["No, las pierde al cambio de dueño", "Sí, deben pagarse en efectivo al terminar", "Pierde la mitad de vacaciones", "Depende del contrato"], correctIndex: 1 },
+                            { text: "¿Quién es legalmente responsable de pagar si cambió dueño?", options: ["Solo el viejo dueño original", "El nuevo propietario asume la responsabilidad (Sustitución Patronal)", "Nadie debe pagar", "CCSS paga"], correctIndex: 1 },
+                            { text: "¿María recibe aguinaldo proporcional?", options: ["No", "Sí, proporcional a los meses laborados", "Solo si trabajó fin de año", "El dueño decide"], correctIndex: 1 },
+                            { text: "¿Puede reclamar judicialmente ante cambio de dueño?", options: ["No hay reclamación posible", "Sí, ante el Juzgado de Trabajo", "Solo administrativamente", "No hay tiempo"], correctIndex: 1 }
+                        ],
+                        feedback: "Por la 'Sustitución Patronal', el nuevo dueño asume todas las obligaciones laborales. María tiene derecho al pago total de su liquidación laboral."
+                    },
+                    {
+                        caso: "Carlos trabaja en una constructora hace 6 años como capataz. Su jefe le dice que fue despedido porque 'no es productivo'. Carlos cree que fue porque se enfermó dos veces durante el año pasado. No le pagaron vacaciones ni aguinaldo. Solo le dieron su último mes de sueldo. Carlos necesita este dinero urgentemente para pagar renta y alimentar a su familia.",
+                        questions: [
+                            { text: "¿Las vacaciones deben pagarse al despido?", options: ["No", "Sí, es un derecho laboral irrenunciable", "Si quiere", "Depende"], correctIndex: 1 },
+                            { text: "¿Merece aguinaldo proporcional?", options: ["No", "Sí, correspondiente a los meses laborados ese año", "Mitad", "Si pide"], correctIndex: 1 },
+                            { text: "¿Tiene derecho a indemnización (Cesantía y Preaviso)?", options: ["No", "Sí, por ser despido sin justa causa comprobada", "Solo parcial", "Depende"], correctIndex: 1 },
+                            { text: "¿Dónde puede reclamar legalmente sus extremos laborales?", options: ["Con el patrón personalmente", "Juzgado de Trabajo / MTSS", "CCSS", "Policía"], correctIndex: 1 }
+                        ],
+                        feedback: "Para un despido justificado ('sin responsabilidad patronal'), el patrón debe tener pruebas graves. Sin ellas, Carlos tiene derecho al pago completo de su liquidación."
+                    }
+                ]
+            }
+        ];
+
+        /* --- ESTADO DEL JUEGO --- */
+        let teams = [];
+        let currentProblemIndex = 0;
+        let currentTeamIndex = 0;
+        let roomAssignment = []; 
+        let currentAnswers = [-1, -1, -1, -1];
+        let currentShuffledQuestions = []; // Guarda el mapeo de opciones aleatorias
+        
+        let timeRemaining = 120;
+        let timerInterval = null;
+        let isMuted = false;
+
+        /* Letras estándar para opciones */
+        const optionShapes = ['A', 'B', 'C', 'D'];
+
+        /* --- WEB AUDIO API ENGINE --- */
+        let audioCtx;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+        }
+
+        function playSound(type) {
+            if (isMuted || !audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            
+            const now = audioCtx.currentTime;
+            
+            switch(type) {
+                case 'tick':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(800, now);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                    break;
+                case 'alert':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(1000, now);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                    osc.start(now); osc.stop(now + 0.3);
+                    break;
+                case 'critical':
+                    for(let i=0; i<3; i++) {
+                        const o = audioCtx.createOscillator();
+                        const g = audioCtx.createGain();
+                        o.connect(g); g.connect(audioCtx.destination);
+                        o.type = 'square';
+                        o.frequency.setValueAtTime(1200, now + (i*0.1));
+                        g.gain.setValueAtTime(0.2, now + (i*0.1));
+                        g.gain.exponentialRampToValueAtTime(0.01, now + (i*0.1) + 0.05);
+                        o.start(now + (i*0.1)); o.stop(now + (i*0.1) + 0.05);
+                    }
+                    break;
+                case 'timeover':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.linearRampToValueAtTime(1000, now + 1);
+                    gain.gain.setValueAtTime(0.4, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 1);
+                    osc.start(now); osc.stop(now + 1);
+                    break;
+                case 'success':
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(600, now);
+                    osc.frequency.exponentialRampToValueAtTime(1200, now + 0.3);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                    break;
+                case 'error':
+                    osc.type = 'sawtooth';
+                    osc.frequency.setValueAtTime(300, now);
+                    osc.frequency.exponentialRampToValueAtTime(150, now + 0.4);
+                    gain.gain.setValueAtTime(0.3, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                    osc.start(now); osc.stop(now + 0.4);
+                    break;
+                case 'click':
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(900, now);
+                    gain.gain.setValueAtTime(0.1, now);
+                    gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                    osc.start(now); osc.stop(now + 0.1);
+                    break;
+                case 'champions':
+                    // Melodía sintetizada de "We Are The Champions"
+                    const notes = [
+                        { f: 329.63, d: 0.5, t: 0 },    // We
+                        { f: 392.00, d: 0.5, t: 0.5 },  // are
+                        { f: 440.00, d: 0.5, t: 1.0 },  // the
+                        { f: 329.63, d: 0.5, t: 1.5 },  // cham -
+                        { f: 523.25, d: 1.2, t: 2.0 },  // pions
+                        { f: 493.88, d: 0.4, t: 3.4 },  // my
+                        { f: 440.00, d: 1.0, t: 3.8 }   // friends!
+                    ];
+                    
+                    notes.forEach(note => {
+                        // Voz Principal (Triangular, más brillante)
+                        const o1 = audioCtx.createOscillator();
+                        const g1 = audioCtx.createGain();
+                        o1.connect(g1); g1.connect(audioCtx.destination);
+                        o1.type = 'triangle'; 
+                        o1.frequency.setValueAtTime(note.f, now + note.t);
+                        g1.gain.setValueAtTime(0.4, now + note.t);
+                        g1.gain.linearRampToValueAtTime(0.01, now + note.t + note.d);
+                        o1.start(now + note.t); o1.stop(now + note.t + note.d);
+                        
+                        // Armonía (Onda Senoidal más baja para dar cuerpo)
+                        const o2 = audioCtx.createOscillator();
+                        const g2 = audioCtx.createGain();
+                        o2.connect(g2); g2.connect(audioCtx.destination);
+                        o2.type = 'sine';
+                        o2.frequency.setValueAtTime(note.f * 0.75, now + note.t); 
+                        g2.gain.setValueAtTime(0.2, now + note.t);
+                        g2.gain.linearRampToValueAtTime(0.01, now + note.t + note.d);
+                        o2.start(now + note.t); o2.stop(now + note.t + note.d);
+                    });
+                    break;
+            }
+        }
+
+        document.getElementById('btn-audio-toggle').addEventListener('click', (e) => {
+            isMuted = !isMuted;
+            e.target.textContent = isMuted ? '🔇' : '🔊';
+            if(!isMuted) initAudio();
+        });
+
+        /* --- LÓGICA DE NAVEGACIÓN Y SETUP --- */
+        const teamInput = document.getElementById('team-input');
+        const btnAdd = document.getElementById('btn-add');
+        const teamListUI = document.getElementById('team-list-ui');
+        const btnStart = document.getElementById('btn-start');
+
+        btnAdd.addEventListener('click', () => {
+            const name = teamInput.value.trim().toUpperCase();
+            if (!name || teams.length >= 5) return;
+            
+            const colorVar = `var(--team-${teams.length})`;
+            teams.push({
+                id: teams.length,
+                name: name,
+                color: colorVar,
+                score: 0,
+                correctCount: 0
+            });
+            
+            const li = document.createElement('li');
+            li.className = 'team-item';
+            li.style.borderColor = colorVar;
+            li.innerHTML = `<span style="color:${colorVar}; margin-right:15px">●</span> ${name}`;
+            teamListUI.appendChild(li);
+            
+            teamInput.value = '';
+            btnStart.disabled = teams.length === 0;
+            playSound('click');
+        });
+
+        teamInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') btnAdd.click(); });
+
+        btnStart.addEventListener('click', () => {
+            initAudio();
+            generateAssignments();
+            updateLeaderboard();
+            document.getElementById('setup-screen').classList.remove('active');
+            document.getElementById('game-screen').classList.add('active');
+            loadProblem();
+        });
+
+        function generateAssignments() {
+            roomAssignment = [];
+            for (let p = 0; p < 5; p++) {
+                let variants = [0, 1, 2];
+                let teamVars = [];
+                for (let t = 0; t < teams.length; t++) {
+                    if (variants.length === 0) variants = [0, 1, 2];
+                    const rIndex = Math.floor(Math.random() * variants.length);
+                    teamVars.push(variants.splice(rIndex, 1)[0]);
+                }
+                roomAssignment.push(teamVars);
+            }
+        }
+
+        /* Función para Mezclar Opciones aleatoriamente */
+        function shuffleOptionsArray(options, originalCorrectIndex) {
+            let mapped = options.map((opt, i) => ({ text: opt, isCorrect: i === originalCorrectIndex }));
+            for (let i = mapped.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [mapped[i], mapped[j]] = [mapped[j], mapped[i]];
+            }
+            return mapped;
+        }
+
+        /* --- FLUJO DE JUEGO --- */
+        const btnSubmit = document.getElementById('btn-submit');
+        const btnNext = document.getElementById('btn-next');
+        const questionsContainer = document.getElementById('questions-container');
+
+        function loadProblem() {
+            currentAnswers = [-1, -1, -1, -1];
+            currentShuffledQuestions = []; // Limpiamos mapeo de la ronda anterior
+            
+            btnSubmit.disabled = true;
+            btnSubmit.style.display = 'block';
+            btnNext.style.display = 'none';
+            document.getElementById('ui-feedback').className = 'feedback-box';
+            
+            const team = teams[currentTeamIndex];
+            const prob = bancoProblemas[currentProblemIndex];
+            const variantIdx = roomAssignment[currentProblemIndex][currentTeamIndex];
+            const variant = prob.variantes[variantIdx];
+
+            const uiTeam = document.getElementById('ui-team-name');
+            uiTeam.textContent = team.name;
+            uiTeam.style.color = team.color;
+            document.getElementById('ui-problem-meta').textContent = `Problema ${currentProblemIndex + 1} de 5 • ${prob.tema}`;
+            
+            const caseBox = document.getElementById('ui-case-text');
+            caseBox.textContent = variant.caso;
+            caseBox.style.animation = 'none';
+            void caseBox.offsetWidth; 
+            caseBox.style.animation = null;
+
+            questionsContainer.innerHTML = '';
+            
+            variant.questions.forEach((q, qIndex) => {
+                const qBlock = document.createElement('div');
+                qBlock.className = `question-block slide-up stagger-${qIndex + 1}`;
+                
+                const qTitle = document.createElement('div');
+                qTitle.className = 'q-text';
+                qTitle.textContent = `${qIndex + 1}. ${q.text}`;
+                qBlock.appendChild(qTitle);
+
+                const grid = document.createElement('div');
+                grid.className = 'options-grid';
+                
+                // Mezcla de opciones para evitar memorización
+                const shuffledOpts = shuffleOptionsArray(q.options, q.correctIndex);
+                currentShuffledQuestions.push(shuffledOpts); 
+                
+                shuffledOpts.forEach((optData, optIndex) => {
+                    const btn = document.createElement('button');
+                    btn.className = `option-btn opt-${qIndex}`;
+                    
+                    btn.innerHTML = `<span class="shape-icon">${optionShapes[optIndex]})</span><span>${optData.text}</span>`;
+                    btn.onclick = () => selectOption(qIndex, optIndex, btn);
+                    grid.appendChild(btn);
+                });
+                
+                qBlock.appendChild(grid);
+                questionsContainer.appendChild(qBlock);
+            });
+
+            document.getElementById('ui-progress').textContent = `Avance Global: Problema ${currentProblemIndex + 1}/5 | Turno ${currentTeamIndex + 1}/${teams.length}`;
+            
+            startTimer();
+        }
+
+        function selectOption(qIndex, optIndex, btnElem) {
+            playSound('click');
+            currentAnswers[qIndex] = optIndex;
+            
+            const siblings = document.querySelectorAll(`.opt-${qIndex}`);
+            siblings.forEach(s => s.classList.remove('selected'));
+            btnElem.classList.add('selected');
+
+            if (!currentAnswers.includes(-1)) {
+                btnSubmit.disabled = false;
+            }
+        }
+
+        /* --- CRONÓMETRO --- */
+        function startTimer() {
+            timeRemaining = 120;
+            updateTimerUI();
+            const uiTimerBox = document.getElementById('ui-timer-box');
+            uiTimerBox.className = 'timer-box';
+
+            if(timerInterval) clearInterval(timerInterval);
+            
+            timerInterval = setInterval(() => {
+                timeRemaining--;
+                updateTimerUI();
+
+                if (timeRemaining <= 30 && timeRemaining > 10) {
+                    uiTimerBox.classList.add('timer-warning');
+                    playSound('tick');
+                } else if (timeRemaining <= 10 && timeRemaining > 5) {
+                    uiTimerBox.classList.add('timer-pulse');
+                    playSound('alert');
+                } else if (timeRemaining <= 5 && timeRemaining > 0) {
+                    uiTimerBox.classList.remove('timer-pulse');
+                    uiTimerBox.classList.add('timer-critical');
+                    playSound('critical');
+                } else if (timeRemaining <= 0) {
+                    clearInterval(timerInterval);
+                    playSound('timeover');
+                    forceSubmit();
+                }
+            }, 1000);
+        }
+
+        function updateTimerUI() {
+            const m = Math.floor(Math.max(0, timeRemaining) / 60);
+            const s = Math.max(0, timeRemaining) % 60;
+            const text = `${m}:${s.toString().padStart(2, '0')}`;
+            document.getElementById('ui-timer').textContent = text;
+            document.getElementById('ui-mini-timer').textContent = text;
+        }
+
+        /* --- VALIDACIÓN Y PUNTUACIÓN DE ESFUERZO CONTINUA --- */
+        btnSubmit.addEventListener('click', () => processSubmission(false));
+        
+        function forceSubmit() {
+            processSubmission(true);
+        }
+
+        function processSubmission(isTimeout) {
+            clearInterval(timerInterval);
+            document.getElementById('ui-timer-box').className = 'timer-box'; 
+            
+            btnSubmit.style.display = 'none';
+            btnNext.style.display = 'block';
+            
+            const variantIdx = roomAssignment[currentProblemIndex][currentTeamIndex];
+            const variant = bancoProblemas[currentProblemIndex].variantes[variantIdx];
+            
+            let correctAnswersCount = 0;
+            let ptsCorrectas = 0;
+            let ptsIncorrectas = 0;
+
+            const timeTaken = isTimeout ? 120 : (120 - timeRemaining);
+            // El multiplicador penaliza lento, pero nunca llega a cero para evitar la desmotivación
+            let timeFactor = 1 - ((timeTaken / 120) / 2); 
+            
+            currentShuffledQuestions.forEach((shuffledOpts, qIndex) => {
+                const buttons = document.querySelectorAll(`.opt-${qIndex}`);
+                buttons.forEach((btn, optIndex) => {
+                    btn.disabled = true;
+                    
+                    const isOptCorrect = shuffledOpts[optIndex].isCorrect;
+                    const isUserSelection = (optIndex === currentAnswers[qIndex]);
+
+                    // Marcamos visualmente las correctas e incorrectas directamente en el botón
+                    if (isOptCorrect) {
+                        btn.classList.add('correct-reveal');
+                        btn.innerHTML += '<span class="eval-icon">✓</span>';
+                    } else if (isUserSelection && !isOptCorrect) {
+                        btn.classList.add('incorrect-reveal');
+                        btn.innerHTML += '<span class="eval-icon">✗</span>';
+                    }
+                });
+                
+                // Sumar aciertos y esfuerzo validando contra nuestro array aleatorio guardado
+                if (currentAnswers[qIndex] !== -1) {
+                    if (shuffledOpts[currentAnswers[qIndex]].isCorrect) {
+                        correctAnswersCount++;
+                        ptsCorrectas += Math.round(1000 * timeFactor); // Puntos solo por aciertos
+                    } else {
+                        ptsIncorrectas += 0; // 0 puntos por respuesta incorrecta
+                    }
+                }
+            });
+
+            const fbBox = document.getElementById('ui-feedback');
+            const ptBox = document.getElementById('ui-round-points');
+            fbBox.style = '';
+
+            let earnedPoints = ptsCorrectas + ptsIncorrectas;
+
+            teams[currentTeamIndex].score += earnedPoints;
+            teams[currentTeamIndex].correctCount += correctAnswersCount;
+
+            // Construir desglose de puntaje garantizado
+            let desgloseHTML = `
+                <div class="points-breakdown">
+                    <div style="color: var(--success-green); margin-bottom: 5px;">✅ ${correctAnswersCount} Correctas: +${ptsCorrectas} pts</div>
+                    <div style="color: var(--error-red);">❌ ${4 - correctAnswersCount} Incorrectas: 0 pts</div>
+                    <div class="points-breakdown-total">TOTAL SUMADO ESTA RONDA: +${earnedPoints} PTS</div>
+                </div>
+            `;
+
+            if (correctAnswersCount === 4) {
+                playSound('success');
+                fbBox.innerHTML = `✓ ¡PERFECTO! Todas las respuestas son correctas.${desgloseHTML}`;
+                fbBox.className = 'feedback-box success fade-in';
+            } else if (correctAnswersCount > 0) {
+                playSound('success'); 
+                fbBox.innerHTML = `⚠️ ACIERTO PARCIAL: ${correctAnswersCount}/4 correctas.<br><br><span style="font-size:18px; color:white; font-weight:normal;">Revisa las opciones marcadas con ✓ arriba para ver dónde te equivocaste.<br><br>${variant.feedback}</span>${desgloseHTML}`;
+                fbBox.className = 'feedback-box fade-in';
+                fbBox.style.display = 'block';
+                fbBox.style.backgroundColor = 'rgba(255, 170, 0, 0.15)';
+                fbBox.style.borderColor = 'var(--warning-orange)';
+                fbBox.style.color = 'var(--warning-orange)';
+                fbBox.style.boxShadow = '0 0 20px rgba(255, 170, 0, 0.3)';
+            } else {
+                playSound('error');
+                fbBox.innerHTML = `✗ OBTUVISTE 0 ACIERTOS.<br><br> <span style="font-size:18px; color:white; font-weight:normal;">Revisa las opciones marcadas con ✓ arriba para entender el caso.<br><br>${variant.feedback}</span>${desgloseHTML}`;
+                fbBox.className = 'feedback-box error fade-in';
+            }
+
+            ptBox.textContent = `Puntaje actualizado`;
+
+            updateLeaderboard();
+        }
+
+        btnNext.addEventListener('click', () => {
+            playSound('click');
+            document.getElementById('ui-round-points').textContent = '';
+            
+            currentTeamIndex++;
+            if (currentTeamIndex >= teams.length) {
+                currentTeamIndex = 0;
+                currentProblemIndex++;
+            }
+
+            if (currentProblemIndex >= 5) {
+                showFinalScreen();
+            } else {
+                loadProblem();
+            }
+        });
+
+        /* --- TABLA DE LÍDERES --- */
+        function updateLeaderboard() {
+            const list = document.getElementById('ui-leaderboard');
+            list.innerHTML = '';
+            
+            const sorted = [...teams].sort((a, b) => b.score - a.score);
+            
+            sorted.forEach((t, i) => {
+                const li = document.createElement('li');
+                li.className = 'lb-item';
+                if (t.id === teams[currentTeamIndex].id && btnNext.style.display === 'block') {
+                    li.style.animation = 'updatePop 0.5s ease forwards';
+                    li.style.boxShadow = `0 0 15px ${t.color}`;
+                    li.style.borderColor = t.color;
+                    li.style.borderWidth = '1px';
+                    li.style.borderStyle = 'solid';
+                }
+                
+                li.innerHTML = `
+                    <div>
+                        <span class="lb-pos">${i+1}º</span>
+                        <span style="color: ${t.color}">${t.name}</span>
+                    </div>
+                    <span class="lb-score">${t.score} pts</span>
+                `;
+                list.appendChild(li);
+            });
+        }
+
+        /* --- SISTEMA DE CONFETI --- */
+        function shootConfetti() {
+            const colors = ['#ff3366', '#00d4ff', '#ffaa00', '#00ff88', '#9b59b6', '#ffffff', '#ffd700'];
+            for(let i = 0; i < 150; i++) {
+                const conf = document.createElement('div');
+                conf.className = 'confetti';
+                conf.style.left = (Math.random() * 100) + 'vw';
+                conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.animationDelay = (Math.random() * 3) + 's';
+                conf.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                
+                // Variar formas (cuadrados, rectángulos, círculos)
+                if(Math.random() > 0.5) conf.style.borderRadius = '50%';
+                if(Math.random() > 0.7) conf.style.width = '8px';
+                
+                document.body.appendChild(conf);
+                
+                // Limpieza del DOM
+                setTimeout(() => { if (conf.parentNode) conf.parentNode.removeChild(conf); }, 6000);
+            }
+        }
+
+        /* --- PANTALLA FINAL --- */
+        function showFinalScreen() {
+            document.getElementById('game-screen').classList.remove('active');
+            document.getElementById('final-screen').classList.add('active');
+            
+            const container = document.getElementById('ui-final-ranking');
+            const sorted = [...teams].sort((a, b) => b.score - a.score);
+            
+            sorted.forEach((t, i) => {
+                const isWinner = i === 0;
+                const row = document.createElement('div');
+                row.className = `final-row ${isWinner ? 'winner' : ''}`;
+                
+                let rankIcon = isWinner ? '<div style="animation: crown-bounce 1.5s infinite;">👑</div>' : `${i+1}º`;
+                
+                row.innerHTML = `
+                    <div style="font-size:36px; text-align:center;">${rankIcon}</div>
+                    <div style="color: ${t.color}; text-shadow: ${isWinner ? '0 0 15px ' + t.color : 'none'}">${t.name}</div>
+                    <div class="stat-col">${t.correctCount}/20 aciertos</div>
+                    <div class="stat-col" style="color:var(--accent-cyan)">${t.score} PTS</div>
+                `;
+                container.appendChild(row);
+            });
+            
+            // Efectos de Campeonato
+            playSound('champions');
+            shootConfetti();
+            
+            const finalTitle = document.querySelector('.final-title');
+            finalTitle.innerHTML = '🏆 ¡TENEMOS CAMPEONES! 🏆';
+            finalTitle.style.color = '#ffd700'; // Dorado
+            finalTitle.style.textShadow = '0 0 30px rgba(255, 215, 0, 0.8)';
+            finalTitle.style.animation = 'pulseGlow 2s infinite';
+        }
+    </script>
+</body>
+</html>
