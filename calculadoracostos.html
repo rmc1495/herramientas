@@ -136,8 +136,10 @@ body {
   .tab { padding: 9px 14px; font-size: 0.75rem; white-space: nowrap; flex-shrink: 0; }
   .scenarios-grid { grid-template-columns: 1fr; gap: 10px; }
   .sens-grid { grid-template-columns: 1fr; }
-  .item-row.ing { grid-template-columns: 1.3fr 0.9fr 0.8fr 28px; }
-  .item-row input { font-size: 0.74rem; padding: 8px 8px; }
+  .item-row.ing { grid-template-columns: 1.1fr 0.75fr 0.7fr 0.65fr 24px; }
+  .col-headers.ing { grid-template-columns: 1.1fr 0.75fr 0.7fr 0.65fr 24px; }
+  .item-row input { font-size: 0.74rem; padding: 8px 6px; }
+  .item-row select { font-size: 0.68rem; padding: 8px 3px; padding-right: 16px; }
   .col-headers span { font-size: 0.54rem; }
   th, td { padding: 8px 10px; font-size: 0.78rem; }
   th { font-size: 0.55rem; letter-spacing: 1px; }
@@ -207,7 +209,7 @@ body {
   align-items: center;
   animation: fadeIn 0.2s ease;
 }
-.item-row.ing { grid-template-columns: 1.4fr 1fr 0.9fr 28px; }
+.item-row.ing { grid-template-columns: 1.4fr 1fr 0.7fr 0.7fr 28px; }
 .item-row.fix { grid-template-columns: 1.5fr 1fr 28px; }
 .item-row.var { grid-template-columns: 1.5fr 1fr 28px; }
 
@@ -231,6 +233,37 @@ body {
   font-family: 'Instrument Sans', sans-serif;
   font-weight: 500;
 }
+.item-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+.item-row input[type="number"]::-webkit-outer-spin-button,
+.item-row input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.item-row select {
+  background: var(--surface2);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  padding: 8px 4px;
+  color: var(--text);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.72rem;
+  outline: none;
+  width: 100%;
+  transition: all 0.15s;
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 6px center;
+  padding-right: 18px;
+}
+.item-row select:focus {
+  border-color: var(--accent);
+  background-color: white;
+}
 
 @keyframes fadeIn { from { opacity: 0; transform: translateY(-3px); } to { opacity: 1; transform: none; } }
 
@@ -240,7 +273,7 @@ body {
   margin-bottom: 4px;
   padding: 0 2px;
 }
-.col-headers.ing { grid-template-columns: 1.4fr 1fr 0.9fr 28px; }
+.col-headers.ing { grid-template-columns: 1.4fr 1fr 0.7fr 0.7fr 28px; }
 .col-headers.fix { grid-template-columns: 1.5fr 1fr 28px; }
 .col-headers.var { grid-template-columns: 1.5fr 1fr 28px; }
 .col-headers span {
@@ -1023,6 +1056,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
         <span>Nombre</span>
         <span>Costo ₡</span>
         <span id="label-cantidad-header">Cantidad</span>
+        <span>Unidad</span>
         <span></span>
       </div>
       <div class="item-list" id="ing-list"></div>
@@ -1168,11 +1202,11 @@ const BUSINESS_TYPES = {
       unidad: 'unidad', unidadPlural: 'unidades',
     },
     ingredients: [
-      { name: 'Harina', cost: 800, qty: 500 },
-      { name: 'Azúcar', cost: 600, qty: 300 },
-      { name: 'Huevos', cost: 1200, qty: 6 },
-      { name: 'Mantequilla', cost: 1500, qty: 250 },
-      { name: 'Chocolate', cost: 2000, qty: 200 },
+      { name: 'Harina', cost: 800, qty: 500, unit: 'g' },
+      { name: 'Azúcar', cost: 600, qty: 300, unit: 'g' },
+      { name: 'Huevos', cost: 1200, qty: 6, unit: 'uds' },
+      { name: 'Mantequilla', cost: 1500, qty: 250, unit: 'g' },
+      { name: 'Chocolate', cost: 2000, qty: 200, unit: 'g' },
     ],
     variables: [
       { name: 'Empaque', value: 150 },
@@ -1245,11 +1279,11 @@ const BUSINESS_TYPES = {
       unidad: 'plato', unidadPlural: 'platos',
     },
     ingredients: [
-      { name: 'Arroz', cost: 1500, qty: 2000 },
-      { name: 'Frijoles', cost: 2000, qty: 1000 },
-      { name: 'Proteína (pollo/carne)', cost: 12000, qty: 10 },
-      { name: 'Verduras', cost: 3000, qty: 1 },
-      { name: 'Aceite y condimentos', cost: 1500, qty: 1 },
+      { name: 'Arroz', cost: 1500, qty: 2000, unit: 'g' },
+      { name: 'Frijoles', cost: 2000, qty: 1000, unit: 'g' },
+      { name: 'Proteína (pollo/carne)', cost: 12000, qty: 10, unit: 'uds' },
+      { name: 'Verduras', cost: 3000, qty: 1, unit: 'kg' },
+      { name: 'Aceite y condimentos', cost: 1500, qty: 1, unit: 'l' },
     ],
     variables: [
       { name: 'Empaque para llevar', value: 200 },
@@ -1419,7 +1453,7 @@ function setBusinessType(type) {
   document.getElementById('fixed-list').innerHTML = '';
   ingId = 0; varId = 0; fixId = 0;
 
-  config.ingredients.forEach(i => addIngredient(i.name, i.cost, i.qty));
+  config.ingredients.forEach(i => addIngredient(i.name, i.cost, i.qty, i.unit || 'uds'));
   config.variables.forEach(v => addVariable(v.name, v.value));
   config.fixed.forEach(f => addFixed(f.name, f.value));
 
@@ -1427,6 +1461,9 @@ function setBusinessType(type) {
   const results = document.getElementById('results');
   if (results) results.style.display = 'none';
   document.getElementById('empty-state').style.display = 'flex';
+
+  // Persist to localStorage
+  if (typeof autoSave === 'function') autoSave();
 }
 
 let ingId = 0, varId = 0, fixId = 0;
@@ -1445,15 +1482,18 @@ function n(id) { return parseFloat(document.getElementById(id)?.value) || 0; }
 // ============================================================================
 // ROW MANAGEMENT
 // ============================================================================
-function addIngredient(name='', cost='', qty='') {
+function addIngredient(name='', cost='', qty='', unit='uds') {
   const id = ingId++;
   const el = document.createElement('div');
   el.className = 'item-row ing';
   el.id = 'ing-' + id;
+  const units = ['uds','g','kg','ml','l','oz','lb'];
+  const opts = units.map(u => `<option value="${u}"${u===unit?' selected':''}>${u}</option>`).join('');
   el.innerHTML = `
     <input type="text" placeholder="Nombre" value="${name}" class="ing-name">
     <input type="number" placeholder="₡" value="${cost}" min="0" class="ing-cost">
     <input type="number" placeholder="Cant." value="${qty}" min="0" class="ing-qty">
+    <select class="ing-unit">${opts}</select>
     <button class="del-btn" onclick="removeRow('ing-${id}')">×</button>
   `;
   document.getElementById('ing-list').appendChild(el);
@@ -1492,6 +1532,7 @@ function getIngredients() {
     name: r.querySelector('.ing-name').value || 'Sin nombre',
     cost: parseFloat(r.querySelector('.ing-cost').value) || 0,
     qty:  parseFloat(r.querySelector('.ing-qty').value) || 1,
+    unit: r.querySelector('.ing-unit').value || 'uds',
   }));
 }
 function getVariables() {
@@ -1707,8 +1748,9 @@ function renderCostos() {
   const ingsRows = d.ings.map(i => {
     const cpu = i.cost / d.unidades;
     const pct = d.costoInsumos > 0 ? ((i.cost / d.costoInsumos) * 100).toFixed(1) : 0;
+    const unitLabel = i.unit && i.unit !== 'uds' ? ` (${i.qty} ${i.unit})` : '';
     return `<tr>
-      <td>${i.name}</td>
+      <td>${i.name}${unitLabel}</td>
       <td class="mono right">${col(i.cost)}</td>
       <td class="accent right">${col(cpu)}</td>
       <td class="mono right green-t">${pct}%</td>
@@ -2418,7 +2460,8 @@ function buildAndPrintPDF() {
   const ingsRows = d.ings.map(i => {
     const cpu = i.cost / d.unidades;
     const pct = d.costoInsumos > 0 ? ((i.cost / d.costoInsumos) * 100).toFixed(1) : 0;
-    return `<tr><td>${i.name}</td><td class="right">${col(i.cost)}</td><td class="right accent-col">${col(cpu)}</td><td class="right green-col">${pct}%</td></tr>`;
+    const unitLabel = i.unit && i.unit !== 'uds' ? ` (${i.qty} ${i.unit})` : '';
+    return `<tr><td>${i.name}${unitLabel}</td><td class="right">${col(i.cost)}</td><td class="right accent-col">${col(cpu)}</td><td class="right green-col">${pct}%</td></tr>`;
   }).join('');
 
   const varsRows = d.vars_.map(v => {
@@ -2819,7 +2862,7 @@ function loadFormState(state) {
   document.getElementById('fixed-list').innerHTML = '';
   ingId = 0; varId = 0; fixId = 0;
 
-  (state.ingredients || []).forEach(i => addIngredient(i.name, i.cost, i.qty));
+  (state.ingredients || []).forEach(i => addIngredient(i.name, i.cost, i.qty, i.unit || 'uds'));
   (state.variables || []).forEach(v => addVariable(v.name, v.value));
   (state.fixed || []).forEach(f => addFixed(f.name, f.value));
 }
@@ -2865,7 +2908,7 @@ function onFileSelected(e) {
       loadFormState(state);
       cerrarModales();
       showToast('📂 Cargado: ' + (state._nombre || state.product || file.name));
-      setTimeout(() => calcular(), 100);
+      setTimeout(() => { calcular(); autoSave(); }, 100);
     } catch(err) {
       showToast('❌ Archivo inválido');
     }
@@ -2891,9 +2934,52 @@ function showToast(msg) {
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModales(); });
 
 // ============================================================================
+// LOCALSTORAGE AUTO-SAVE
+// ============================================================================
+const LS_KEY = 'calcEmprendedor_state';
+
+function autoSave() {
+  try {
+    localStorage.setItem(LS_KEY, JSON.stringify(getFormState()));
+  } catch(e) { /* quota exceeded or private mode — ignore */ }
+}
+
+function autoRestore() {
+  try {
+    const raw = localStorage.getItem(LS_KEY);
+    if (!raw) return false;
+    const state = JSON.parse(raw);
+    if (state && state._app === 'Calculadora del Emprendedor') {
+      loadFormState(state);
+      return true;
+    }
+  } catch(e) { /* corrupted — ignore */ }
+  return false;
+}
+
+// Debounced auto-save on any input/change inside the panel
+let _saveTimer;
+document.getElementById('panel').addEventListener('input', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(autoSave, 600);
+});
+document.getElementById('panel').addEventListener('change', () => {
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(autoSave, 300);
+});
+
+// Also save after adding/removing rows (MutationObserver on the lists)
+['ing-list','var-list','fixed-list'].forEach(id => {
+  new MutationObserver(() => { clearTimeout(_saveTimer); _saveTimer = setTimeout(autoSave, 400); })
+    .observe(document.getElementById(id), { childList: true });
+});
+
+// ============================================================================
 // INIT
 // ============================================================================
-setBusinessType('producto');
+if (!autoRestore()) {
+  setBusinessType('producto');
+}
 </script>
 </body>
 </html>
