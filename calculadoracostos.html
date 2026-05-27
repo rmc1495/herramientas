@@ -1572,20 +1572,24 @@ function calcular() {
   // Fixed costs
   const totalFijos = fixed.reduce((s, f) => s + f.value, 0);
 
-  // Pricing
-  const precioVenta   = costoVariableTotal * (1 + margen / 100);
+  // Production volumes (needed for fixed cost per unit)
+  const prodMensual = porDia * diasMes;
+  const costoFijoPorUd = prodMensual > 0 ? totalFijos / prodMensual : 0;
+  const costoTotalUnitario = costoVariableTotal + costoFijoPorUd;
+
+  // Pricing — margin applied on TOTAL unit cost (variable + fixed)
+  const precioVenta   = costoTotalUnitario * (1 + margen / 100);
   const precioConIVA  = precioVenta * (1 + impuesto / 100);
   const margenContrib = precioVenta - costoVariableTotal;
   const margenPct     = precioVenta > 0 ? (margenContrib / precioVenta) * 100 : 0;
-  const gananciaUnit  = margenContrib;
+  const gananciaUnit  = precioVenta - costoTotalUnitario;
 
   // Break-even
   const peUnidades = margenContrib > 0 ? totalFijos / margenContrib : 0;
   const peColones  = peUnidades * precioVenta;
   const peDiario   = peUnidades / diasMes;
 
-  // Production volumes
-  const prodMensual = porDia * diasMes;
+  // Monthly results
   const ingresosMensuales = prodMensual * precioVenta;
   const costosVariablesMes = prodMensual * costoVariableTotal;
   const costosTotalesMes = totalFijos + costosVariablesMes;
@@ -1602,7 +1606,8 @@ function calcular() {
     product, unidades, margen, porDia, diasMes, impuesto,
     ings, vars_, fixed,
     costoInsumos, costoInsumosPorUd, costoVariableExtra, costoVariableTotal,
-    totalFijos, precioVenta, precioConIVA, margenContrib, margenPct, gananciaUnit,
+    totalFijos, costoFijoPorUd, costoTotalUnitario,
+    precioVenta, precioConIVA, margenContrib, margenPct, gananciaUnit,
     peUnidades, peColones, peDiario,
     prodMensual, ingresosMensuales, costosVariablesMes, costosTotalesMes, utilidadMes, roi,
     margenSeguridad, superavit, diffUnits,
@@ -1673,19 +1678,19 @@ function renderResumen() {
         <div class="kpi-sub">insumos + otros variables</div>
       </div>
       <div class="kpi orange">
-        <div class="kpi-label">Precio de venta</div>
-        <div class="kpi-value orange">${col(d.precioVenta)}</div>
-        <div class="kpi-sub">${d.margen}% margen</div>
+        <div class="kpi-label">Costo total / ${U}</div>
+        <div class="kpi-value orange">${col(d.costoTotalUnitario)}</div>
+        <div class="kpi-sub">variable + fijo</div>
       </div>
       <div class="kpi blue">
-        <div class="kpi-label">Precio con impuesto</div>
-        <div class="kpi-value blue">${col(d.precioConIVA)}</div>
-        <div class="kpi-sub">incluye ${d.impuesto}%</div>
+        <div class="kpi-label">Precio de venta</div>
+        <div class="kpi-value blue">${col(d.precioVenta)}</div>
+        <div class="kpi-sub">${d.margen}% margen</div>
       </div>
       <div class="kpi green">
-        <div class="kpi-label">Ganancia por ${U}</div>
-        <div class="kpi-value green">${col(d.gananciaUnit)}</div>
-        <div class="kpi-sub">${d.margenPct.toFixed(1)}% margen contribución</div>
+        <div class="kpi-label">Precio con impuesto</div>
+        <div class="kpi-value green">${col(d.precioConIVA)}</div>
+        <div class="kpi-sub">incluye ${d.impuesto}%</div>
       </div>
       <div class="kpi lavender">
         <div class="kpi-label">PE en ${Up}/mes</div>
@@ -1818,7 +1823,9 @@ function renderCostos() {
           <tr><td>Insumos por unidad</td><td class="mono right">${col(d.costoInsumosPorUd)}</td></tr>
           <tr><td>Otros costos variables</td><td class="mono right">${col(d.costoVariableExtra)}</td></tr>
           <tr><td class="total"><strong>COSTO VARIABLE / UNIDAD</strong></td><td class="total accent right"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
-          <tr><td>Margen de ganancia aplicado (${d.margen}%)</td><td class="mono right">+ ${col(d.costoVariableTotal * d.margen / 100)}</td></tr>
+          <tr><td>Costo fijo / unidad (${col0(d.totalFijos)} ÷ ${d.prodMensual} uds)</td><td class="mono right">${col(d.costoFijoPorUd)}</td></tr>
+          <tr><td class="total"><strong>COSTO TOTAL / UNIDAD</strong></td><td class="total accent right"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
+          <tr><td>Margen de ganancia aplicado (${d.margen}%)</td><td class="mono right">+ ${col(d.costoTotalUnitario * d.margen / 100)}</td></tr>
           <tr><td class="total"><strong style="color:var(--green-d)">PRECIO DE VENTA</strong></td><td class="total right" style="color:var(--green-d);font-family:'JetBrains Mono',monospace;font-weight:700">${col(d.precioVenta)}</td></tr>
         </tbody>
       </table>
@@ -2597,9 +2604,9 @@ function buildAndPrintPDF() {
     <div class="pr-section-title">Indicadores Clave (KPIs)</div>
     <div class="pr-kpi-grid">
       <div class="pr-kpi yellow"><div class="pr-kpi-label">Costo variable/ud</div><div class="pr-kpi-value">${col(d.costoVariableTotal)}</div><div class="pr-kpi-sub">insumos + variables</div></div>
-      <div class="pr-kpi peach"><div class="pr-kpi-label">Precio de venta</div><div class="pr-kpi-value">${col(d.precioVenta)}</div><div class="pr-kpi-sub">${d.margen}% margen</div></div>
-      <div class="pr-kpi blue"><div class="pr-kpi-label">Precio c/impuesto</div><div class="pr-kpi-value">${col(d.precioConIVA)}</div><div class="pr-kpi-sub">incluye ${d.impuesto}%</div></div>
-      <div class="pr-kpi green"><div class="pr-kpi-label">Margen contribución</div><div class="pr-kpi-value">${col(d.margenContrib)}</div><div class="pr-kpi-sub">${d.margenPct.toFixed(1)}% del precio</div></div>
+      <div class="pr-kpi peach"><div class="pr-kpi-label">Costo total/ud</div><div class="pr-kpi-value">${col(d.costoTotalUnitario)}</div><div class="pr-kpi-sub">variable + fijo</div></div>
+      <div class="pr-kpi blue"><div class="pr-kpi-label">Precio de venta</div><div class="pr-kpi-value">${col(d.precioVenta)}</div><div class="pr-kpi-sub">${d.margen}% margen</div></div>
+      <div class="pr-kpi green"><div class="pr-kpi-label">Precio c/impuesto</div><div class="pr-kpi-value">${col(d.precioConIVA)}</div><div class="pr-kpi-sub">incluye ${d.impuesto}%</div></div>
       <div class="pr-kpi lav"><div class="pr-kpi-label">PE unidades/mes</div><div class="pr-kpi-value">${Math.ceil(d.peUnidades)}</div><div class="pr-kpi-sub">${Math.ceil(d.peDiario)} por día</div></div>
       <div class="pr-kpi lav"><div class="pr-kpi-label">PE colones/mes</div><div class="pr-kpi-value">${col0(d.peColones)}</div><div class="pr-kpi-sub">ingreso mínimo</div></div>
       <div class="pr-kpi ${d.utilidadMes >= 0 ? 'green' : 'peach'}"><div class="pr-kpi-label">Utilidad mensual</div><div class="pr-kpi-value" style="color:${d.utilidadMes >= 0 ? '#5aaa83' : '#c07070'}">${col0(d.utilidadMes)}</div><div class="pr-kpi-sub">${d.utilidadMes >= 0 ? '✓ Ganancia' : '✗ Pérdida'}</div></div>
@@ -2657,7 +2664,9 @@ function buildAndPrintPDF() {
         <tr><td>Insumos por unidad</td><td class="right">${col(d.costoInsumosPorUd)}</td></tr>
         <tr><td>Otros costos variables por unidad</td><td class="right">${col(d.costoVariableExtra)}</td></tr>
         <tr class="total-row"><td><strong>COSTO VARIABLE TOTAL / UNIDAD</strong></td><td class="right accent-col"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
-        <tr><td>(+) Margen de ganancia (${d.margen}%)</td><td class="right">+ ${col(d.costoVariableTotal * d.margen / 100)}</td></tr>
+        <tr><td>Costo fijo / unidad (${col0(d.totalFijos)} ÷ ${d.prodMensual} uds)</td><td class="right">${col(d.costoFijoPorUd)}</td></tr>
+        <tr class="total-row"><td><strong>COSTO TOTAL / UNIDAD</strong></td><td class="right accent-col"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
+        <tr><td>(+) Margen de ganancia (${d.margen}%)</td><td class="right">+ ${col(d.costoTotalUnitario * d.margen / 100)}</td></tr>
         <tr class="total-row"><td><strong style="color:#5aaa83">PRECIO DE VENTA SUGERIDO</strong></td><td class="right green-col"><strong>${col(d.precioVenta)}</strong></td></tr>
         <tr><td>(+) Impuesto al consumo (${d.impuesto}%)</td><td class="right">+ ${col(d.precioVenta * d.impuesto / 100)}</td></tr>
         <tr class="total-row"><td><strong>PRECIO FINAL AL CLIENTE</strong></td><td class="right accent-col"><strong>${col(d.precioConIVA)}</strong></td></tr>
