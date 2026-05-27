@@ -14,9 +14,8 @@
     <!-- FontAwesome para Íconos -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
-    <!-- Librerías para el Gráfico y Exportación a PDF -->
+    <!-- Librerías para el Gráfico -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     
     <style>
         body {
@@ -470,9 +469,6 @@
                         <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-between items-center">
                             <span class="text-sm text-gray-600">Total dispositivos: <span id="device-count" class="font-bold text-gray-800">0</span></span>
                             <div class="space-x-2 flex">
-                                <button onclick="generatePDF()" id="btn-pdf" class="hidden text-emerald-600 hover:text-emerald-800 text-sm font-medium px-3 py-1.5 rounded bg-emerald-50 hover:bg-emerald-100 transition border border-emerald-200 shadow-sm flex items-center">
-                                    <i class="fa-solid fa-file-pdf mr-2"></i> Informe PDF
-                                </button>
                                 <button onclick="clearList()" class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1.5 rounded bg-white hover:bg-red-50 transition border border-gray-200 hover:border-red-200 flex items-center">
                                     <i class="fa-solid fa-trash-can mr-2"></i> Vaciar
                                 </button>
@@ -700,15 +696,12 @@
 
         function updateChart(totalKwh) {
             const chartSection = document.getElementById('chart-section');
-            const btnPdf = document.getElementById('btn-pdf');
             
             if (totalKwh === 0) {
                 chartSection.classList.add('hidden');
-                btnPdf.classList.add('hidden');
                 return;
             } else {
                 chartSection.classList.remove('hidden');
-                btnPdf.classList.remove('hidden');
             }
 
             let b1 = Math.min(totalKwh, 30);
@@ -754,117 +747,6 @@
                     }
                 });
             }
-        }
-
-        function generatePDF() {
-            const chartImg = myChart ? myChart.toBase64Image() : '';
-            const totalKwh = document.getElementById('total-kwh').innerText;
-            const totalCost = document.getElementById('total-cost').innerText;
-            
-            let htmlContent = `
-                <div style="font-family: 'Inter', Arial, sans-serif; padding: 40px; color: #1f2937; background: white; max-width: 800px; margin: 0 auto;">
-                    
-                    <style>
-                        table { page-break-inside: auto; }
-                        tr { page-break-inside: avoid; page-break-after: auto; }
-                        thead { display: table-header-group; }
-                        tfoot { display: table-footer-group; }
-                        .no-break { page-break-inside: avoid; }
-                    </style>
-
-                    <!-- Encabezado -->
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h1 style="color: #065f46; margin: 0 0 8px 0; font-size: 26px; font-weight: 500;">Informe de Eficiencia Energética</h1>
-                        <p style="color: #6b7280; margin: 0 0 20px 0; font-size: 14px;">Generado por EcoCalcula</p>
-                        <div style="height: 2px; background-color: #10b981; width: 100%;"></div>
-                    </div>
-                    
-                    <!-- Resultados -->
-                    <div class="no-break" style="display: flex; justify-content: space-between; background-color: #f8fafc; padding: 24px 32px; border-radius: 8px; border: 1px solid #f1f5f9; margin-bottom: 25px; box-sizing: border-box; width: 100%;">
-                        <div style="text-align: left;">
-                            <p style="margin: 0 0 8px 0; font-size: 11px; color: #64748b; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Consumo Total Estimado</p>
-                            <p style="margin: 0; font-size: 28px; font-weight: 700; color: #10b981;">${totalKwh} kWh</p>
-                        </div>
-                        <div style="text-align: right;">
-                            <p style="margin: 0 0 8px 0; font-size: 11px; color: #64748b; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase;">Costo Total Estimado</p>
-                            <p style="margin: 0; font-size: 28px; font-weight: 700; color: #3b82f6;">₡${totalCost}</p>
-                        </div>
-                    </div>
-
-                    <!-- Advertencia -->
-                    <div class="no-break" style="background-color: #fffbeb; border-left: 4px solid #f59e0b; padding: 16px; margin-bottom: 30px; border-radius: 4px; box-sizing: border-box; width: 100%;">
-                        <h4 style="margin: 0 0 8px 0; color: #b45309; font-size: 13px; font-weight: 600;">⚠️ Importante: Solo incluye Tarifa Residencial (T-RE) base</h4>
-                        <p style="margin: 0 0 8px 0; font-size: 11px; color: #92400e;">
-                            El costo estimado no incluye rubros adicionales que componen su facturación real con la CNFL, tales como:
-                        </p>
-                        <ul style="margin: 0; font-size: 11px; color: #92400e; padding-left: 20px;">
-                            <li>Impuesto al Valor Agregado (IVA) aplicable si supera los 289 kWh.</li>
-                            <li>Tributo de Bomberos (1.75% del monto de energía).</li>
-                            <li>Alumbrado Público.</li>
-                            <li>Costo Variable de Generación (CVG) que se ajusta trimestralmente.</li>
-                        </ul>
-                    </div>
-
-                    <!-- Gráfico -->
-                    <div class="no-break" style="text-align: center; margin-bottom: 30px; width: 100%;">
-                        <h3 style="font-size: 13px; color: #374151; margin-bottom: 15px; font-weight: 600;">Distribución en Bloques Tarifarios (CNFL)</h3>
-                        ${chartImg ? `<img src="${chartImg}" style="max-width: 320px; margin: 0 auto; display: block;" />` : ''}
-                    </div>
-
-                    <!-- Tabla -->
-                    <h3 style="color: #374151; font-size: 13px; margin-bottom: 10px; font-weight: 600; border-bottom: 1px solid #e5e7eb; padding-bottom: 5px;">Detalle de Dispositivos Registrados</h3>
-                    <div style="width: 100%; box-sizing: border-box;">
-                        <table style="width: 100%; border-collapse: collapse; font-size: 11px; table-layout: fixed;">
-                            <thead>
-                                <tr style="background-color: #f1f5f9; color: #475569;">
-                                    <th style="padding: 8px; text-align: left; border: 1px solid #e2e8f0; width: 35%;">Dispositivo</th>
-                                    <th style="padding: 8px; text-align: center; border: 1px solid #e2e8f0; width: 10%;">Cant.</th>
-                                    <th style="padding: 8px; text-align: center; border: 1px solid #e2e8f0; width: 15%;">Watts</th>
-                                    <th style="padding: 8px; text-align: center; border: 1px solid #e2e8f0; width: 20%;">Uso/Mes</th>
-                                    <th style="padding: 8px; text-align: right; border: 1px solid #e2e8f0; width: 20%;">Consumo (kWh)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-            `;
-
-            devices.forEach(d => {
-                const kwh = (d.watts * d.hours * d.days * d.quantity) / 1000;
-                htmlContent += `
-                    <tr>
-                        <td style="padding: 6px 8px; border: 1px solid #e2e8f0; color: #334155; word-wrap: break-word;">${d.name}</td>
-                        <td style="padding: 6px 8px; text-align: center; border: 1px solid #e2e8f0; color: #334155;">${d.quantity}</td>
-                        <td style="padding: 6px 8px; text-align: center; border: 1px solid #e2e8f0; color: #334155;">${d.watts} W</td>
-                        <td style="padding: 6px 8px; text-align: center; border: 1px solid #e2e8f0; color: #334155;">${d.hours}h x ${d.days}d</td>
-                        <td style="padding: 6px 8px; text-align: right; border: 1px solid #e2e8f0; font-weight: 600; color: #0f172a;">${kwh.toFixed(2)}</td>
-                    </tr>
-                `;
-            });
-
-            htmlContent += `
-                            </tbody>
-                        </table>
-                    </div>
-                    
-                    <div class="no-break" style="margin-top: 30px; font-size: 10px; color: #94a3b8; text-align: center; border-top: 1px solid #e2e8f0; padding-top: 15px; width: 100%;">
-                        <p style="margin: 0;">Documento generado automáticamente para fines educativos. Los cálculos son estimaciones.</p>
-                    </div>
-                </div>
-            `;
-
-            const opt = {
-              margin:       10, 
-              filename:     'Informe_EcoCalcula.pdf',
-              image:        { type: 'jpeg', quality: 0.98 },
-              html2canvas:  { 
-                  scale: 2, 
-                  useCORS: true, 
-                  windowWidth: 800
-              },
-              jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' },
-              pagebreak:    { mode: ['css', 'legacy'] }
-            };
-
-            html2pdf().set(opt).from(htmlContent).save();
         }
 
         function animateValue(id, start, end, duration) {
