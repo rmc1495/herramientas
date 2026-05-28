@@ -109,6 +109,7 @@
     display: flex;
     gap: 10px;
     margin-bottom: 20px;
+    flex-wrap: wrap;
   }
 
   .btn {
@@ -129,6 +130,37 @@
   .btn-outline:hover { background: var(--ink); color: var(--cream); }
   .btn-gold { background: var(--gold); color: var(--ink); }
   .btn-gold:hover { background: #b8923e; }
+  .btn-sage { background: var(--sage); color: white; }
+  .btn-sage:hover { background: #3a6347; }
+  .btn-outline-sage { background: transparent; border: 2px solid var(--sage); color: var(--sage); }
+  .btn-outline-sage:hover { background: var(--sage); color: white; }
+  .btn-ghost { background: transparent; border: 2px solid #ccc; color: var(--muted); }
+  .btn-ghost:hover { border-color: var(--rust); color: var(--rust); }
+
+  /* TOAST */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: var(--ink);
+    color: var(--cream);
+    padding: 12px 24px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border-left: 4px solid var(--sage);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 200;
+    white-space: nowrap;
+    max-width: 90vw;
+  }
+  .toast.show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  .toast.error { border-left-color: var(--rust); }
 
   /* CANVAS GRID */
   .canvas-grid {
@@ -257,6 +289,9 @@
   .canvas-bottom .canvas-block {
     min-height: 100px;
   }
+
+  /* Tall blocks span 2 rows on desktop */
+  .span-tall { grid-row: span 2; }
 
   /* Color variants */
   .kp { --accent: #4A7C59; }
@@ -747,12 +782,162 @@
     font-style: italic;
   }
 
+  /* STUDENT CARD */
+  .student-card {
+    background: var(--white);
+    border: 2px solid var(--sand);
+    border-left: 5px solid var(--gold);
+    padding: 16px 20px;
+    margin-bottom: 16px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+
+  .student-card-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    white-space: nowrap;
+  }
+
+  .student-fields {
+    display: flex;
+    gap: 14px;
+    flex: 1;
+    flex-wrap: wrap;
+  }
+
+  .student-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-width: 160px;
+  }
+
+  .student-field label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: var(--muted);
+  }
+
+  .student-field input {
+    border: 1.5px solid var(--sand);
+    padding: 7px 10px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.82rem;
+    color: var(--ink);
+    background: var(--cream);
+    outline: none;
+    transition: border-color 0.2s;
+  }
+
+  .student-field input:focus { border-color: var(--gold); background: var(--white); }
+  .student-field:first-child { min-width: 200px; flex: 1.4; }
+
+  /* ===== RESPONSIVE ===== */
+
+  /* TABLET */
   @media (max-width: 900px) {
+    header { padding: 16px 20px; flex-direction: column; align-items: flex-start; gap: 6px; }
+    header h1 { font-size: 1.2rem; }
+    header span { font-size: 0.65rem; }
+    .tabs { padding: 0 12px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .tab { padding: 10px 14px; font-size: 0.72rem; white-space: nowrap; }
+    .section { padding: 20px; }
+    .canvas-header { flex-direction: column; align-items: flex-start; gap: 8px; }
+    .canvas-header p { text-align: left; max-width: 100%; }
     .canvas-grid { grid-template-columns: 1fr 1fr 1fr; }
-    .canvas-block.span2 { grid-column: span 1; }
+    .canvas-bottom { grid-template-columns: 1fr 1fr; }
     .detail-hero { grid-template-columns: 1fr; }
     .about-grid { grid-template-columns: 1fr; }
-    header, .tabs, .section { padding-left: 20px; padding-right: 20px; }
+    .about-highlight { flex-direction: column; }
+    .learn-grid { grid-template-columns: 1fr 1fr; }
+    .patterns-grid { grid-template-columns: 1fr 1fr; }
+    .student-card { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .student-card-title { white-space: normal; }
+    .student-fields { gap: 10px; }
+    .student-field { min-width: 140px; }
+  }
+
+  /* MOBILE */
+  @media (max-width: 600px) {
+    header { padding: 14px 16px; }
+    header h1 { font-size: 1rem; }
+    header span { display: none; }
+
+    .tabs { padding: 0 4px; gap: 0; }
+    .tab { padding: 10px 10px; font-size: 0.65rem; letter-spacing: 0.04em; flex: 1; text-align: center; }
+
+    .section { padding: 14px 12px; }
+
+    .canvas-header h2 { font-size: 1.4rem; }
+    .canvas-header p { font-size: 0.8rem; }
+
+    /* Canvas: each block full width, stacked */
+    .canvas-grid {
+      grid-template-columns: 1fr !important;
+      gap: 5px;
+    }
+    .canvas-block {
+      grid-row: auto !important;
+      grid-column: auto !important;
+      min-height: 120px;
+    }
+    .canvas-bottom {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+    .canvas-bottom .canvas-block { min-height: 100px; }
+
+    .canvas-actions { flex-direction: column; gap: 8px; }
+    .btn { width: 100%; text-align: center; padding: 12px 16px; font-size: 0.82rem; }
+    .toast { font-size: 0.78rem; padding: 10px 16px; white-space: normal; text-align: center; }
+
+    /* Student card */
+    .student-card { padding: 14px; }
+    .student-fields { flex-direction: column; gap: 10px; }
+    .student-field { min-width: 100%; flex: none; }
+    .student-field:first-child { min-width: 100%; flex: none; }
+    .student-field input { font-size: 0.9rem; padding: 10px 12px; }
+
+    /* Modal */
+    .modal-overlay { padding: 0; align-items: flex-end; }
+    .modal { max-height: 90vh; border-bottom: none; border-radius: 0; }
+    .modal-header { padding: 18px 18px 12px; }
+    .modal-header h3 { font-size: 1.1rem; }
+    .modal-body { padding: 16px 18px; }
+    .modal-input-area input { font-size: 0.9rem; padding: 12px 14px; }
+
+    /* Learn */
+    .learn-grid { grid-template-columns: 1fr; gap: 12px; }
+    .learn-card { padding: 18px; }
+    .detail-hero { gap: 16px; }
+    .detail-sidebar { padding: 20px; }
+
+    /* Patterns */
+    .patterns-grid { grid-template-columns: 1fr; }
+    .patterns-intro h2 { font-size: 1.4rem; }
+
+    /* About */
+    .about-grid { gap: 16px; }
+    .about-grid h2 { font-size: 1.4rem; }
+    .about-card { padding: 16px; }
+    .about-highlight { padding: 20px; }
+    .about-highlight blockquote { font-size: 0.95rem; }
+
+    .export-hint { font-size: 0.72rem; }
+  }
+
+  /* Extra small */
+  @media (max-width: 380px) {
+    .tab { font-size: 0.58rem; padding: 9px 6px; }
+    header h1 { font-size: 0.9rem; }
   }
 </style>
 </head>
@@ -776,18 +961,47 @@
     <h2>Tu Lienzo<br>de Modelo de Negocio</h2>
     <p>Haz clic en cada bloque para agregar ideas. El lienzo es tu herramienta de reflexión estratégica.</p>
   </div>
-  <div class="canvas-actions">
-    <button class="btn btn-primary" onclick="clearCanvas()">🗑 Limpiar Canvas</button>
-    <button class="btn btn-outline" onclick="printCanvas()">🖨 Imprimir</button>
-    <button class="btn btn-gold" onclick="exportCanvas()">💾 Exportar JSON</button>
+
+  <!-- Student info card -->
+  <div class="student-card">
+    <div class="student-card-title">👤 Información del equipo</div>
+    <div class="student-fields">
+      <div class="student-field">
+        <label>Nombre del Emprendimiento</label>
+        <input type="text" id="emp-nombre" placeholder="Ej: EcoRide S.A." oninput="saveStudents()">
+      </div>
+      <div class="student-field">
+        <label>Estudiante 1</label>
+        <input type="text" id="est-1" placeholder="Nombre completo" oninput="saveStudents()">
+      </div>
+      <div class="student-field">
+        <label>Estudiante 2</label>
+        <input type="text" id="est-2" placeholder="Nombre completo" oninput="saveStudents()">
+      </div>
+      <div class="student-field">
+        <label>Estudiante 3</label>
+        <input type="text" id="est-3" placeholder="Nombre completo" oninput="saveStudents()">
+      </div>
+    </div>
   </div>
+
+  <div class="canvas-actions">
+    <button class="btn btn-sage" onclick="saveProgress()">💾 Guardar progreso</button>
+    <button class="btn btn-sage btn-outline-sage" onclick="document.getElementById('loadFileInput').click()">📂 Cargar progreso</button>
+    <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadProgress(event)">
+    <button class="btn btn-primary" onclick="exportPDF()" style="background:#3D5A73;">📄 Exportar PDF</button>
+    <button class="btn btn-ghost" onclick="clearCanvas()">🗑 Limpiar</button>
+  </div>
+
+  <!-- Toast notification -->
+  <div id="toast" class="toast"></div>
 
   <!-- CANVAS GRID (5 cols) -->
   <div class="canvas-grid" id="canvasGrid">
 
     <!-- Row 1: KP | KA+VPspan2+CR | CS -->
     <!-- KP: span2 rows visually — we handle via CSS grid-row -->
-    <div class="canvas-block kp" style="grid-row: span 2;" onclick="openModal('kp')">
+    <div class="canvas-block kp span-tall" onclick="openModal('kp')">
       <div class="block-label"><div class="block-num">1</div> Alianzas Clave</div>
       <div class="block-title">Socios Clave</div>
       <div class="block-icon">🤝</div>
@@ -805,7 +1019,7 @@
       <div class="add-note-btn" onclick="event.stopPropagation(); openModal('ka')">+ Agregar idea</div>
     </div>
 
-    <div class="canvas-block vp" style="grid-row: span 2;" onclick="openModal('vp')">
+    <div class="canvas-block vp span-tall" onclick="openModal('vp')">
       <div class="block-label"><div class="block-num">3</div> Propuesta Central</div>
       <div class="block-title">Propuesta de Valor</div>
       <div class="block-icon">💎</div>
@@ -823,7 +1037,7 @@
       <div class="add-note-btn" onclick="event.stopPropagation(); openModal('cr')">+ Agregar idea</div>
     </div>
 
-    <div class="canvas-block cs" style="grid-row: span 2;" onclick="openModal('cs')">
+    <div class="canvas-block cs span-tall" onclick="openModal('cs')">
       <div class="block-label"><div class="block-num">5</div> Mercado</div>
       <div class="block-title">Segmentos de Clientes</div>
       <div class="block-icon">👥</div>
@@ -833,4 +1047,773 @@
     </div>
 
     <!-- Row 2 -->
-    <div class="canvas-block ka" 
+    <div class="canvas-block ka" onclick="openModal('kr')">
+      <div class="block-label"><div class="block-num">6</div> Recursos</div>
+      <div class="block-title">Recursos Clave</div>
+      <div class="block-icon">🧱</div>
+      <div class="block-hint">¿Qué activos son indispensables para tu modelo?</div>
+      <div class="block-notes" id="notes-kr"></div>
+      <div class="add-note-btn" onclick="event.stopPropagation(); openModal('kr')">+ Agregar idea</div>
+    </div>
+
+    <div class="canvas-block cr" onclick="openModal('ch')">
+      <div class="block-label"><div class="block-num">7</div> Distribución</div>
+      <div class="block-title">Canales</div>
+      <div class="block-icon">📦</div>
+      <div class="block-hint">¿Cómo llega tu propuesta de valor a los clientes?</div>
+      <div class="block-notes" id="notes-ch"></div>
+      <div class="add-note-btn" onclick="event.stopPropagation(); openModal('ch')">+ Agregar idea</div>
+    </div>
+
+  </div>
+
+  <!-- Bottom row: Costs + Revenue -->
+  <div class="canvas-bottom">
+    <div class="canvas-block cost" onclick="openModal('cost')">
+      <div class="block-label"><div class="block-num">8</div> Estructura</div>
+      <div class="block-title">Estructura de Costes</div>
+      <div class="block-icon">📉</div>
+      <div class="block-hint">¿Cuáles son los costes más importantes inherentes a tu modelo?</div>
+      <div class="block-notes" id="notes-cost"></div>
+      <div class="add-note-btn" onclick="event.stopPropagation(); openModal('cost')">+ Agregar idea</div>
+    </div>
+    <div class="canvas-block rev" onclick="openModal('rev')">
+      <div class="block-label"><div class="block-num">9</div> Ingresos</div>
+      <div class="block-title">Fuentes de Ingresos</div>
+      <div class="block-icon">💰</div>
+      <div class="block-hint">¿Por qué valor están dispuestos a pagar tus clientes?</div>
+      <div class="block-notes" id="notes-rev"></div>
+      <div class="add-note-btn" onclick="event.stopPropagation(); openModal('rev')">+ Agregar idea</div>
+    </div>
+  </div>
+
+  <p class="export-hint">💡 Tus anotaciones y datos del equipo se guardan automáticamente en el navegador.</p>
+</div>
+
+<!-- ===== LEARN SECTION ===== -->
+<div id="learn" class="section">
+  <div id="learnList" class="learn-list">
+    <h2 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:8px;">Los 9 Bloques del Canvas</h2>
+    <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0;">Haz clic en cada bloque para explorar su definición, preguntas clave y ejemplos del libro.</p>
+    <div class="learn-grid" id="learnGrid"></div>
+  </div>
+  <div id="learnDetail" class="detail-view">
+    <button class="detail-back" onclick="closeDetail()">← Volver a los bloques</button>
+    <div id="detailContent"></div>
+  </div>
+</div>
+
+<!-- ===== PATTERNS SECTION ===== -->
+<div id="patterns" class="section">
+  <div class="patterns-intro">
+    <h2>Patrones de Modelos de Negocio</h2>
+    <p>Osterwalder y Pigneur identificaron patrones recurrentes en modelos de negocio exitosos. Entenderlos te ayuda a innovar más rápido y con mayor confianza estratégica.</p>
+  </div>
+  <div class="patterns-grid" id="patternsGrid"></div>
+</div>
+
+<!-- ===== ABOUT SECTION ===== -->
+<div id="about" class="section">
+  <div class="about-grid">
+    <h2>¿Qué es el Modelo Canvas?</h2>
+    <div class="about-card">
+      <h3>Origen del Método</h3>
+      <p>El Business Model Canvas fue desarrollado por Alexander Osterwalder en su tesis doctoral bajo la supervisión de Yves Pigneur. Publicado en 2010, el libro «Generación de Modelos de Negocio» se convirtió en uno de los libros de negocios más vendidos de todos los tiempos, traducido a más de 30 idiomas.</p>
+    </div>
+    <div class="about-card">
+      <h3>¿Cómo Usarlo?</h3>
+      <p>El Canvas es una herramienta visual compartida. Se recomienda imprimirlo en tamaño grande (A0) y trabajarlo en equipo con post-its. Permite iterar rápidamente sobre la lógica de negocio antes de comprometer recursos. No es un plan de negocios; es un mapa de hipótesis a validar.</p>
+    </div>
+    <div class="about-highlight">
+      <blockquote>
+        «Un modelo de negocio describe los fundamentos de cómo una organización crea, proporciona y capta valor.»
+        <cite>— Osterwalder &amp; Pigneur, Generación de Modelos de Negocio (2010)</cite>
+      </blockquote>
+    </div>
+    <div class="about-card">
+      <h3>Los 4 Pilares del Canvas</h3>
+      <p><strong>Qué</strong> ofreces → Propuesta de Valor<br><br><strong>A quién</strong> → Segmentos, Canales, Relaciones<br><br><strong>Cómo</strong> lo creas → Actividades, Recursos, Socios<br><br><strong>Cuánto</strong> → Costes e Ingresos</p>
+    </div>
+    <div class="about-card">
+      <h3>El Método de Diseño</h3>
+      <p>El libro propone adoptar técnicas de pensamiento de diseño: empatía con el cliente, ideación, prototipado rápido. Se usan herramientas como el Mapa de Empatía del Cliente y el análisis de entorno (PESTL + Tendencias) para alimentar la innovación del Canvas.</p>
+    </div>
+  </div>
+</div>
+
+<!-- ===== MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle"></h3>
+      <button class="modal-close" onclick="closeModalDirect()">✕</button>
+    </div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<script>
+// ===== DATA =====
+const blocks = {
+  kp: {
+    title: 'Socios Clave',
+    icon: '🤝',
+    accent: '#4A7C59',
+    desc: 'La red de proveedores y socios que hacen funcionar el modelo de negocio. Las empresas crean alianzas para optimizar sus modelos, reducir riesgos o adquirir recursos.',
+    detail: `<p>Las alianzas son cada vez más cruciales para muchos modelos de negocio. Las empresas forjan alianzas para optimizar sus modelos, reducir riesgos o adquirir recursos.</p>
+    <p>Osterwalder distingue cuatro tipos de asociaciones: alianzas estratégicas entre no competidores, alianzas estratégicas entre competidores (coopetición), joint ventures y relaciones cliente-proveedor para garantizar suministros fiables.</p>
+    <p>Las motivaciones principales son: optimización y economías de escala, reducción de riesgos e incertidumbre, y adquisición de recursos y actividades particulares.</p>`,
+    examples: 'Apple y sus fabricantes de componentes en Asia. Spotify y las discográficas. Renault-Nissan como alianza estratégica entre competidores. Amazon Web Services proveyendo infraestructura a miles de startups.',
+    questions: ['¿Quiénes son nuestros socios clave?', '¿Quiénes son nuestros proveedores clave?', '¿Qué recursos clave adquirimos de nuestros socios?', '¿Qué actividades clave realizan los socios?']
+  },
+  ka: {
+    title: 'Actividades Clave',
+    icon: '⚙️',
+    accent: '#3D5A73',
+    desc: 'Las acciones más importantes que debe emprender una empresa para que su modelo de negocio funcione.',
+    detail: `<p>Al igual que los recursos clave, las actividades clave son necesarias para crear y ofrecer la propuesta de valor, llegar a los mercados, establecer relaciones con clientes y percibir ingresos.</p>
+    <p>Las actividades clave se clasifican en tres categorías principales: <strong>Producción</strong> (diseño, fabricación y entrega de un producto), <strong>Resolución de problemas</strong> (nuevas soluciones individuales a los problemas específicos de los clientes), y <strong>Plataforma/red</strong> (diseño, gestión y promoción de plataformas).</p>`,
+    examples: 'Microsoft desarrolla software. McKinsey resuelve problemas de gestión. VISA gestiona una plataforma de pagos. Skype desarrolla y mantiene su infraestructura de red.',
+    questions: ['¿Qué actividades clave requiere nuestra propuesta de valor?', '¿Qué actividades son las más importantes en nuestra distribución, relaciones con clientes, fuentes de ingresos?']
+  },
+  vp: {
+    title: 'Propuesta de Valor',
+    icon: '💎',
+    accent: '#C4522A',
+    desc: 'El conjunto de productos y servicios que crean valor para un segmento de mercado específico. Es el corazón del Canvas.',
+    detail: `<p>La propuesta de valor describe el paquete de productos y servicios que crean valor para un segmento de clientes específico. Es la razón por la que los clientes eligen una empresa en lugar de otra.</p>
+    <p>El valor puede ser cuantitativo (precio, velocidad) o cualitativo (diseño, experiencia). Los elementos generadores de valor incluyen: novedad, rendimiento, personalización, trabajo hecho, diseño, marca/estatus, precio, reducción de costes, reducción de riesgos, accesibilidad y comodidad/utilidad.</p>`,
+    examples: 'Cirque du Soleil: una propuesta radicalmente nueva entre circo y teatro. IKEA: diseño asequible y autoservicio. Nespresso: calidad de café de alta gama en casa. Google: búsqueda gratuita financiada por publicidad.',
+    questions: ['¿Qué valor proporcionamos a nuestros clientes?', '¿Cuál de los problemas de nuestros clientes ayudamos a resolver?', '¿Qué necesidades de los clientes satisfacemos?', '¿Qué paquetes de productos o servicios ofrecemos a cada segmento?']
+  },
+  cr: {
+    title: 'Relación con Clientes',
+    icon: '❤️',
+    accent: '#D4A853',
+    desc: 'Los tipos de relaciones que una empresa establece con segmentos de mercado específicos.',
+    detail: `<p>Una empresa debe definir el tipo de relación que quiere establecer con cada segmento de clientes. Las relaciones pueden ir de personales a automatizadas.</p>
+    <p>Las categorías incluyen: asistencia personal (contacto humano real), asistencia personal exclusiva (representante dedicado), autoservicio, servicios automáticos, comunidades (plataformas en línea) y cocreación (creación de valor con el cliente).</p>`,
+    examples: 'Amazon: relaciones automatizadas con recomendaciones personalizadas. Apple Genius Bar: asistencia personal exclusiva. LEGO Ideas: cocreación con fans. Harley-Davidson: comunidad H.O.G. que crea valor de marca.',
+    questions: ['¿Qué tipo de relación esperan los diferentes segmentos de clientes?', '¿Qué tipo de relación hemos establecido?', '¿Cuál es el coste de esas relaciones?', '¿Cómo se integran en nuestro modelo de negocio?']
+  },
+  cs: {
+    title: 'Segmentos de Clientes',
+    icon: '👥',
+    accent: '#2A7D8C',
+    desc: 'Los diferentes grupos de personas u organizaciones a los que una empresa desea llegar y servir.',
+    detail: `<p>Los clientes son el corazón de cualquier modelo de negocio. Sin clientes (rentables), ninguna empresa puede sobrevivir mucho tiempo. Para satisfacer mejor a sus clientes, una empresa puede agruparlos en segmentos distintos con necesidades, comportamientos y atributos comunes.</p>
+    <p>Los tipos de segmentación incluyen: mercado de masas, nicho de mercado, mercado segmentado, mercado diversificado y plataformas multilaterales (dos o más segmentos interdependientes).</p>`,
+    examples: 'Facebook: dos segmentos interdependientes (usuarios y anunciantes). Microsoft Office: consumidores y empresas (diversificado). Rolex: nicho de lujo. Zara: mercado de masas con rotación rápida.',
+    questions: ['¿Para quién creamos valor?', '¿Quiénes son nuestros clientes más importantes?', '¿Son mercados de masas, nicho, segmentados o plataformas multilaterales?']
+  },
+  kr: {
+    title: 'Recursos Clave',
+    icon: '🧱',
+    accent: '#7B5EA7',
+    desc: 'Los activos más importantes para que un modelo de negocio funcione.',
+    detail: `<p>Todos los modelos de negocio requieren recursos clave. Estos recursos permiten a la empresa crear y ofrecer una propuesta de valor, llegar a los mercados, establecer relaciones con segmentos de clientes y percibir ingresos.</p>
+    <p>Se clasifican en: <strong>físicos</strong> (instalaciones, máquinas, vehículos), <strong>intelectuales</strong> (marcas, patentes, datos, conocimiento), <strong>humanos</strong> (especialmente en industrias creativas) y <strong>económicos</strong> (efectivo, crédito, opciones sobre acciones).</p>`,
+    examples: 'Intel: instalaciones y tecnología de fabricación de chips. Microsoft: plataformas de software y red de proveedores. DELL: gran red de proveedores + capital de trabajo. McKinsey: capital humano de alta cualificación.',
+    questions: ['¿Qué recursos clave requiere nuestra propuesta de valor?', '¿Y nuestros canales de distribución, relaciones con clientes, fuentes de ingresos?']
+  },
+  ch: {
+    title: 'Canales',
+    icon: '📦',
+    accent: '#5C8A3C',
+    desc: 'Cómo una empresa se comunica y llega a sus segmentos de mercado para entregar una propuesta de valor.',
+    detail: `<p>Los canales son puntos de contacto con los clientes y desempeñan un papel importante en su experiencia. Son el mecanismo a través del cual la empresa comunica, distribuye y vende.</p>
+    <p>Los canales tienen cinco fases: <strong>información</strong> (¿cómo damos a conocer nuestros productos?), <strong>evaluación</strong> (¿cómo ayudamos a evaluar nuestra propuesta?), <strong>compra</strong>, <strong>entrega</strong> y <strong>posventa</strong>. Pueden ser directos, indirectos, propios o de socios.</p>`,
+    examples: 'Apple Store: canal propio directo con experiencia premium. Amazon: canal de venta online masivo. Coca-Cola: distribuidores y mayoristas. Dell: venta directa por internet (eliminando intermediarios).',
+    questions: ['¿A través de qué canales quieren ser contactados nuestros segmentos de clientes?', '¿Cómo los contactamos ahora?', '¿Cuáles tienen mejor resultado?', '¿Cuáles son más rentables?', '¿Cómo se integran en las rutinas de los clientes?']
+  },
+  cost: {
+    title: 'Estructura de Costes',
+    icon: '📉',
+    accent: '#5A5A5A',
+    desc: 'Todos los costes que implica la puesta en marcha de un modelo de negocio.',
+    detail: `<p>Este bloque describe los costes más importantes de un modelo de negocio. Los costes se calculan con relativa facilidad después de definir los recursos, actividades y alianzas clave.</p>
+    <p>Hay dos tipos de modelos según estructura de costes: <strong>según costes</strong> (minimizar costes en todo lo posible; ej: aerolíneas low-cost como Ryanair) y <strong>según valor</strong> (crear valor premium sin preocuparse demasiado por el coste; ej: hoteles de lujo).</p>
+    <p>Los elementos son: costes fijos, costes variables, economías de escala y economías de alcance.</p>`,
+    examples: 'Ryanair: reducción extrema de costes operativos. Amazon Web Services: economías de escala masivas. Rolls-Royce: estructura orientada al valor. Southwest Airlines: flota uniforme para reducir costes de mantenimiento.',
+    questions: ['¿Cuáles son los costes más importantes inherentes a nuestro modelo?', '¿Qué recursos clave son más caros?', '¿Qué actividades clave son más caras?', '¿Es nuestro modelo orientado a costes o a valor?']
+  },
+  rev: {
+    title: 'Fuentes de Ingresos',
+    icon: '💰',
+    accent: '#8B4513',
+    desc: 'El dinero que genera una empresa en los diferentes segmentos de mercado.',
+    detail: `<p>Si los clientes son el corazón del modelo, las fuentes de ingresos son las arterias. Cada fuente puede tener un mecanismo de fijación de precios diferente.</p>
+    <p>Los tipos incluyen: <strong>venta de activos</strong> (más frecuente), <strong>cuota por uso</strong>, <strong>cuota de suscripción</strong>, <strong>préstamo/alquiler/leasing</strong>, <strong>concesión de licencias</strong>, <strong>gastos de corretaje</strong> y <strong>publicidad</strong>.</p>
+    <p>La fijación de precios puede ser fija (lista de precios) o dinámica (negociación, subasta, mercado en tiempo real).</p>`,
+    examples: 'Gillette: maquinillas baratas + hojas de afeitar de alto margen. Skype: gratuito entre usuarios, pago hacia teléfonos. Amazon: venta directa + marketplace + AWS. Rolls-Royce: "poder por horas" (pay-per-use de motores de avión).',
+    questions: ['¿Por qué valor están dispuestos a pagar nuestros clientes?', '¿Por qué pagan actualmente?', '¿Cómo pagan actualmente?', '¿Cómo preferirían pagar?', '¿Cuánto reporta cada fuente de ingresos?']
+  }
+};
+
+const patterns = [
+  {
+    title: 'Modelo de Larga Cola',
+    subtitle: 'Long Tail',
+    accent: '#C4522A',
+    desc: 'Vender menos de más productos en vez de más de menos. Centrarse en ofrecer un gran surtido de productos de nicho, donde cada uno vende relativamente poco.',
+    examples: ['Lulu.com', 'Netflix', 'YouTube', 'eBay', 'Amazon']
+  },
+  {
+    title: 'Plataformas Multilaterales',
+    subtitle: 'Multi-Sided Platform',
+    accent: '#3D5A73',
+    desc: 'Plataformas que reúnen a dos o más grupos de clientes distintos pero interdependientes. Solo tienen valor si todos los grupos están presentes.',
+    examples: ['Google', 'Facebook', 'Visa', 'Nintendo Wii', 'Financial Times']
+  },
+  {
+    title: 'Gratis como Modelo',
+    subtitle: 'Freemium & Free',
+    accent: '#4A7C59',
+    desc: 'Al menos un segmento se beneficia de la oferta gratuita. No usuarios, patrocinadores o suscriptores premium financian los usuarios gratuitos.',
+    examples: ['Spotify', 'Skype', 'Metro (periódico)', 'Flickr', 'LinkedIn']
+  },
+  {
+    title: 'Modelo Abierto',
+    subtitle: 'Open Innovation',
+    accent: '#7B5EA7',
+    desc: 'Crear y captar valor mediante la colaboración con socios externos. Fuera-dentro: explotar ideas externas. Dentro-fuera: compartir activos propios.',
+    examples: ['Procter & Gamble (Connect & Develop)', 'GlaxoSmithKline', 'Innocentive', '3M']
+  },
+  {
+    title: 'Cebo y Anzuelo',
+    subtitle: 'Bait & Hook',
+    accent: '#D4A853',
+    desc: 'Una oferta inicial económica o gratuita (cebo) que induce compras repetidas de productos relacionados con margen elevado (anzuelo).',
+    examples: ['Gillette', 'Nespresso', 'Amazon Kindle', 'Impresoras y cartuchos']
+  }
+];
+
+// ===== NOTES STATE =====
+let notes = {};
+
+function loadNotes() {
+  try {
+    const saved = localStorage.getItem('canvas-notes-v1');
+    if (saved) notes = JSON.parse(saved);
+  } catch(e) { notes = {}; }
+  renderAllNotes();
+}
+
+function saveNotes() {
+  localStorage.setItem('canvas-notes-v1', JSON.stringify(notes));
+}
+
+function renderAllNotes() {
+  Object.keys(blocks).forEach(id => renderNotes(id));
+}
+
+function renderNotes(id) {
+  const container = document.getElementById('notes-' + id);
+  if (!container) return;
+  container.innerHTML = '';
+  const items = notes[id] || [];
+  items.slice(0, 3).forEach((note, i) => {
+    const el = document.createElement('div');
+    el.className = 'sticky-note';
+    el.innerHTML = `<span>${note}</span><span class="del" onclick="deleteNote('${id}',${i});event.stopPropagation()">✕</span>`;
+    container.appendChild(el);
+  });
+}
+
+function deleteNote(id, index) {
+  if (notes[id]) {
+    notes[id].splice(index, 1);
+    saveNotes();
+    renderNotes(id);
+    if (document.getElementById('modalOverlay').classList.contains('open')) {
+      renderModalNotes(id);
+    }
+  }
+}
+
+function renderModalNotes(id) {
+  const list = document.getElementById('modal-note-list');
+  if (!list) return;
+  list.innerHTML = '';
+  const items = notes[id] || [];
+  if (items.length === 0) {
+    list.innerHTML = '<p style="font-size:0.8rem;color:var(--muted);">Aún no hay ideas agregadas.</p>';
+    return;
+  }
+  items.forEach((note, i) => {
+    const el = document.createElement('div');
+    el.className = 'modal-note-item';
+    el.innerHTML = `<span>${note}</span><button class="del" onclick="deleteNote('${id}',${i})">✕</button>`;
+    list.appendChild(el);
+  });
+}
+
+// ===== MODAL =====
+let currentBlock = null;
+
+function openModal(id) {
+  currentBlock = id;
+  const b = blocks[id];
+  document.getElementById('modalTitle').textContent = b.icon + ' ' + b.title;
+  document.getElementById('modalBody').innerHTML = `
+    <p>${b.desc}</p>
+    <div class="modal-questions">
+      <h4>Preguntas Clave del Canvas</h4>
+      <ul>${b.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+    </div>
+    <div class="modal-input-area">
+      <label>Agrega una idea a tu Canvas</label>
+      <input type="text" id="noteInput" placeholder="Escribe tu idea..." onkeydown="if(event.key==='Enter')addNote()">
+      <button class="btn btn-primary modal-add-btn" onclick="addNote()">Agregar al Canvas</button>
+    </div>
+    <div class="modal-existing">
+      <h4>Ideas agregadas</h4>
+      <div class="modal-note-list" id="modal-note-list"></div>
+    </div>
+  `;
+  renderModalNotes(id);
+  document.getElementById('modalOverlay').classList.add('open');
+  setTimeout(() => document.getElementById('noteInput').focus(), 100);
+}
+
+function addNote() {
+  const input = document.getElementById('noteInput');
+  const val = input.value.trim();
+  if (!val) return;
+  if (!notes[currentBlock]) notes[currentBlock] = [];
+  notes[currentBlock].push(val);
+  saveNotes();
+  renderNotes(currentBlock);
+  renderModalNotes(currentBlock);
+  input.value = '';
+  input.focus();
+}
+
+function closeModal(e) {
+  if (e.target === document.getElementById('modalOverlay')) closeModalDirect();
+}
+
+function closeModalDirect() {
+  document.getElementById('modalOverlay').classList.remove('open');
+  currentBlock = null;
+}
+
+function clearCanvas() {
+  if (!confirm('¿Limpiar todas las ideas del Canvas?')) return;
+  notes = {};
+  saveNotes();
+  renderAllNotes();
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'ok') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show' + (type === 'error' ? ' error' : '');
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => t.className = 'toast', 3000);
+}
+
+// ===== SAVE / LOAD PROGRESS =====
+function getStudentData() {
+  return {
+    nombre: document.getElementById('emp-nombre').value.trim(),
+    est1:   document.getElementById('est-1').value.trim(),
+    est2:   document.getElementById('est-2').value.trim(),
+    est3:   document.getElementById('est-3').value.trim(),
+  };
+}
+
+function saveProgress() {
+  const s = getStudentData();
+  const payload = {
+    version: 2,
+    savedAt: new Date().toISOString(),
+    emprendimiento: s.nombre,
+    estudiantes: [s.est1, s.est2, s.est3].filter(Boolean),
+    notas: notes
+  };
+  const json = JSON.stringify(payload, null, 2);
+  const blob = new Blob([json], { type: 'application/json' });
+  const a = document.createElement('a');
+  const empName = s.nombre || 'canvas';
+  a.download = 'progreso-' + empName.replace(/\s+/g, '-').toLowerCase() + '.json';
+  a.href = URL.createObjectURL(blob);
+  a.click();
+  showToast('✅ Progreso guardado — guarda el archivo en Drive o WhatsApp');
+}
+
+function loadProgress(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      // Restore notes
+      if (data.notas) {
+        notes = data.notas;
+        saveNotes();
+        renderAllNotes();
+      }
+      // Restore student info
+      if (data.emprendimiento) document.getElementById('emp-nombre').value = data.emprendimiento;
+      if (data.estudiantes) {
+        const est = data.estudiantes;
+        if (est[0]) document.getElementById('est-1').value = est[0];
+        if (est[1]) document.getElementById('est-2').value = est[1];
+        if (est[2]) document.getElementById('est-3').value = est[2];
+        saveStudents();
+      }
+      const fecha = data.savedAt ? new Date(data.savedAt).toLocaleDateString('es-CR') : '';
+      showToast('✅ Progreso cargado' + (fecha ? ' · Guardado el ' + fecha : ''));
+    } catch(err) {
+      showToast('❌ Archivo inválido, intenta con otro archivo', 'error');
+    }
+  };
+  reader.readAsText(file);
+  // Reset input so same file can be loaded again
+  event.target.value = '';
+}
+
+// ===== TABS =====
+function showTab(id) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  event.currentTarget.classList.add('active');
+  document.getElementById(id).classList.add('active');
+}
+
+// ===== LEARN =====
+function buildLearn() {
+  const grid = document.getElementById('learnGrid');
+  Object.entries(blocks).forEach(([id, b], i) => {
+    const card = document.createElement('div');
+    card.className = 'learn-card';
+    card.style.setProperty('--accent', b.accent);
+    card.innerHTML = `
+      <div class="learn-card-num">${i+1}</div>
+      <div class="learn-card-icon">${b.icon}</div>
+      <h3>${b.title}</h3>
+      <p>${b.desc}</p>
+    `;
+    card.onclick = () => openDetail(id);
+    grid.appendChild(card);
+  });
+}
+
+function openDetail(id) {
+  const b = blocks[id];
+  document.getElementById('learnList').classList.add('hidden');
+  const detail = document.getElementById('learnDetail');
+  detail.classList.add('open');
+  document.getElementById('detailContent').innerHTML = `
+    <div class="detail-hero">
+      <div class="detail-sidebar">
+        <div class="block-icon">${b.icon}</div>
+        <h2>${b.title}</h2>
+        <p>${b.desc}</p>
+      </div>
+      <div class="detail-content">
+        <h3>Definición y Fundamentos</h3>
+        ${b.detail}
+        <div class="detail-examples">
+          <h4>Ejemplos del Libro</h4>
+          <p>${b.examples}</p>
+        </div>
+        <div class="questions-box">
+          <h4>Preguntas para Rellenar tu Canvas</h4>
+          <ul>${b.questions.map(q => `<li>${q}</li>`).join('')}</ul>
+        </div>
+      </div>
+    </div>
+    <button class="btn btn-primary" onclick="showTab('canvas');setTimeout(()=>openModal('${id}'),200)">✏️ Ir al Canvas y agregar ideas</button>
+  `;
+}
+
+function closeDetail() {
+  document.getElementById('learnList').classList.remove('hidden');
+  document.getElementById('learnDetail').classList.remove('open');
+}
+
+// ===== PATTERNS =====
+function buildPatterns() {
+  const grid = document.getElementById('patternsGrid');
+  patterns.forEach(p => {
+    const card = document.createElement('div');
+    card.className = 'pattern-card';
+    card.style.setProperty('--accent', p.accent);
+    card.innerHTML = `
+      <div class="pattern-header" style="background:${p.accent}">
+        <h3>${p.title}</h3>
+        <span>${p.subtitle}</span>
+      </div>
+      <div class="pattern-body">
+        <p>${p.desc}</p>
+        <div class="pattern-examples">
+          ${p.examples.map(e => `<span class="tag">${e}</span>`).join('')}
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+// ===== PDF EXPORT =====
+// ===== STUDENTS =====
+function saveStudents() {
+  localStorage.setItem('canvas-students-v1', JSON.stringify({
+    nombre: document.getElementById('emp-nombre').value,
+    est1: document.getElementById('est-1').value,
+    est2: document.getElementById('est-2').value,
+    est3: document.getElementById('est-3').value,
+  }));
+}
+
+function loadStudents() {
+  try {
+    const s = JSON.parse(localStorage.getItem('canvas-students-v1') || '{}');
+    if (s.nombre) document.getElementById('emp-nombre').value = s.nombre;
+    if (s.est1)   document.getElementById('est-1').value = s.est1;
+    if (s.est2)   document.getElementById('est-2').value = s.est2;
+    if (s.est3)   document.getElementById('est-3').value = s.est3;
+  } catch(e) {}
+}
+
+// ===== PDF EXPORT (tamaño dinámico según contenido) =====
+async function exportPDF() {
+  if (!window.jspdf) {
+    await new Promise((res, rej) => {
+      const s = document.createElement('script');
+      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+      s.onload = res; s.onerror = rej;
+      document.head.appendChild(s);
+    });
+  }
+  const { jsPDF } = window.jspdf;
+
+  // ── Datos de estudiantes ────────────────────────────────────────────────
+  const empNombre = document.getElementById('emp-nombre').value.trim() || '—';
+  const est1 = document.getElementById('est-1').value.trim();
+  const est2 = document.getElementById('est-2').value.trim();
+  const est3 = document.getElementById('est-3').value.trim();
+
+  // ── Colores ─────────────────────────────────────────────────────────────
+  const CREAM  = [247, 243, 238];
+  const INK    = [26, 22, 18];
+  const RUST   = [196, 82, 42];
+  const GOLDC  = [212, 168, 83];
+  const SANDC  = [232, 221, 208];
+  const WHITEC = [254, 252, 250];
+  const MUTEDC = [140, 123, 107];
+  const HDR_BG = [58, 50, 42];
+
+  const blockColors = {
+    kp: [74,124,89],  ka: [61,90,115],   kr: [123,94,167],
+    vp: [196,82,42],  cr: [212,168,83],  cs: [42,125,140],
+    ch: [92,138,60],  cost: [74,74,74],  rev: [122,59,16]
+  };
+
+  // ── Layout fijo ─────────────────────────────────────────────────────────
+  const W      = 420;   // ancho fijo (mm) — estilo A3 landscape
+  const PAD    = 4;
+  const GAP    = 2;
+  const HDR    = 26;
+  const ACCENT = 1.5;
+  const TOP    = HDR + ACCENT + 1;
+  const COL_W  = (W - 2*PAD - 4*GAP) / 5;
+  const colX   = n => PAD + n * (COL_W + GAP);
+  const FOOT   = 7;
+
+  // ── Altura de bloque según contenido ────────────────────────────────────
+  // Necesitamos un doc temporal solo para medir texto
+  const docMeasure = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, 400] });
+
+  const NOTE_FONT = 5.5;
+  const NOTE_PAD_V = 3;
+  const NOTE_LINE_H = 4.2;
+  const NOTE_GAP = 2.5;
+  const BLOCK_HEADER_H = 16;
+  const MIN_BLOCK_H = 22;
+
+  function calcBlockHeight(blockId) {
+    const items = notes[blockId] || [];
+    if (items.length === 0) return MIN_BLOCK_H;
+    let total = BLOCK_HEADER_H;
+    items.forEach(note => {
+      const lines = docMeasure.splitTextToSize(note, COL_W - 12);
+      total += lines.length * NOTE_LINE_H + NOTE_PAD_V * 2 + NOTE_GAP;
+    });
+    return Math.max(total + 4, MIN_BLOCK_H);
+  }
+
+  // Alturas por bloque
+  const H_kp   = calcBlockHeight('kp');
+  const H_ka   = calcBlockHeight('ka');
+  const H_kr   = calcBlockHeight('kr');
+  const H_vp   = calcBlockHeight('vp');
+  const H_cr   = calcBlockHeight('cr');
+  const H_cs   = calcBlockHeight('cs');
+  const H_ch   = calcBlockHeight('ch');
+  const H_cost = calcBlockHeight('cost');
+  const H_rev  = calcBlockHeight('rev');
+
+  // Columna 0: KP solo
+  const COL0_H = H_kp;
+  // Columna 1: KA + KR apilados
+  const COL1_H = H_ka + GAP + H_kr;
+  // Columna 2: VP solo
+  const COL2_H = H_vp;
+  // Columna 3: CR + CH apilados
+  const COL3_H = H_cr + GAP + H_ch;
+  // Columna 4: CS solo
+  const COL4_H = H_cs;
+
+  // Altura del grid principal = máximo de todas las columnas
+  const MAIN_H = Math.max(COL0_H, COL1_H, COL2_H, COL3_H, COL4_H);
+
+  // Fila inferior: costes e ingresos
+  const BOT_H = Math.max(H_cost, H_rev);
+  const BOT_ROW_Y = TOP + MAIN_H + GAP;
+
+  // Altura total del documento
+  const TOTAL_H = BOT_ROW_Y + BOT_H + GAP + FOOT;
+
+  // ── Crear documento con tamaño exacto ───────────────────────────────────
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, TOTAL_H] });
+
+  // Fondo
+  doc.setFillColor(...CREAM);
+  doc.rect(0, 0, W, TOTAL_H, 'F');
+
+  // ── Header ───────────────────────────────────────────────────────────────
+  doc.setFillColor(...HDR_BG);
+  doc.rect(0, 0, W, HDR, 'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(13); doc.setFont('helvetica','bold');
+  doc.text('LIENZO DEL MODELO DE NEGOCIO', 8, 10);
+  doc.setFontSize(6); doc.setFont('helvetica','normal');
+  doc.setTextColor(...GOLDC);
+  doc.text('Business Model Canvas  ·  Osterwalder & Pigneur (2010)', 8, 17);
+
+  // Centro: emprendimiento
+  const empX = W * 0.42;
+  doc.setFontSize(5.5); doc.setFont('helvetica','bold');
+  doc.setTextColor(...GOLDC);
+  doc.text('EMPRENDIMIENTO', empX, 8);
+  doc.setFontSize(10); doc.setFont('helvetica','bold');
+  doc.setTextColor(255,255,255);
+  doc.text(doc.splitTextToSize(empNombre, W * 0.26)[0], empX, 18);
+
+  // Derecha: equipo
+  const estX = W * 0.72;
+  doc.setFontSize(5.5); doc.setFont('helvetica','bold');
+  doc.setTextColor(...GOLDC);
+  doc.text('EQUIPO', estX, 8);
+  doc.setFontSize(7); doc.setFont('helvetica','normal');
+  doc.setTextColor(255,255,255);
+  let ey = 14;
+  [est1, est2, est3].forEach(e => { if (e) { doc.text('· ' + e, estX, ey); ey += 5; } });
+
+  // Barra acento
+  doc.setFillColor(...RUST);
+  doc.rect(0, HDR, W, ACCENT, 'F');
+
+  // ── Función drawBlock dinámica ──────────────────────────────────────────
+  function drawBlock(bx, by, bw, bh, num, title, sub, color, blockId) {
+    // Fondo y borde
+    doc.setFillColor(...WHITEC);
+    doc.setDrawColor(...SANDC);
+    doc.setLineWidth(0.35);
+    doc.rect(bx, by, bw, bh, 'FD');
+
+    // Barra lateral izquierda
+    doc.setFillColor(...color);
+    doc.rect(bx, by, 2, bh, 'F');
+
+    // Círculo número
+    doc.setFillColor(...color);
+    doc.circle(bx + 6, by + 5.5, 3.2, 'F');
+    doc.setTextColor(255,255,255);
+    doc.setFontSize(5.5); doc.setFont('helvetica','bold');
+    doc.text(String(num), bx + 6, by + 7, { align: 'center' });
+
+    // Subtítulo
+    doc.setTextColor(...color);
+    doc.setFontSize(4.8); doc.setFont('helvetica','bold');
+    doc.text(sub.toUpperCase(), bx + 11.5, by + 4.5);
+
+    // Título
+    doc.setTextColor(...INK);
+    doc.setFontSize(8); doc.setFont('helvetica','bold');
+    doc.text(title, bx + 11.5, by + 10);
+
+    // Línea separadora
+    doc.setDrawColor(...SANDC); doc.setLineWidth(0.25);
+    doc.line(bx + 3, by + 12.5, bx + bw - 3, by + 12.5);
+
+    // Notas (stickies dinámicos — texto completo)
+    const items = notes[blockId] || [];
+    let ny = by + 15;
+    const maxW = bw - 8;
+
+    items.forEach(note => {
+      const noteLines = doc.splitTextToSize(note, maxW - 4);
+      const noteH = noteLines.length * NOTE_LINE_H + NOTE_PAD_V * 2;
+      doc.setFillColor(255, 249, 196);
+      doc.setDrawColor(232, 217, 107);
+      doc.setLineWidth(0.2);
+      doc.rect(bx + 3, ny, maxW, noteH, 'FD');
+      doc.setTextColor(...INK);
+      doc.setFontSize(NOTE_FONT); doc.setFont('helvetica','normal');
+      noteLines.forEach((line, i) => {
+        doc.text(line, bx + 5, ny + NOTE_PAD_V + 1 + i * NOTE_LINE_H);
+      });
+      ny += noteH + NOTE_GAP;
+    });
+  }
+
+  // ── Dibujar bloques ──────────────────────────────────────────────────────
+  // Col 0: KP (alto = MAIN_H para alinearse visualmente)
+  drawBlock(colX(0), TOP, COL_W, MAIN_H,  1, 'Socios Clave',         'Alianzas clave',        blockColors.kp,   'kp');
+  // Col 1: KA arriba, KR abajo
+  drawBlock(colX(1), TOP,             COL_W, H_ka, 2, 'Actividades Clave',  'Actividades',           blockColors.ka, 'ka');
+  drawBlock(colX(1), TOP + H_ka + GAP, COL_W, MAIN_H - H_ka - GAP,  6, 'Recursos Clave', 'Recursos', blockColors.kr, 'kr');
+  // Col 2: VP (alto = MAIN_H)
+  drawBlock(colX(2), TOP, COL_W, MAIN_H,  3, 'Propuesta de Valor',   'El corazon del Canvas', blockColors.vp,   'vp');
+  // Col 3: CR arriba, CH abajo
+  drawBlock(colX(3), TOP,             COL_W, H_cr, 4, 'Relacion con Clientes','Relaciones',          blockColors.cr, 'cr');
+  drawBlock(colX(3), TOP + H_cr + GAP, COL_W, MAIN_H - H_cr - GAP,  7, 'Canales',        'Distribucion',          blockColors.ch, 'ch');
+  // Col 4: CS (alto = MAIN_H)
+  drawBlock(colX(4), TOP, COL_W, MAIN_H,  5, 'Segmentos de Clientes','Mercado',               blockColors.cs,   'cs');
+
+  // Fila inferior
+  const HALF_W = (W - 2*PAD - GAP) / 2;
+  drawBlock(PAD,              BOT_ROW_Y, HALF_W, BOT_H, 8, 'Estructura de Costes', 'Finanzas', blockColors.cost, 'cost');
+  drawBlock(PAD + HALF_W + GAP, BOT_ROW_Y, HALF_W, BOT_H, 9, 'Fuentes de Ingresos','Ingresos', blockColors.rev,  'rev');
+
+  // ── Footer ───────────────────────────────────────────────────────────────
+  doc.setFillColor(...RUST);
+  doc.rect(0, TOTAL_H - FOOT, W, 1.5, 'F');
+  doc.setTextColor(...MUTEDC);
+  doc.setFontSize(4.8); doc.setFont('helvetica','normal');
+  doc.text(
+    'Basado en: Osterwalder, A. & Pigneur, Y. (2010) Generacion de Modelos de Negocio. Deusto.  ·  Herramienta educativa de uso libre.',
+    W / 2, TOTAL_H - 2, { align: 'center' }
+  );
+
+  const filename = empNombre !== '—'
+    ? 'canvas-' + empNombre.replace(/[^a-zA-Z0-9áéíóúñ]/g, '-').toLowerCase() + '.pdf'
+    : 'mi-lienzo-canvas.pdf';
+  doc.save(filename);
+}
+
+// ===== INIT =====
+loadNotes();
+loadStudents();
+buildLearn();
+buildPatterns();
+</script>
+</body>
+</html>
