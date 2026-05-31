@@ -162,15 +162,22 @@
   }
   .toast.error { border-left-color: var(--rust); }
 
+  /* CANVAS WRAPPER — contenedor único con borde */
+  .canvas-wrapper {
+    background: var(--sand);
+    padding: 6px;
+    border: 2px solid var(--ink);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
   /* CANVAS GRID */
   .canvas-grid {
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: auto auto auto;
     gap: 6px;
-    background: var(--sand);
-    padding: 6px;
-    border: 2px solid var(--ink);
   }
 
   .canvas-block {
@@ -283,7 +290,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 6px;
-    margin-top: 6px;
   }
 
   .canvas-bottom .canvas-block {
@@ -854,6 +860,7 @@
     .canvas-header p { text-align: left; max-width: 100%; }
     .canvas-grid { grid-template-columns: 1fr 1fr 1fr; }
     .canvas-bottom { grid-template-columns: 1fr 1fr; }
+    .canvas-wrapper { padding: 4px; gap: 4px; }
     .detail-hero { grid-template-columns: 1fr; }
     .about-grid { grid-template-columns: 1fr; }
     .about-highlight { flex-direction: column; }
@@ -879,10 +886,11 @@
     .canvas-header h2 { font-size: 1.4rem; }
     .canvas-header p { font-size: 0.8rem; }
 
-    /* Canvas: each block full width, stacked */
+    /* Canvas: cada bloque ancho completo, apilado */
+    .canvas-wrapper { padding: 4px; gap: 4px; }
     .canvas-grid {
       grid-template-columns: 1fr !important;
-      gap: 5px;
+      gap: 4px;
     }
     .canvas-block {
       grid-row: auto !important;
@@ -891,7 +899,7 @@
     }
     .canvas-bottom {
       grid-template-columns: 1fr;
-      gap: 5px;
+      gap: 4px;
     }
     .canvas-bottom .canvas-block { min-height: 100px; }
 
@@ -996,7 +1004,10 @@
   <!-- Toast notification -->
   <div id="toast" class="toast"></div>
 
-  <!-- CANVAS GRID (5 cols) -->
+  <!-- CANVAS WRAPPER con borde único -->
+  <div class="canvas-wrapper">
+
+    <!-- CANVAS GRID (5 cols) -->
   <div class="canvas-grid" id="canvasGrid">
 
     <!-- Row 1: KP | KA+VPspan2+CR | CS -->
@@ -1085,7 +1096,8 @@
       <div class="block-notes" id="notes-rev"></div>
       <div class="add-note-btn" onclick="event.stopPropagation(); openModal('rev')">+ Agregar idea</div>
     </div>
-  </div>
+  </div><!-- /canvas-bottom -->
+  </div><!-- /canvas-wrapper -->
 
   <p class="export-hint">💡 Tus anotaciones y datos del equipo se guardan automáticamente en el navegador.</p>
 </div>
