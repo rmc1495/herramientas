@@ -1653,7 +1653,7 @@ async function exportPDF() {
     if (items.length === 0) return MIN_BLOCK_H;
     let total = BLOCK_HEADER_H;
     items.forEach(note => {
-      const lines = docMeasure.splitTextToSize(note, COL_W - 12);
+      const lines = docMeasure.splitTextToSize(pdfText(note), COL_W - 12);
       total += lines.length * NOTE_LINE_H + NOTE_PAD_V * 2 + NOTE_GAP;
     });
     return Math.max(total + 4, MIN_BLOCK_H);
@@ -1716,7 +1716,7 @@ async function exportPDF() {
   doc.text('EMPRENDIMIENTO', empX, 8);
   doc.setFontSize(10); doc.setFont('helvetica','bold');
   doc.setTextColor(255,255,255);
-  doc.text(doc.splitTextToSize(empNombre, W * 0.26)[0], empX, 18);
+  doc.text(doc.splitTextToSize(pdfText(empNombre), W * 0.26)[0], empX, 18);
 
   // Derecha: equipo
   const estX = W * 0.72;
@@ -1731,6 +1731,17 @@ async function exportPDF() {
   // Barra acento
   doc.setFillColor(...RUST);
   doc.rect(0, HDR, W, ACCENT, 'F');
+
+  // Sanitiza caracteres que jsPDF no puede renderizar correctamente
+  function pdfText(str) {
+    return (str || '')
+      .replace(/₡/g, 'CRC')
+      .replace(/[^\x00-\xFF]/g, c => {
+        const map = { '–': '-', '—': '-', '\u2018': "'", '\u2019': "'",
+                      '\u201C': '"', '\u201D': '"', '\u2026': '...' };
+        return map[c] || '?';
+      });
+  }
 
   // ── Función drawBlock dinámica ──────────────────────────────────────────
   function drawBlock(bx, by, bw, bh, num, title, sub, color, blockId) {
@@ -1771,7 +1782,7 @@ async function exportPDF() {
     const maxW = bw - 8;
 
     items.forEach(note => {
-      const noteLines = doc.splitTextToSize(note, maxW - 4);
+      const noteLines = doc.splitTextToSize(pdfText(note), maxW - 4);
       const noteH = noteLines.length * NOTE_LINE_H + NOTE_PAD_V * 2;
       doc.setFillColor(255, 249, 196);
       doc.setDrawColor(232, 217, 107);
