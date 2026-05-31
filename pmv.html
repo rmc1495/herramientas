@@ -40,13 +40,13 @@
                 <h1 class="text-xl font-bold text-slate-900">Creador de PMV</h1>
             </div>
             <div class="text-sm font-medium text-slate-500">
-                Paso <span id="currentStepText">1</span> de 5
+                Paso <span id="currentStepText">1</span> de 6
             </div>
         </div>
         
         <!-- Progress bar -->
         <div class="w-full bg-slate-100 h-1">
-            <div id="progressBar" class="bg-indigo-600 h-1 transition-all duration-300 ease-out" style="width: 20%;"></div>
+            <div id="progressBar" class="bg-indigo-600 h-1 transition-all duration-300 ease-out" style="width: 16.6%;"></div>
         </div>
     </header>
 
@@ -59,41 +59,49 @@
             <!-- Paso 1 -->
             <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
                 <div id="indicator-1" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200">
-                    <i data-lucide="target" class="w-5 h-5"></i>
+                    <i data-lucide="book-open" class="w-5 h-5"></i>
                 </div>
-                <span id="indicator-text-1" class="text-xs font-medium text-indigo-900">El Problema</span>
+                <span id="indicator-text-1" class="text-xs font-medium text-indigo-900">Introducción</span>
             </div>
-            
+
             <!-- Paso 2 -->
             <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
                 <div id="indicator-2" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
+                    <i data-lucide="target" class="w-5 h-5"></i>
                 </div>
-                <span id="indicator-text-2" class="text-xs font-medium text-slate-400">La Solución</span>
+                <span id="indicator-text-2" class="text-xs font-medium text-slate-400">El Problema</span>
             </div>
-
+            
             <!-- Paso 3 -->
             <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
                 <div id="indicator-3" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="list-todo" class="w-5 h-5"></i>
+                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
                 </div>
-                <span id="indicator-text-3" class="text-xs font-medium text-slate-400">Funcionalidades</span>
+                <span id="indicator-text-3" class="text-xs font-medium text-slate-400">La Solución</span>
             </div>
 
             <!-- Paso 4 -->
             <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
                 <div id="indicator-4" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="line-chart" class="w-5 h-5"></i>
+                    <i data-lucide="list-todo" class="w-5 h-5"></i>
                 </div>
-                <span id="indicator-text-4" class="text-xs font-medium text-slate-400">Métricas</span>
+                <span id="indicator-text-4" class="text-xs font-medium text-slate-400">Funcionalidades</span>
             </div>
 
             <!-- Paso 5 -->
             <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
                 <div id="indicator-5" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
+                    <i data-lucide="line-chart" class="w-5 h-5"></i>
+                </div>
+                <span id="indicator-text-5" class="text-xs font-medium text-slate-400">Métricas</span>
+            </div>
+
+            <!-- Paso 6 -->
+            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
+                <div id="indicator-6" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
                     <i data-lucide="layout-template" class="w-5 h-5"></i>
                 </div>
-                <span id="indicator-text-5" class="text-xs font-medium text-slate-400">Canvas PMV</span>
+                <span id="indicator-text-6" class="text-xs font-medium text-slate-400">Canvas PMV</span>
             </div>
         </div>
 
@@ -101,10 +109,69 @@
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 print-block">
             <div class="p-6 sm:p-10">
                 
-                <!-- PASO 1 -->
+                <!-- PASO 1: INTRODUCCIÓN -->
                 <div id="step-1" class="step-container space-y-6 fade-in">
+                    <div class="border-b border-slate-100 pb-6">
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">¿Qué es un Producto Mínimo Viable (PMV)?</h2>
+                        <p class="text-slate-600 leading-relaxed">
+                            El PMV (o MVP en inglés) es la versión <strong>más básica</strong> de su producto, la cual le permite aprender de usuarios reales con el mínimo esfuerzo posible. No se trata de crear un producto defectuoso o a medias, sino de enfocarse únicamente en la funcionalidad central que resuelve el problema de su cliente para comprobar si el mercado realmente lo necesita (validación).
+                        </p>
+                    </div>
+
                     <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Definamos el contexto</h2>
+                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+                            <i data-lucide="sparkles" class="w-5 h-5 text-indigo-500"></i>
+                            Técnicas comunes para lanzar un PMV sin desarrollar tecnología excesiva:
+                        </h3>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <!-- Tecnica 1 -->
+                            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
+                                <h4 class="font-bold text-indigo-900 flex items-center gap-2 mb-2">
+                                    <i data-lucide="door-open" class="w-4 h-4"></i> Puerta Falsa (Fake Door)
+                                </h4>
+                                <p class="text-sm text-indigo-800">
+                                    Consiste en crear una página web anunciando el producto como si ya existiera. Se añade un botón de "Comprar" o "Suscribirse". Si el usuario hace clic, se le muestra un mensaje: <em>"Estamos en desarrollo, deje su correo y le avisaremos"</em>. Sirve para medir interés real.
+                                </p>
+                            </div>
+                            
+                            <!-- Tecnica 2 -->
+                            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
+                                <h4 class="font-bold text-emerald-900 flex items-center gap-2 mb-2">
+                                    <i data-lucide="user-check" class="w-4 h-4"></i> Conserje (Concierge)
+                                </h4>
+                                <p class="text-sm text-emerald-800">
+                                    En lugar de crear tecnología, se ofrece el servicio de forma manual y altamente personalizada a unos pocos clientes. Permite aprender qué necesitan y cómo interactúan antes de invertir en automatizar los procesos.
+                                </p>
+                            </div>
+
+                            <!-- Tecnica 3 -->
+                            <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl">
+                                <h4 class="font-bold text-amber-900 flex items-center gap-2 mb-2">
+                                    <i data-lucide="wand-2" class="w-4 h-4"></i> Mago de Oz
+                                </h4>
+                                <p class="text-sm text-amber-800">
+                                    La interfaz para el usuario parece un sistema 100% automático y tecnológico, pero detrás de la cortina, es usted o su equipo realizando el trabajo manualmente para validar si el modelo de negocio es viable.
+                                </p>
+                            </div>
+
+                            <!-- Tecnica 4 -->
+                            <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
+                                <h4 class="font-bold text-rose-900 flex items-center gap-2 mb-2">
+                                    <i data-lucide="puzzle" class="w-4 h-4"></i> A retazos (Piecemeal)
+                                </h4>
+                                <p class="text-sm text-rose-800">
+                                    Implica utilizar herramientas gratuitas o de bajo costo que ya existen (WhatsApp, Google Forms, Typeform, Zapier) y conectarlas para simular la funcionalidad de su producto final sin necesidad de programar.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 2 -->
+                <div id="step-2" class="step-container space-y-6 fade-in hidden">
+                    <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Definición del contexto</h2>
                         <p class="text-slate-500">Todo gran producto comienza entendiendo un problema real.</p>
                     </div>
                     <div class="space-y-4">
@@ -113,32 +180,12 @@
                             <input type="text" id="projectName" placeholder="Ej. EcoDelivery" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Qué problema estás resolviendo?</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Qué problema está resolviendo?</label>
                             <textarea id="problem" rows="3" placeholder="Ej. Las personas quieren comer saludable pero no tienen tiempo para cocinar o buscar restaurantes sanos cerca." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
                         </div>
                         <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Quién es tu público objetivo?</label>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Quién es su público objetivo?</label>
                             <input type="text" id="audience" placeholder="Ej. Profesionales de 25-40 años que trabajan en oficinas" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 2 -->
-                <div id="step-2" class="step-container space-y-6 fade-in hidden">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Tu Solución</h2>
-                        <p class="text-slate-500">¿Cómo mejorarás la vida de tus usuarios?</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Propuesta de Valor Única</label>
-                            <p class="text-xs text-slate-500 mb-2">En una frase, ¿por qué deberían elegirte a ti?</p>
-                            <textarea id="valueProp" rows="3" placeholder="Ej. Entregamos comida casera y saludable en menos de 30 minutos a tu oficina." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Alternativas Actuales</label>
-                            <p class="text-xs text-slate-500 mb-2">¿Cómo resuelven este problema hoy los usuarios?</p>
-                            <textarea id="alternatives" rows="2" placeholder="Ej. Apps tradicionales de delivery (comida rápida), llevar tupper de casa." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
                         </div>
                     </div>
                 </div>
@@ -146,8 +193,28 @@
                 <!-- PASO 3 -->
                 <div id="step-3" class="step-container space-y-6 fade-in hidden">
                     <div>
+                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Su Solución</h2>
+                        <p class="text-slate-500">¿Cómo mejorará la vida de sus usuarios?</p>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Propuesta de Valor Única</label>
+                            <p class="text-xs text-slate-500 mb-2">En una frase, ¿por qué deberían elegir su solución?</p>
+                            <textarea id="valueProp" rows="3" placeholder="Ej. Entregamos comida casera y saludable en menos de 30 minutos a la oficina." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-slate-700 mb-1">Alternativas Actuales</label>
+                            <p class="text-xs text-slate-500 mb-2">¿Cómo resuelven este problema actualmente los usuarios?</p>
+                            <textarea id="alternatives" rows="2" placeholder="Ej. Apps tradicionales de delivery (comida rápida), llevar recipiente térmico desde casa." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- PASO 4 -->
+                <div id="step-4" class="step-container space-y-6 fade-in hidden">
+                    <div>
                         <h2 class="text-2xl font-bold text-slate-900 mb-2">Priorización de Funcionalidades</h2>
-                        <p class="text-slate-500">Anota todas tus ideas y luego decide qué es esencial para lanzar el PMV y qué puede esperar (Post-PMV).</p>
+                        <p class="text-slate-500">Anote todas sus ideas y luego decida qué es esencial para lanzar el PMV y qué puede posponerse (Post-PMV).</p>
                     </div>
                     
                     <form id="featureForm" class="flex gap-2">
@@ -161,33 +228,33 @@
                         <!-- Las funcionalidades se inyectarán aquí con JavaScript -->
                         <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
                             <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
-                            <p>Aún no has añadido funcionalidades.</p>
-                            <p class="text-sm mt-1">Empieza a escribir arriba.</p>
+                            <p>Aún no ha añadido funcionalidades.</p>
+                            <p class="text-sm mt-1">Comience a escribir en la parte superior.</p>
                         </div>
                     </div>
                 </div>
 
-                <!-- PASO 4 -->
-                <div id="step-4" class="step-container space-y-6 fade-in hidden">
+                <!-- PASO 5 -->
+                <div id="step-5" class="step-container space-y-6 fade-in hidden">
                     <div>
                         <h2 class="text-2xl font-bold text-slate-900 mb-2">Métricas de Éxito</h2>
-                        <p class="text-slate-500">¿Cómo sabrás si tu PMV ha validado tu idea?</p>
+                        <p class="text-slate-500">¿Cómo comprobará si el PMV ha validado su idea inicial?</p>
                     </div>
                     <div class="space-y-4">
                         <div>
                             <label class="block text-sm font-semibold text-slate-700 mb-1">KPIs o Métricas Clave</label>
-                            <p class="text-xs text-slate-500 mb-2">Elige 1 o 2 métricas accionables (Ej. Tasa de conversión, Retención, Entrevistas completadas).</p>
+                            <p class="text-xs text-slate-500 mb-2">Seleccione 1 o 2 métricas accionables (Ej. Tasa de conversión, Retención, Entrevistas completadas).</p>
                             <textarea id="metrics" rows="4" placeholder="Ej. Conseguir 50 pedidos pagados en la primera semana. Lograr que el 20% de los usuarios repita un pedido." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
                         </div>
                     </div>
                 </div>
 
-                <!-- PASO 5: CANvAS -->
-                <div id="step-5" class="step-container space-y-6 fade-in hidden">
+                <!-- PASO 6: CANvAS -->
+                <div id="step-6" class="step-container space-y-6 fade-in hidden">
                     <div class="flex justify-between items-end print-hidden">
                         <div>
-                            <h2 class="text-2xl font-bold text-slate-900 mb-2">Canvas de tu PMV</h2>
-                            <p class="text-slate-500">Aquí tienes el resumen estratégico de tu producto mínimo viable.</p>
+                            <h2 class="text-2xl font-bold text-slate-900 mb-2">Canvas del PMV</h2>
+                            <p class="text-slate-500">A continuación, se presenta el resumen estratégico de su Producto Mínimo Viable.</p>
                         </div>
                         <button id="btnExport" onclick="exportPDF()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
                             <i data-lucide="download" class="w-4 h-4"></i> Descargar PDF
@@ -296,7 +363,7 @@
 
         // Estado de la aplicación
         let currentStep = 1;
-        const totalSteps = 5;
+        const totalSteps = 6;
         let features = [];
 
         // Referencias al DOM
@@ -350,15 +417,15 @@
             renderFeatures();
         };
 
-        // Actualizar la lista de funcionalidades en el paso 3
+        // Actualizar la lista de funcionalidades en el paso 4
         function renderFeatures() {
             const list = document.getElementById('featuresList');
             if (features.length === 0) {
                 list.innerHTML = `
                     <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
                         <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
-                        <p>Aún no has añadido funcionalidades.</p>
-                        <p class="text-sm mt-1">Empieza a escribir arriba.</p>
+                        <p>Aún no ha añadido funcionalidades.</p>
+                        <p class="text-sm mt-1">Comience a escribir en la parte superior.</p>
                     </div>`;
             } else {
                 list.innerHTML = features.map(f => `
@@ -417,7 +484,7 @@
             if (currentStep === totalSteps) {
                 btnNext.classList.add('hidden');
                 btnRestart.classList.remove('hidden');
-                populateCanvas(); // Llenar el resumen cuando llegamos al paso 5
+                populateCanvas(); // Llenar el resumen cuando llegamos al paso 6
             } else {
                 btnNext.classList.remove('hidden');
                 btnRestart.classList.add('hidden');
@@ -500,7 +567,7 @@
             // 3. Configuración del PDF (SIN márgenes para evitar el salto de página)
             const opt = {
                 margin:       0, 
-                filename:     'Mi_Canvas_PMV.pdf',
+                filename:     'Canvas_PMV.pdf',
                 image:        { type: 'jpeg', quality: 1 },
                 html2canvas:  { 
                     scale: 2, 
