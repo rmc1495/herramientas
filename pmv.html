@@ -8,8 +8,9 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Cargamos Lucide Icons para los iconos -->
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Cargamos html2pdf para exportar a PDF de forma directa -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <!-- Cargamos html2canvas y jsPDF para exportar a PDF en 1 sola página perfecta -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
         /* Animaciones suaves para las transiciones entre pasos */
@@ -217,12 +218,17 @@
                         <p class="text-slate-500">Anote todas sus ideas y luego decida qué es esencial para lanzar el PMV y qué puede posponerse (Post-PMV).</p>
                     </div>
                     
-                    <form id="featureForm" class="flex gap-2">
+                    <div class="flex flex-col sm:flex-row gap-2">
                         <input type="text" id="newFeature" placeholder="Ej. Sistema de pagos con tarjeta..." class="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
-                        <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm">
-                            <i data-lucide="plus" class="w-5 h-5 mr-1"></i> Añadir
-                        </button>
-                    </form>
+                        <div class="flex gap-2">
+                            <button type="button" onclick="addFeatureUI(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm whitespace-nowrap" title="Añadir a funcionalidades esenciales">
+                                <i data-lucide="check-circle" class="w-5 h-5 mr-1"></i> Esencial
+                            </button>
+                            <button type="button" onclick="addFeatureUI(false)" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm whitespace-nowrap" title="Añadir para el futuro">
+                                <i data-lucide="list-todo" class="w-5 h-5 mr-1"></i> Futuro
+                            </button>
+                        </div>
+                    </div>
 
                     <div id="featuresList" class="mt-6 space-y-3">
                         <!-- Las funcionalidades se inyectarán aquí con JavaScript -->
@@ -372,7 +378,6 @@
         const btnRestart = document.getElementById('btnRestart');
         const progressBar = document.getElementById('progressBar');
         const currentStepText = document.getElementById('currentStepText');
-        const featureForm = document.getElementById('featureForm');
 
         // Eventos de Navegación
         btnNext.addEventListener('click', () => {
@@ -394,17 +399,24 @@
             updateUI();
         });
 
-        // Evento de formulario de Funcionalidades
-        featureForm.addEventListener('submit', (e) => {
-            e.preventDefault();
+        // Evento de teclado para el input de funcionalidades (Enter = Esencial por defecto)
+        document.getElementById('newFeature').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                window.addFeatureUI(true);
+            }
+        });
+
+        // Función para agregar funcionalidades desde los nuevos botones
+        window.addFeatureUI = (isMVP) => {
             const input = document.getElementById('newFeature');
             const text = input.value.trim();
             if (text !== '') {
-                features.push({ id: Date.now(), text, isMVP: true });
+                features.push({ id: Date.now(), text, isMVP });
                 input.value = '';
                 renderFeatures();
             }
-        });
+        };
 
         // Funciones Globales para Funcionalidades
         window.toggleFeature = (id) => {
@@ -535,65 +547,92 @@
             }
         }
 
-        // Función para exportar a PDF usando html2pdf
-        function exportPDF() {
+        // Función para exportar a PDF ajustado exactamente a 1 página
+        async function exportPDF() {
+            const { jsPDF } = window.jspdf;
             const element = document.getElementById('canvas-content');
             const btn = document.getElementById('btnExport');
             
             // Mostrar estado de carga en el botón
             const originalHTML = btn.innerHTML;
-            btn.innerHTML = 'Generando PDF...';
+            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Generando...';
+            lucide.createIcons();
             btn.disabled = true;
             btn.classList.add('opacity-75', 'cursor-wait');
 
-            // 1. Crear un contenedor temporal para fijar dimensiones y evitar recortes
+            // 1. Crear un contenedor temporal para fijar dimensiones anchas (diseño escritorio)
             const wrapper = document.createElement('div');
-            wrapper.style.padding = '30px'; 
+            wrapper.style.padding = '20px'; 
             wrapper.style.backgroundColor = '#ffffff'; 
-            wrapper.style.width = '1100px'; // Ancho fijo amplio para evitar que se corte a la derecha
+            wrapper.style.width = '1200px'; 
             
             // Envolver el canvas temporalmente
             element.parentNode.insertBefore(wrapper, element);
             wrapper.appendChild(element);
 
-            // 2. Calcular dimensiones exactas del nuevo contenedor
-            const elementWidth = wrapper.offsetWidth;
-            const elementHeight = wrapper.offsetHeight;
-            
-            // Convertir píxeles a milímetros (1px ≈ 0.264583mm)
-            const widthMm = elementWidth * 0.264583; 
-            const heightMm = elementHeight * 0.264583;
+            try {
+                // 2. Tomar la "foto" del contenedor
+                const canvas = await html2canvas(wrapper, {
+                    scale: 2, // Alta resolución
+                    useCORS: true,
+                    backgroundColor: '#ffffff'
+                });
 
-            // 3. Configuración del PDF (SIN márgenes para evitar el salto de página)
-            const opt = {
-                margin:       0, 
-                filename:     'Canvas_PMV.pdf',
-                image:        { type: 'jpeg', quality: 1 },
-                html2canvas:  { 
-                    scale: 2, 
-                    useCORS: true, 
-                    windowWidth: elementWidth, // Obliga a capturar todo el ancho
-                    scrollY: 0
-                }, 
-                jsPDF:        { 
-                    unit: 'mm', 
-                    format: [widthMm, heightMm], 
-                    orientation: widthMm > heightMm ? 'landscape' : 'portrait' 
-                }
-            };
-
-            // 4. Generar y descargar el documento
-            html2pdf().set(opt).from(wrapper).save().then(() => {
-                // Restaurar el DOM a su estado original (quitar el wrapper)
+                // Restaurar el DOM original inmediatamente
                 wrapper.parentNode.insertBefore(element, wrapper);
                 wrapper.parentNode.removeChild(wrapper);
 
+                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+                // 3. Configurar el documento PDF (A4 en formato horizontal)
+                const pdf = new jsPDF({
+                    orientation: 'landscape',
+                    unit: 'mm',
+                    format: 'a4'
+                });
+
+                // 4. Calcular proporciones para que encaje perfecto sin cortarse
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = pdf.internal.pageSize.getHeight();
+                
+                const imgProps = pdf.getImageProperties(imgData);
+                const margin = 10; // 10mm de margen blanco alrededor
+                const maxImgWidth = pdfWidth - (margin * 2);
+                const maxImgHeight = pdfHeight - (margin * 2);
+
+                let renderWidth = maxImgWidth;
+                let renderHeight = (imgProps.height * renderWidth) / imgProps.width;
+
+                // Si la altura calculada sigue siendo más grande que la hoja, ajustamos por altura
+                if (renderHeight > maxImgHeight) {
+                    renderHeight = maxImgHeight;
+                    renderWidth = (imgProps.width * renderHeight) / imgProps.height;
+                }
+
+                // Centrar la imagen en la hoja
+                const x = (pdfWidth - renderWidth) / 2;
+                const y = (pdfHeight - renderHeight) / 2;
+
+                // 5. Agregar imagen al PDF y descargar
+                pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight);
+                pdf.save('Canvas_PMV.pdf');
+
+            } catch (error) {
+                console.error("Error al generar el PDF:", error);
+                alert("Ocurrió un error al intentar generar el archivo PDF.");
+                
+                // Asegurar que el DOM se restaura en caso de error
+                if (wrapper.parentNode) {
+                    wrapper.parentNode.insertBefore(element, wrapper);
+                    wrapper.parentNode.removeChild(wrapper);
+                }
+            } finally {
                 // Restaurar el botón a la normalidad
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
                 btn.classList.remove('opacity-75', 'cursor-wait');
-                lucide.createIcons(); // Volver a renderizar el icono
-            });
+                lucide.createIcons();
+            }
         }
     </script>
 </body>
