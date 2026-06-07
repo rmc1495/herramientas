@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🚀 Carrera Espacial PRO | Mente Maestra</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;700&family=Space+Grotesk:wght@500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg-dark: #050914; --glass-bg: rgba(16, 24, 48, 0.7); --glass-border: rgba(65, 88, 208, 0.4);
+    --neon-blue: #00f0ff; --neon-pink: #ff007f; --neon-green: #00ff66;
+    --neon-yellow: #ffde00; --neon-orange: #ff7300; --text-main: #e2e8f0; --text-muted: #94a3b8;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'Outfit', sans-serif; background-color: var(--bg-dark); color: var(--text-main); min-height: 100vh; overflow-x: hidden; position: relative; }
+
+  /* Scanlines CRT Effect */
+  body::after {
+    content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.03), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.03));
+    z-index: 999; background-size: 100% 3px, 6px 100%; pointer-events: none;
+  }
+
+  .nebula { position: fixed; width: 60vw; height: 60vw; border-radius: 50%; filter: blur(100px); opacity: 0.15; z-index: 0; pointer-events: none; transition: background 1s ease; }
+  .nebula-1 { top: -20%; left: -10%; background: var(--neon-blue); }
+  .nebula-2 { bottom: -20%; right: -10%; background: var(--neon-pink); }
+  body.danger-mode .nebula-1 { background: #ff0000; opacity: 0.3; }
+  body.danger-mode .nebula-2 { background: var(--neon-orange); opacity: 0.3; }
+
+  canvas#starfield { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+  canvas#confetti { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 998; pointer-events: none; }
+  
+  #app { position: relative; z-index: 10; max-width: 950px; margin: 0 auto; padding: 20px; min-height: 100vh; display: flex; flex-direction: column; }
+
+  .glass-panel { background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border: 1px solid var(--glass-border); border-radius: 24px; box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5); padding: 30px; }
+  h1, h2, h3, .space-font { font-family: 'Space Grotesk', sans-serif; }
+
+  /* TOOLBAR */
+  .toolbar { display: flex; gap: 12px; justify-content: flex-end; margin-bottom: 15px; }
+  .tool-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: var(--text-muted); padding: 8px 16px; border-radius: 12px; cursor: pointer; font-family: 'Space Grotesk', sans-serif; font-size: 0.85rem; transition: all 0.3s ease; }
+  .tool-btn:hover { background: rgba(255,255,255,0.1); color: #fff; }
+  .tool-btn.active { color: var(--neon-blue); border-color: rgba(0, 240, 255, 0.4); background: rgba(0, 240, 255, 0.1); box-shadow: 0 0 15px rgba(0, 240, 255, 0.2); }
+
+  .btn { padding: 16px 32px; border: none; border-radius: 16px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.1rem; cursor: pointer; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); text-transform: uppercase; letter-spacing: 1px; color:#fff; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);}
+  .btn:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); background: rgba(255,255,255,0.2); }
+  .btn:active { transform: translateY(1px); }
+  .btn-primary { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: #000; box-shadow: 0 0 20px rgba(0, 242, 254, 0.4); border:none;}
+  .btn-primary:hover { background: linear-gradient(135deg, #00f2fe 0%, #4facfe 100%); }
+
+  /* LANDING */
+  .landing { text-align: center; animation: fadeIn 0.8s ease-out; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items:center;}
+  .landing h1 { font-size: 3.5rem; font-weight: 900; margin-bottom: 10px; background: linear-gradient(to right, var(--neon-blue), var(--neon-pink), var(--neon-yellow)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 10px rgba(0, 240, 255, 0.3)); line-height: 1.2;}
+  .landing p.sub { font-size: 1.2rem; color: var(--text-muted); margin-bottom: 30px; }
+  .mode-select { display: flex; gap: 20px; justify-content: center; margin: 20px 0; flex-wrap: wrap; width:100%;}
+  .card-mode { flex: 1; min-width: 250px; padding: 30px; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); border-radius: 20px; text-align: center; transition: all 0.3s; background: rgba(0,0,0,0.4); }
+  .card-mode:hover { border-color: var(--neon-blue); background: rgba(0, 240, 255, 0.05); transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0, 240, 255, 0.1); }
+  .team-count { display: flex; gap: 16px; justify-content: center; margin: 30px 0; }
+  .team-count button { width: 60px; height: 60px; border-radius: 16px; border: 2px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.3); color: #fff; font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; cursor: pointer; transition: all 0.3s; }
+  .team-count button:hover { border-color: var(--neon-blue); transform: translateY(-2px); }
+  .team-count button.sel { background: var(--neon-blue); color: #000; border-color: var(--neon-blue); box-shadow: 0 0 20px rgba(0, 240, 255, 0.4); }
+  .t-row { display: flex; align-items: center; gap: 16px; background: rgba(0,0,0,0.3); padding: 8px 16px; border-radius: 16px; border: 1px solid rgba(255,255,255,0.05); margin-bottom:16px;}
+  .t-row input { flex: 1; background: transparent; border: none; color: #fff; font-family: 'Outfit', sans-serif; font-size: 1.2rem; padding: 8px 0; outline: none; }
+
+  /* INSTRUCTIONS */
+  .instructions-box { text-align: left; max-width: 800px; margin: 0 auto; width: 100%;}
+  .inst-list { list-style: none; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 30px; }
+  .inst-list li { display: flex; align-items: flex-start; gap: 15px; font-size: 1rem; line-height: 1.4; background: rgba(0,0,0,0.4); padding: 15px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05); }
+  @media(max-width: 700px){ .inst-list{grid-template-columns: 1fr;} }
+
+  /* TRACK UI */
+  .track-container { padding: 20px; margin-bottom: 20px; position: relative; overflow: hidden; }
+  .lane { display: flex; align-items: center; gap: 15px; margin-bottom: 12px; position: relative; z-index: 2; }
+  .lane-name { width: 90px; text-align: right; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.9rem; text-transform: uppercase; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .track-line { flex: 1; height: 12px; background: rgba(0,0,0,0.5); border-radius: 10px; position: relative; box-shadow: inset 0 2px 4px rgba(0,0,0,0.5); border: 1px solid rgba(255,255,255,0.05); }
+  .track-fill { position: absolute; top: 0; left: 0; height: 100%; border-radius: 10px; transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 0 10px currentColor; }
+  .ship-avatar { position: absolute; top: 50%; left: -20px; transform: translateY(-50%); font-size: 2rem; transition: left 1s cubic-bezier(0.34, 1.56, 0.64, 1), transform 0.3s; filter: drop-shadow(0 0 10px rgba(255,255,255,0.5)); z-index: 10; }
+  .lane.active .ship-avatar { animation: hoverShip 2s infinite ease-in-out; filter: drop-shadow(0 0 20px currentColor); }
+  .score-badge { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.5); border-radius: 12px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; border: 1px solid rgba(255,255,255,0.1); }
+  
+  @keyframes hoverShip { 0%, 100% { transform: translateY(-50%) scale(1.2); } 50% { transform: translateY(-60%) scale(1.2); } }
+  .floating-point { position: absolute; font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.5rem; pointer-events: none; animation: floatUp 2s ease-out forwards; z-index: 100; white-space: nowrap; text-shadow: 0 0 10px #000; }
+  @keyframes floatUp { 0% { opacity: 0; transform: translateY(0) scale(0.5); } 15% { opacity: 1; transform: translateY(-20px) scale(1.2); } 80% { opacity: 1; transform: translateY(-40px) scale(1); } 100% { opacity: 0; transform: translateY(-60px) scale(0.8); } }
+
+  /* HUD & LIFELINES */
+  .hud { display: flex; justify-content: space-between; align-items: center; padding: 15px 25px; margin-bottom: 20px; border-top: 1px solid rgba(255,255,255,0.05); background: linear-gradient(90deg, rgba(255,255,255,0.05), transparent); flex-wrap: wrap; gap: 15px; }
+  .hud-turn { display: flex; align-items: center; gap: 12px; }
+  .hud-turn .value { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; }
+  
+  .lifelines { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center;}
+  .ll-btn { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 10px; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 0.8rem; color: #fff; cursor: pointer; transition: all 0.3s; }
+  .ll-btn:hover:not(.used):not(.jammed) { transform: translateY(-2px); box-shadow: 0 0 10px currentColor; }
+  .ll-btn.used { opacity: 0.3; cursor: not-allowed; filter: grayscale(100%); text-decoration: line-through; }
+  .ll-btn.jammed { opacity: 0.5; border-color: red; color: red; cursor: not-allowed; animation: shakeAnim 2s infinite; }
+  .ll-sabotage { color: var(--neon-pink); border-color: var(--neon-pink); }
+  .ll-wager { color: var(--neon-orange); border-color: var(--neon-orange); }
+
+  .hud-timer { font-family: 'Space Grotesk', sans-serif; font-size: 2.5rem; font-weight: 900; color: var(--neon-blue); text-shadow: 0 0 15px rgba(0, 240, 255, 0.4); }
+  .hud-timer.danger { color: var(--neon-pink); text-shadow: 0 0 15px rgba(255, 0, 127, 0.6); animation: pulseTimer 0.5s infinite; }
+  .hud-timer.bonus { color: var(--neon-green); text-shadow: 0 0 15px rgba(0, 255, 102, 0.6); }
+
+  /* QUESTIONS & SABOTAGE GLITCH */
+  .q-container { padding: 30px; position: relative; overflow: hidden; transition: all 0.3s; }
+  .fade-in-quick { animation: fadeInQuick 0.4s ease-out; }
+  .glitched { animation: glitch-anim 0.2s linear infinite, rgb-shift 2s infinite alternate; filter: blur(3px) contrast(150%) brightness(120%); pointer-events: none; }
+  @keyframes glitch-anim { 0% { transform: translate(0) skew(0deg); } 20% { transform: translate(-5px, 5px) skew(5deg); } 40% { transform: translate(-5px, -5px) skew(-5deg); } 60% { transform: translate(5px, 5px) skew(2deg); } 80% { transform: translate(5px, -5px) skew(-2deg); } 100% { transform: translate(0) skew(0deg); } }
+  @keyframes rgb-shift { 0% { filter: hue-rotate(0deg) blur(2px) contrast(150%); } 100% { filter: hue-rotate(90deg) blur(3px) contrast(200%); } }
+
+  .q-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 20px; }
+  .q-category { display: inline-block; padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+  .q-text { font-size: 1.3rem; line-height: 1.5; font-weight: 500; margin-bottom: 30px; }
+
+  .opts-grid { display: grid; gap: 16px; }
+  .opt-btn { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); padding: 18px 24px; border-radius: 16px; color: var(--text-main); font-family: 'Outfit', sans-serif; font-size: 1.05rem; text-align: left; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 15px; }
+  .opt-btn.hidden { display: none; } 
+  .opt-btn::before { content: ''; display: block; width: 12px; height: 12px; border-radius: 50%; border: 2px solid rgba(255,255,255,0.3); flex-shrink: 0; transition: all 0.2s; }
+  .opt-btn:hover:not(.locked) { background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.3); transform: translateX(5px); }
+  .opt-btn:hover:not(.locked)::before { border-color: var(--neon-blue); box-shadow: 0 0 10px var(--neon-blue); }
+  .opt-btn.locked { cursor: default; opacity: 0.6; }
+  .opt-btn.reveal { border-color: var(--neon-green); background: rgba(0, 255, 102, 0.05); opacity: 1; }
+  .opt-btn.reveal::before { background: var(--neon-green); border-color: var(--neon-green); box-shadow: 0 0 15px var(--neon-green); }
+  .opt-btn.wrong-pick { border-color: var(--neon-pink); background: rgba(255, 0, 127, 0.05); opacity: 1; }
+  .opt-btn.wrong-pick::before { background: var(--neon-pink); border-color: var(--neon-pink); box-shadow: 0 0 15px var(--neon-pink); }
+
+  .terminal-box { background: #02040a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px; font-family: 'Space Grotesk', monospace; position: relative; overflow: hidden; }
+  .terminal-box::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 2px; background: linear-gradient(90deg, transparent, var(--neon-green), transparent); opacity: 0.5; }
+  .calc-input-wrapper { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+  .calc-input { flex: 1; background: transparent; border: none; border-bottom: 2px solid rgba(0, 255, 102, 0.3); color: var(--neon-green); font-size: 2rem; font-family: 'Space Grotesk', monospace; padding: 10px 0; outline: none; transition: border-color 0.3s; }
+  
+  .match-cols { display: flex; gap: 20px; width: 100%; }
+  .match-col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .match-btn { padding: 15px; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; color: var(--text-main); font-family: 'Outfit', sans-serif; cursor: pointer; transition: all 0.2s; text-align: left; }
+  .match-btn.selected { background: rgba(0, 240, 255, 0.1); border-color: var(--neon-blue); box-shadow: 0 0 15px rgba(0, 240, 255, 0.3); transform: scale(1.02); }
+  .match-btn.locked { opacity: 0.6; pointer-events: none; }
+
+  /* OVERLAYS & EVENTS */
+  .event-banner { font-family: 'Space Grotesk', sans-serif; font-weight: 900; font-size: 1.1rem; text-transform: uppercase; text-align: center; padding: 12px; border-radius: 12px; margin-bottom: 20px; animation: pulseEvent 1.5s infinite; letter-spacing: 1px; }
+  @keyframes pulseEvent { 0%, 100% { box-shadow: inset 0 0 10px currentColor; } 50% { box-shadow: inset 0 0 30px currentColor; } }
+  .event-risk { background: rgba(255, 69, 0, 0.15); border: 2px solid var(--neon-orange); color: var(--neon-orange); text-shadow: 0 0 10px var(--neon-orange); }
+  .event-speed { background: rgba(255, 0, 255, 0.15); border: 2px solid #ff00ff; color: #ff00ff; text-shadow: 0 0 10px #ff00ff; }
+  .event-jammed { background: rgba(255, 0, 127, 0.15); border: 2px solid var(--neon-pink); color: var(--neon-pink); text-shadow: 0 0 10px var(--neon-pink); }
+  .wager-active-ban { background: rgba(0, 240, 255, 0.15); border: 2px solid var(--neon-blue); color: var(--neon-blue); text-shadow: 0 0 10px var(--neon-blue); }
+
+  .modal-overlay { position: fixed; inset: 0; z-index: 100; background: rgba(0,0,0,0.8); backdrop-filter: blur(5px); display: flex; align-items: center; justify-content: center; animation: fadeIn 0.2s; }
+  .modal-box { background: var(--glass-bg); border: 1px solid var(--neon-blue); border-radius: 20px; padding: 30px; text-align: center; max-width: 400px; width: 90%; box-shadow: 0 0 30px rgba(0, 240, 255, 0.2); }
+  .modal-box .opt-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
+  .modal-box button { padding: 12px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.2); background: rgba(0,0,0,0.5); color: #fff; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1.1rem; }
+  .modal-box button:hover { background: rgba(255,255,255,0.1); border-color: var(--neon-blue); }
+
+  .feedback-box { margin-top: 25px; padding: 20px; border-radius: 16px; animation: fadeIn 0.4s; display: flex; flex-direction: column; gap: 10px; }
+  .feedback-box.success { background: rgba(0, 255, 102, 0.1); border: 1px solid rgba(0, 255, 102, 0.2); color: var(--neon-green);}
+  .feedback-box.error { background: rgba(255, 0, 127, 0.1); border: 1px solid rgba(255, 0, 127, 0.2); color: var(--neon-pink);}
+
+  /* WINNER */
+  .winner-screen { text-align: center; padding: 60px 20px; flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; animation: zoomIn 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); }
+  @keyframes zoomIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
+  .trophy { font-size: 6rem; filter: drop-shadow(0 0 30px var(--neon-yellow)); margin-bottom: 20px; animation: floatTrophy 3s ease-in-out infinite; }
+  @keyframes floatTrophy { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-20px); } }
+  .podium-grid { display: flex; flex-wrap: wrap; gap: 20px; justify-content: center; margin: 40px 0; width: 100%; max-width: 700px; }
+  .podium-card { background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 25px; flex: 1; min-width: 150px; position: relative; overflow: hidden; }
+  .podium-card::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 4px; background: currentColor; }
+
+  .shake { animation: shakeAnim 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+  @keyframes shakeAnim { 10%, 90% { transform: translate3d(-2px, 0, 0); } 20%, 80% { transform: translate3d(4px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-6px, 0, 0); } }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+</style>
+</head>
+<body>
+
+<canvas id="starfield"></canvas>
+<canvas id="confetti"></canvas>
+<div class="nebula nebula-1"></div>
+<div class="nebula nebula-2"></div>
+<div id="app"></div>
+
+<script>
+// ============================================================
+//  VISUAL & AUDIO ENGINE
+// ============================================================
+const cvs = document.getElementById('starfield');
+const ctx = cvs.getContext('2d');
+let stars = []; let hyperSpeed = false;
+
+function initStars() {
+  cvs.width = window.innerWidth; cvs.height = window.innerHeight; stars = [];
+  for (let i = 0; i < 150; i++) { stars.push({ x: Math.random()*cvs.width, y: Math.random()*cvs.height, z: Math.random()*2+0.1, r: Math.random()*1.5+0.5, alpha: Math.random() }); }
+}
+function drawStars() {
+  ctx.clearRect(0, 0, cvs.width, cvs.height);
+  let speedMult = hyperSpeed ? 8 : 1.5; 
+  for (let s of stars) {
+    s.y += (1 / s.z) * speedMult; s.alpha += 0.02;
+    if (s.y > cvs.height) { s.y = 0; s.x = Math.random() * cvs.width; }
+    ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2);
+    ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.abs(Math.sin(s.alpha))*0.7})`; ctx.fill();
+  }
+  requestAnimationFrame(drawStars);
+}
+window.addEventListener('resize', initStars); initStars(); drawStars();
+
+const confCvs = document.getElementById('confetti');
+const confCtx = confCvs.getContext('2d');
+let confParticles = []; let confActive = false;
+const confColors = ['#00f0ff', '#ff007f', '#00ff66', '#ffde00', '#ffffff'];
+
+function launchConfetti() {
+  confCvs.width = window.innerWidth; confCvs.height = window.innerHeight;
+  confParticles = []; confActive = true;
+  for(let i=0; i<150; i++) {
+    confParticles.push({
+      x: Math.random() * confCvs.width, y: Math.random() * confCvs.height - confCvs.height,
+      r: Math.random() * 6 + 2, d: Math.random() * 20 + 10,
+      color: confColors[Math.floor(Math.random() * confColors.length)],
+      tilt: Math.floor(Math.random() * 10) - 10,
+      tiltAngleInc: (Math.random() * 0.07) + 0.05, tiltAngle: 0
+    });
+  }
+  requestAnimationFrame(drawConfetti);
+}
+function drawConfetti() {
+  if(!confActive) { confCtx.clearRect(0,0,confCvs.width, confCvs.height); return; }
+  confCtx.clearRect(0,0,confCvs.width, confCvs.height);
+  for(let i=0; i<confParticles.length; i++) {
+    let p = confParticles[i];
+    p.tiltAngle += p.tiltAngleInc; p.y += (Math.cos(p.d) + 3 + p.r/2) / 2; p.x += Math.sin(p.d);
+    p.tilt = Math.sin(p.tiltAngle) * 15;
+    if(p.y > confCvs.height) { p.x = Math.random() * confCvs.width; p.y = -20; }
+    confCtx.beginPath(); confCtx.lineWidth = p.r; confCtx.strokeStyle = p.color;
+    confCtx.moveTo(p.x + p.tilt + p.r, p.y); confCtx.lineTo(p.x + p.tilt, p.y + p.tilt + p.r); confCtx.stroke();
+  }
+  requestAnimationFrame(drawConfetti);
+}
+
+let audioCtx=null, sfxGain=null, musicOn=true, sfxOn=true, musicInterval=null;
+function initAudio(){
+  if(audioCtx) return; 
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+    if(AudioContext) {
+      audioCtx = new AudioContext();
+      sfxGain = audioCtx.createGain(); sfxGain.gain.value = 0.3; sfxGain.connect(audioCtx.destination);
+    }
+  } catch(e) {}
+}
+function playTone(freq, type, dur, delay=0, vol=1){
+  if(!audioCtx||!sfxOn)return;
+  try {
+    const o=audioCtx.createOscillator(), g=audioCtx.createGain();
+    o.type=type; o.frequency.value=freq; g.gain.setValueAtTime(vol, audioCtx.currentTime+delay);
+    g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime+delay+dur);
+    o.connect(g); g.connect(sfxGain); o.start(audioCtx.currentTime+delay); o.stop(audioCtx.currentTime+delay+dur);
+  } catch(e){}
+}
+function sfxClick(){ playTone(800, 'sine', 0.05, 0, 0.5); }
+function sfxCorrect(){ playTone(600, 'square', 0.1); playTone(800, 'square', 0.15, 0.1); playTone(1200, 'sine', 0.2, 0.25); }
+function sfxWrong(){ playTone(300, 'sawtooth', 0.15); playTone(200, 'sawtooth', 0.3, 0.1); }
+function sfxTick(){ playTone(1000, 'sine', 0.05); }
+function sfxPowerup(){ playTone(400, 'sine', 0.1); playTone(600, 'sine', 0.1, 0.1); playTone(800, 'sine', 0.2, 0.2); }
+function sfxGlitch(){ playTone(150, 'sawtooth', 0.1); playTone(100, 'sawtooth', 0.1, 0.1); playTone(200, 'square', 0.1, 0.2); }
+function sfxHyper(){ playTone(300, 'sine', 0.5); playTone(600, 'sine', 0.5, 0.2); playTone(900, 'sine', 0.5, 0.4); }
+function sfxWin(){ [523,659,783,1046].forEach((f,i)=>playTone(f,'square',0.2,i*0.15)); }
+
+const MUSIC_NOTES = [220, 261, 329, 440, 329, 261];
+let mStep = 0;
+function toggleMusic() { 
+  initAudio(); musicOn = !musicOn; 
+  if(musicOn && G.screen==='game') {
+    if(musicInterval) clearInterval(musicInterval);
+    musicInterval = setInterval(()=>{ playTone(MUSIC_NOTES[mStep%MUSIC_NOTES.length], 'triangle', 0.4, 0, 0.3); mStep++; }, 400);
+  } else { clearInterval(musicInterval); musicInterval = null; }
+  renderToolbarOnly(); 
+}
+
+// ============================================================
+//  BANCO DE DATOS MASIVO (50 PREGUNTAS ÚNICAS)
+// ============================================================
+const SHIPS = ['🚀', '🛸', '🛰️', '🌠'];
+const COLORS = ['#00f0ff', '#ff007f', '#00ff66', '#ffde00'];
+const CAT_COLORS = { 'Design Thinking': '#a18cd1', 'Canvas': '#4facfe', 'PMV': '#ff9ff3', 'Negociación': '#ff6b6b', 'Punto de Equilibrio': '#f6d365' };
+const GOAL = 35; 
+const MATCH_COLORS = ['#00f0ff', '#ff007f', '#00ff66', '#ffde00', '#a18cd1'];
+const EVENT_TYPES = ['RISK', 'SPEED', 'JAMMED'];
+
+const QUESTIONS = [
+  // DESIGN THINKING (10)
+  {cat:'Design Thinking', type:'choice', q:'El Design Thinking es una metodología centrada principalmente en:', opts:['Maximizar las ganancias financieras a corto plazo','El usuario y sus necesidades reales','La implementación de tecnología de punta','La reducción estricta de costos operativos'], ans:1, fb:'Design Thinking es 100% "User-Centric" (Centrado en el usuario).'},
+  {cat:'Design Thinking', type:'choice', q:'En esta etapa, actúas como un "detective" usando la observación directa y entrevistas para comprender el entorno del cliente:', opts:['Definir','Idear','Empatizar', 'Prototipar'], ans:2, fb:'Empatizar es ponerse en los zapatos del usuario.'},
+  {cat:'Design Thinking', type:'choice', q:'Si estás agrupando toda la información recolectada en "Clusters" o diagramas de afinidad para hallar el verdadero problema, estás en la etapa de:', opts:['Empatizar','Definir','Idear', 'Testear'], ans:1, fb:'Definir: Organizas la información para identificar con claridad el problema a resolver.'},
+  {cat:'Design Thinking', type:'choice', q:'¿Qué técnica específica NO pertenece a la etapa de "Idear"?', opts:['Brainstorming (Lluvia de ideas)','SCAMPER','Mapa de ideas','Pruebas de usabilidad (A/B)'], ans:3, fb:'Las pruebas de usabilidad pertenecen a la etapa de "Testear".'},
+  {cat:'Design Thinking', type:'choice', q:'¿Cuál afirmación sobre el proceso de Design Thinking es correcta?', opts:['Es estrictamente lineal, paso a paso','Es iterativo, puedes regresar a etapas anteriores siempre','Sólo se puede aplicar a productos digitales', 'Se debe evitar el contacto con el usuario hasta el final'], ans:1, fb:'La iteración es clave: fallar rápido para aprender rápido.'},
+  {cat:'Design Thinking', type:'choice', q:'VERDADERO O FALSO: Prototipar significa crear el producto final, perfecto y listo para vender al público.', opts:['Verdadero', 'Falso'], ans:1, fb:'FALSO. Prototipar es dar forma visual/básica (incluso en papel) para probar la idea barata y rápido.'},
+  {cat:'Design Thinking', type:'choice', q:'La etapa donde llevas tu "Boceto" o "Storyboard" a los usuarios reales para que lo usen y te den retroalimentación es:', opts:['Empatizar','Testear','Definir','Ideación'], ans:1, fb:'Testear o Probar es la fase final (pero puedes regresar a corregir).'},
+  {cat:'Design Thinking', type:'choice', q:'El principio fundamental del Design Thinking se podría resumir en:', opts:['Primero construir, luego buscar a quién venderle','Primero entender al usuario, luego crear soluciones','Copiar lo que hace la competencia', 'Automatizar todos los procesos de la empresa'], ans:1, fb:'Si no entiendes al usuario, crearás algo que nadie quiere.'},
+  {cat:'Design Thinking', type:'match', q:'Asocia cada técnica con la fase del Design Thinking a la que pertenece:', pairs:[ {t:'Observación Directa', d:'Empatizar'}, {t:'Clustering (Agrupar Info)', d:'Definir'}, {t:'Técnica SCAMPER', d:'Idear'}, {t:'Bocetos y Storyboards', d:'Prototipar'} ], fb: '¡Excelente conexión de técnicas y fases!'},
+  {cat:'Design Thinking', type:'match', q:'Asocia el objetivo fundamental con la etapa correcta:', pairs:[ {t:'Empatizar', d:'Conocer qué siente y vive el usuario internamente'}, {t:'Definir', d:'Identificar el problema principal a resolver'}, {t:'Testear', d:'Probar la solución con usuarios reales'}, {t:'Prototipar', d:'Dar forma física o visual a la idea'} ], fb: 'Objetivos de las fases mapeados con éxito.'},
+
+  // CANVAS & PROPUESTA DE VALOR (10)
+  {cat:'Canvas', type:'choice', q:'¿Cuál es la función principal del bloque "Propuesta de Valor"?', opts:['Listar detalladamente los costos fijos y variables','Explicar cómo se resuelve un problema y por qué el cliente debe elegirte','Describir los canales logísticos de distribución', 'Definir el logo y los colores de la marca'], ans:1, fb:'Explica tu valor único y por qué eres mejor que la competencia.'},
+  {cat:'Canvas', type:'choice', q:'En el Lienzo de Propuesta de Valor, las frustraciones, obstáculos y riesgos que sufre el cliente antes, durante y después de hacer algo se llaman:', opts:['Alegrías','Dolores','Tareas', 'Expectativas'], ans:1, fb:'Los Dolores son las frustraciones que tu producto debe "aliviar".'},
+  {cat:'Canvas', type:'choice', q:'El bloque que describe "Las vías (directas o indirectas) por las que la propuesta de valor llega físicamente o digitalmente a las manos del cliente" es:', opts:['Segmentos de Clientes','Relaciones con Clientes','Canales', 'Socios Clave'], ans:2, fb:'Canales = Vías de distribución, comunicación y venta.'},
+  {cat:'Canvas', type:'choice', q:'Una empresa ofrece "Atención VIP 24/7 y un ejecutivo de cuenta personal" a sus mejores clientes. ¿En qué bloque del Canvas se anota esto?', opts:['Canales','Actividades Clave','Relaciones con Clientes', 'Estructura de Costos'], ans:2, fb:'El bloque "Relaciones" define cómo interactúas y fidelizas al cliente.'},
+  {cat:'Canvas', type:'choice', q:'El dinero en efectivo, las patentes intelectuales, la marca registrada y la maquinaria pesada son ejemplos directos de:', opts:['Socios Clave','Recursos Clave','Actividades Clave', 'Fuentes de Ingreso'], ans:1, fb:'Los Recursos Clave son los "activos" indispensables que la empresa DEBE TENER.'},
+  {cat:'Canvas', type:'choice', q:'Si una empresa contrata a una agencia de envíos externa (como Correos de Costa Rica) para no comprar camiones propios, está llenando el bloque de:', opts:['Recursos Clave','Relaciones con Clientes','Socios Clave (Alianzas)', 'Actividades Clave'], ans:2, fb:'Los Socios Clave son externos que te ayudan a optimizar el negocio.'},
+  {cat:'Canvas', type:'choice', q:'¿Qué bloque del Canvas responde a la pregunta financiera "¿Qué nos cuesta operar?" (incluyendo costos fijos y variables)?', opts:['Recursos clave','Fuentes de ingresos','Estructura de costos', 'Socios Clave'], ans:2, fb:'La estructura de costos define toda la salida de dinero.'},
+  {cat:'Canvas', type:'choice', q:'VERDADERO O FALSO: Los "Aliviadores de dolor" de tu producto están diseñados para responder directamente a las "Tareas" que el cliente intenta hacer.', opts:['Verdadero', 'Falso'], ans:1, fb:'FALSO. Los aliviadores responden a los "Dolores", no a las Tareas.'},
+  {cat:'Canvas', type:'match', q:'Asocia el bloque del Lienzo Canvas con su pregunta principal:', pairs:[ {t:'Segmentos de Clientes', d:'¿A quién servimos o vendemos?'}, {t:'Canales', d:'¿Cómo llega el valor a las manos del cliente?'}, {t:'Fuentes de Ingresos', d:'¿Por qué valor están dispuestos a pagar y cómo?'}, {t:'Socios Clave', d:'¿Quiénes nos ayudan desde afuera de la empresa?'} ], fb: 'Estructura de modelo de negocio perfectamente alineada.'},
+  {cat:'Canvas', type:'match', q:'Diferencia críticamente entre Actividades, Recursos y Canales:', pairs:[ {t:'Actividades Clave', d:'Las acciones operativas más importantes que DEBES HACER.'}, {t:'Recursos Clave', d:'Los activos físicos, intelectuales o humanos que DEBES TENER.'}, {t:'Canales', d:'Las vías que DEBES USAR para entregar el producto.'} ], fb: 'Distinción perfecta entre el hacer, el tener y el entregar.'},
+
+  // PMV (10)
+  {cat:'PMV', type:'choice', q:'La definición más técnica y correcta de Producto Mínimo Viable (PMV) es:', opts:['La versión final con todas las funciones premium para lanzar al mercado global','Una versión básica para obtener la mayor cantidad de aprendizaje validado con el menor esfuerzo','Un prototipo de cartón que no sirve para nada', 'El producto más barato que ofrece la empresa'], ans:1, fb:'El PMV es una herramienta científica para probar hipótesis de negocio rápido, no es el producto final.'},
+  {cat:'PMV', type:'choice', q:'Estás simulando un servicio de Inteligencia Artificial, pero en realidad eres TÚ respondiendo manualmente a escondidas del usuario. Esta técnica es:', opts:['El PMV Conserje','La Puerta Falsa','El PMV Mago de Oz', 'PMV A Retazos'], ans:2, fb:'Mago de Oz: El usuario cree que el sistema es automático y tecnológico, pero hay un humano detrás de la cortina.'},
+  {cat:'PMV', type:'choice', q:'Armas un servicio de envíos uniendo un Formulario de Google gratuito, un grupo de WhatsApp y un Excel manual para probar si hay demanda real. ¿Qué técnica usaste?', opts:['Mago de Oz','PMV A Retazos (Pieced-together)','Puerta Falsa', 'Conserje'], ans:1, fb:'A retazos:unes herramientas "baratas" que ya existen en vez de programar una app nueva.'},
+  {cat:'PMV', type:'choice', q:'Crear una "Landing Page" (Página Web) súper atractiva con un botón de comprar para medir el interés real, aunque el producto NO exista aún y el botón diga "Próximamente", es:', opts:['A Retazos','Puerta Falsa','Conserje', 'Preventa Premium'], ans:1, fb:'Puerta Falsa: Una fachada para medir la disposición real de pago mediante el conteo de clics.'},
+  {cat:'PMV', type:'choice', q:'¿Cuál es la diferencia más importante entre el PMV "Mago de Oz" y el PMV "Conserje"?', opts:['En Conserje usas tecnología avanzada, en Mago de Oz usas magia literal.','En Conserje el cliente SABE que un humano hace el trabajo manual, en Mago de Oz el cliente cree que es automático.','Ambos son exactamente iguales y se usan como sinónimos.'], ans:1, fb:'En el Conserje das un servicio altamente personalizado "cara a cara"; el Mago de Oz oculta al humano.'},
+  {cat:'PMV', type:'choice', q:'VERDADERO O FALSO: El objetivo principal de un PMV es generar ganancias millonarias en el primer mes de lanzamiento.', opts:['Verdadero', 'Falso'], ans:1, fb:'FALSO. El objetivo principal es VALIDAR EL APRENDIZAJE (saber si la gente lo quiere) sin gastar mucho dinero.'},
+  {cat:'PMV', type:'choice', q:'¿Qué técnica de PMV usarías si quieres probar si la gente está dispuesta a pagar por un curso de cocina, ANTES de gastar dinero grabando los videos?', opts:['Grabar todo en calidad 4K por si acaso','Hacer una Puerta Falsa (Landing Page con botón de compra)','Crear un Mago de Oz','Un PMV Conserje en un restaurante'], ans:1, fb:'La puerta falsa te dirá cuánta gente realmente hace clic en "Pagar" sin haber grabado nada.'},
+  {cat:'PMV', type:'match', q:'Asocia la técnica de validación PMV con su concepto exacto:', pairs:[ {t:'Mago de Oz', d:'Se simula automatización a escondidas del usuario (Humano tras la cortina).'}, {t:'Conserje', d:'Servicio manual altamente personalizado directo y visible al cliente.'}, {t:'A Retazos', d:'Combinar herramientas tecnológicas gratuitas que ya existen.'}, {t:'Puerta Falsa', d:'Fachada web para medir intención de compra real mediante clics.'} ], fb: 'Técnicas de validación perfectamente decodificadas.'},
+  {cat:'PMV', type:'choice', q:'Si fundas una empresa de limpieza de autos y los primeros 10 autos los lavas TÚ MISMO para entender qué quiere el cliente y cuánto paga, estás usando:', opts:['Un PMV A Retazos','Un PMV Conserje','Una Puerta Falsa', 'Un PMV Mago de Oz'], ans:1, fb:'Tú mismo entregas el valor de forma manual y el cliente sabe que eres tú (Conserje).'},
+  {cat:'PMV', type:'choice', q:'El principal riesgo de NO hacer un Producto Mínimo Viable (PMV) es:', opts:['Que el producto sea demasiado barato','Construir durante meses algo que nadie quiere comprar y quebrar','Que la competencia te robe el logo', 'Pagar demasiados impuestos'], ans:1, fb:'Construir a ciegas es el mayor motivo de fracaso en startups.'},
+
+  // NEGOCIACIÓN (10)
+  {cat:'Negociación', type:'choice', q:'Estás comprando un carro usado. El vendedor pide 3 millones, tú ofreces 2. Tras regatear, cierran en 2.5 millones. Lo que él dejó de ganar, tú lo ahorraste. Es un recurso fijo. ¿Qué negociación es?', opts:['Integrativa','Distributiva','Colaborativa', 'Acomodativa'], ans:1, fb:'Distributiva: es como repartir un pastel de tamaño fijo. Regateo puro (Ganar-Perder o Perder-Perder).'},
+  {cat:'Negociación', type:'choice', q:'Dos empresas rivales deciden compartir la misma flotilla de camiones. Ahora ambas "amplían el pastel" y ganan más dinero colaborando mutuamente. ¿Qué negociación es?', opts:['Integrativa','Acomodativa','Competitiva', 'Por imposición'], ans:0, fb:'Integrativa: Crean una nueva solución Ganar-Ganar que antes no existía.'},
+  {cat:'Negociación', type:'choice', q:'Una multinacional te ofrece un contrato para usar su software. O lo firmas tal cual está, o no usas el servicio. No hay opción a diálogo. ¿Qué tipo de negociación es?', opts:['Acomodativa','Competitiva','Por Imposición', 'Distributiva'], ans:2, fb:'Por Imposición: Una parte tiene el poder absoluto y dicta las reglas.'},
+  {cat:'Negociación', type:'choice', q:'¿Cuál es el objetivo principal de la negociación Colaborativa?', opts:['Ganar la mayor cantidad de dinero hoy mismo a toda costa','Construir una relación de confianza a largo plazo compartiendo información','Destruir a la competencia', 'Ceder en absolutamente todo'], ans:1, fb:'Busca mantener una relación sana para futuros negocios, basada en la confianza.'},
+  {cat:'Negociación', type:'choice', q:'VERDADERO O FALSO: En la negociación Acomodativa, una de las partes asume una posición de pérdida temporal (cede terreno) para preservar la relación o ganar entrada al mercado futuro.', opts:['Verdadero', 'Falso'], ans:0, fb:'VERDADERO. Es una estrategia de Perder hoy para Ganar mañana.'},
+  {cat:'Negociación', type:'choice', q:'Un sindicato y una empresa se sientan a discutir. El sindicato usa tácticas firmes y agresivas para imponer su propuesta sin importar si la empresa sufre. ¿Qué estilo están usando?', opts:['Integrativo','Acomodativo','Competitivo', 'Colaborativo'], ans:2, fb:'El estilo Competitivo busca el beneficio propio a expensas de la otra parte (Ganar-Perder duro).'},
+  {cat:'Negociación', type:'match', q:'Asocia el tipo de negociación con su filosofía de resultado esperado:', pairs:[ {t:'Colaborativa', d:'Ganar-Ganar (Prioridad en construir relación a largo plazo).'}, {t:'Competitiva', d:'Ganar-Perder (Tácticas firmes para imponer la propuesta propia).'}, {t:'Distributiva', d:'Reparto de un recurso fijo (Regateo).'}, {t:'Acomodativa', d:'Perder-Ganar (Ceder temporalmente para mantener la relación).'} ], fb: 'Estrategias decodificadas magistralmente.'},
+  {cat:'Negociación', type:'choice', q:'¿Cuál de estos estilos de negociación requiere el mayor nivel de confianza y de compartir información transparente entre las partes?', opts:['Competitiva','Distributiva','Integrativa/Colaborativa', 'Por Imposición'], ans:2, fb:'Para ampliar el pastel (Integrativa), ambas partes deben confesar sus verdaderos intereses.'},
+  {cat:'Negociación', type:'choice', q:'En una negociación distributiva, las partes están peleando principalmente por:', opts:['Mejorar el ambiente laboral','Un único valor o recurso limitado (como el precio o el salario)','Innovar en un nuevo producto', 'Compartir patentes tecnológicas'], ans:1, fb:'Se pelea por dividir un valor que ya está sobre la mesa, no por crear uno nuevo.'},
+  {cat:'Negociación', type:'choice', q:'Si una startup decide venderle sus productos casi al costo a un supermercado gigante solo para lograr que los pongan en la vitrina y ser conocidos, está aplicando una estrategia:', opts:['Competitiva agresiva','Acomodativa','Por Imposición', 'Distributiva pura'], ans:1, fb:'Se están acomodando (perdiendo margen hoy) para ganar la relación y visibilidad mañana.'},
+
+  // PUNTO DE EQUILIBRIO (10 - Mitad Teoría, Mitad Cálculos Letales)
+  {cat:'Punto de Equilibrio', type:'choice', q:'VERDADERO O FALSO: El Punto de Equilibrio es el momento exacto donde la empresa genera sus mayores riquezas y ganancias del año.', opts:['Verdadero', 'Falso'], ans:1, fb:'FALSO. Es el punto donde NO se gana ni se pierde (Ingresos totales = Costos totales). Las ganancias empiezan a partir de la siguiente venta.'},
+  {cat:'Punto de Equilibrio', type:'choice', q:'¿Cuál de las siguientes opciones es un ejemplo clásico de COSTO FIJO?', opts:['Materia Prima para los productos','El pago del Alquiler del local','Comisiones del 5% pagadas a los vendedores', 'Los empaques de cartón para envío'], ans:1, fb:'El alquiler se paga íntegro a fin de mes, vendas un millón o no vendas nada.'},
+  {cat:'Punto de Equilibrio', type:'choice', q:'¿Cuál de las siguientes opciones es un ejemplo clásico de COSTO VARIABLE?', opts:['Salario base del Gerente General','Póliza de seguro contra incendios anual','La compra de harina para una pizzería', 'Permiso de sanidad municipal'], ans:2, fb:'Si produces 100 pizzas compras cierta harina; si produces 1000, compras 10 veces más. Varía con la producción.'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'CÁLCULO RÁPIDO: Precio de Venta (P): ₡1,200. Costo Variable (CV): ₡450. Calcula el Margen de Contribución Unitario.', ans:'750', fb:'Fórmula: P - CV (1200 - 450 = 750)'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'CÁLCULO RÁPIDO: Costos Fijos (CF): ₡480,000. Margen de Contribución: ₡600. Calcula el Punto de Equilibrio en Unidades físicas.', ans:'800', fb:'Fórmula: CF ÷ Margen (480000 ÷ 600 = 800)'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'LA REGLA DE ORO: Si al dividir en la calculadora tu Punto de Equilibrio da exactamente 142.1 unidades, ¿Cuántas camisetas físicas debes vender en la vida real para no perder dinero?', ans:'143', fb:'Regla absoluta: Siempre se redondea hacia el entero superior. Con 142 seguirías en pérdida técnica.'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'CÁLCULO: Precio de Venta: ₡5,000. Costo Variable: ₡3,000. ¿Cuál es tu Margen de Contribución?', ans:'2000', fb:'Fórmula: P - CV (5000 - 3000 = 2000)'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'CÁLCULO: Tus Costos Fijos Totales son ₡1,200,000 al mes. Tu Margen de Contribución por unidad vendida es ₡4,000. ¿Cuántas unidades debes vender para alcanzar el Punto de Equilibrio?', ans:'300', fb:'Fórmula: CF ÷ Margen (1,200,000 ÷ 4,000 = 300)'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'(RETO DE CONVERSIÓN) Tu Punto de Equilibrio es de 300 unidades físicas. El Precio de Venta de cada unidad en tu tienda es de ₡1,500. ¿Cuál es tu Punto de Equilibrio expresado en dinero (COLONES)?', ans:'450000', fb:'Fórmula: Unidades PE × Precio Venta (300 × 1500 = 450,000)'},
+  {cat:'Punto de Equilibrio', type:'calc', q:'(RETO MAESTRO) Tus Costos Fijos son ₡45,000. Vendes tu producto a ₡500, y hacer cada uno te cuesta ₡200 en materiales. Primero saca el Margen, luego calcula las Unidades del PE.', ans:'150', fb:'Paso 1: Margen = 500 - 200 = 300. Paso 2: PE = 45000 ÷ 300 = 150 unidades.'}
+];
+
+function shuffle(arr){ const b=[...arr]; for(let i=b.length-1; i>0; i--){ const j=Math.floor(Math.random()*(i+1)); [b[i],b[j]]=[b[j],b[i]]; } return b; }
+
+// ============================================================
+//  ESTADO GLOBAL (SISTEMA EN MEMORIA SIN LOCALSTORAGE)
+// ============================================================
+let G = { 
+  screen: 'select_mode', mode: 'multi', teams: [], scores: [], turn: 0, qs: [], qIndex: 0, 
+  lastRenderedQ: -1, answered: false, picked: -1, calcVal: '', timer: 0, initialTimer: 30,
+  hiddenOpts: [], iaTimeout: null, currentEvent: null, activeWager: 0, 
+  matchData: { terms: [], descs: [], tentativePairs: [], selectedTermId: null }
+};
+let timerInt = null;
+const app = document.getElementById('app');
+
+// ============================================================
+//  RENDERIZADO PRINCIPAL
+// ============================================================
+function render() {
+  if (G.screen === 'select_mode') renderModeSelect();
+  else if (G.screen === 'setup_multi') renderMultiSetup();
+  else if (G.screen === 'instructions') renderInstructions();
+  else if (G.screen === 'game') { renderGame(); if(!G.answered && G.timer === 0 && !document.querySelector('.modal-overlay')) startTurn(); }
+  else if (G.screen === 'winner') renderWinner();
+}
+
+function renderToolbarHTML() {
+  return `
+    <div class="toolbar">
+      <button class="tool-btn ${musicOn?'active':''}" onclick="toggleMusic()">🎵 Música</button>
+      <button class="tool-btn ${sfxOn?'active':''}" onclick="sfxOn=!sfxOn;renderToolbarOnly();sfxClick()">🔊 SFX</button>
+      ${G.screen==='game' ? `<button class="tool-btn" onclick="abortGame()" style="color:var(--neon-pink);border-color:var(--neon-pink)">■ Salir</button>` : ''}
+    </div>
+  `;
+}
+function renderToolbarOnly() { const t = document.getElementById('toolbar-wrapper'); if(t) t.innerHTML = renderToolbarHTML(); }
+
+function abortGame() { clearTimeout(G.iaTimeout); clearInterval(timerInt); document.body.classList.remove('danger-mode'); hyperSpeed=false; G.screen = 'select_mode'; render(); }
+
+// --- SELECTOR DE MODOS ---
+function renderModeSelect() {
+  let h = `<div id="toolbar-wrapper">${renderToolbarHTML()}</div>` + `
+    <div class="landing">
+      <h1>CARRERA ESPACIAL<br><span style="color:#fff;font-size:0.5em;letter-spacing:5px">EMPRENDIMIENTO E INNOVACIÓN</span></h1>
+      <p class="sub">Simulador Interactivo • 50 Preguntas Únicas</p>
+      
+      <div class="glass-panel" style="width:100%; max-width:800px;">
+        <h3>NUEVA MISIÓN (META: ${GOAL} PTS)</h3>
+        <div class="mode-select" style="margin-top:15px">
+          <div class="card-mode" onclick="sfxClick(); setMode('solo')">
+            <h3>👤 INDIVIDUAL</h3>
+            <p>Juega contra el implacable Comandante IA.</p>
+          </div>
+          <div class="card-mode" onclick="sfxClick(); setMode('multi')">
+            <h3>👥 MULTIJUGADOR</h3>
+            <p>De 2 a 4 equipos. Batalla en el aula.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  app.innerHTML = h;
+}
+
+function setMode(m) {
+  G.mode = m; 
+  if(m === 'solo') {
+    G.teams = [
+      { name: 'Humano', ship: '🚀', color: COLORS[0], lifelines: { fifty: true, time: true, skip: true, wager: true, sabotage: true }, isIA: false, isSabotaged: false },
+      { name: 'Comandante IA', ship: '🛸', color: COLORS[1], lifelines: { fifty: false, time: false, skip: false, wager: false, sabotage: false }, isIA: true, isSabotaged: false }
+    ];
+    G.screen = 'instructions';
+  } else { G.teams = []; G.screen = 'setup_multi'; }
+  render();
+}
+
+function renderMultiSetup() {
+  let h = `<div id="toolbar-wrapper">${renderToolbarHTML()}</div>` + `
+    <div class="landing">
+      <h1>CONFIGURAR FLOTILLAS</h1>
+      <div class="glass-panel" style="max-width:600px; width:100%">
+        <div class="team-count">
+          ${[2,3,4].map(n => `<button class="${G.teams.length===n?'sel':''}" onclick="sfxClick();initTeams(${n})">${n}</button>`).join('')}
+        </div>
+        ${G.teams.length > 0 ? `
+          <div style="display:flex; flex-direction:column; gap:15px; margin-bottom:20px; text-align:left;">
+            ${G.teams.map((t,i) => `
+              <div class="t-row">
+                <span style="font-size:2rem">${SHIPS[i]}</span>
+                <input value="${t.name}" placeholder="Nombre Equipo ${i+1}" oninput="G.teams[${i}].name=this.value||'Equipo ${i+1}'">
+              </div>
+            `).join('')}
+          </div>
+          <button class="btn btn-primary w-100" onclick="sfxClick();G.screen='instructions';render()">🚀 CONTINUAR</button>
+        ` : ''}
+      </div>
+    </div>
+  `;
+  app.innerHTML = h;
+}
+
+function initTeams(n) {
+  G.teams = Array.from({length:n}, (_,i) => ({ 
+    name: `Equipo ${i+1}`, ship: SHIPS[i], color: COLORS[i],
+    lifelines: { fifty: true, time: true, skip: true, wager: true, sabotage: true }, isIA: false, isSabotaged: false
+  }));
+  render();
+}
+
+function renderInstructions() {
+  let h = `<div id="toolbar-wrapper">${renderToolbarHTML()}</div>` + `
+    <div class="landing">
+      <div class="glass-panel instructions-box">
+        <h2>📜 REGLAS DEL SIMULADOR DE NEGOCIOS</h2>
+        <ul class="inst-list">
+          <li><span class="icon">⏱️</span> <div><b>Límite Estricto:</b> Tienes máximo 30 segundos. Piensa rápido.</div></li>
+          <li><span class="icon">⚡</span> <div><b>Velocidad:</b> Acierto normal = 2pts. Responde en menos de 15s para <b>+1pt Bono de Velocidad</b>.</div></li>
+          <li><span class="icon">🎲</span> <div><b>Eventos Aleatorios (40% de riesgo):</b> En cualquier turno puedes sufrir un evento:<br>
+          ⚠️ <b style="color:var(--neon-orange)">ASTEROIDES:</b> Ganas el doble, pero si fallas te resta <b>-4 Puntos</b>.<br>
+          ⚡ <b style="color:#ff00ff">AGUJERO DE GUSANO:</b> Reloj a solo 15 segundos.<br>
+          🚫 <b style="color:var(--neon-pink)">INTERFERENCIA:</b> No puedes usar comodines.</div></li>
+          <li><span class="icon">🚀</span> <div><b>HIPERIMPULSOR (Apuesta PvP):</b> Antes de contestar, apuesta un <b>máximo de 3 Pts</b>. Si aciertas ganas la apuesta, si fallas pierdes lo apostado.</div></li>
+          <li><span class="icon">💣</span> <div><b>RAYO PEM (Sabotaje PvP):</b> Dispara a un equipo rival. Su pantalla sufrirá un Glitch severo por 8 segundos.</div></li>
+          <li><span class="icon">🏆</span> <div><b>Meta: El primero en llegar a ${GOAL} Puntos GANA.</b> Hay 50 preguntas en el sistema, no se repetirán.</div></li>
+        </ul>
+        <div style="text-align:center"><button class="btn btn-primary" onclick="sfxClick();startGame()">🚀 ¡DESPEGAR!</button></div>
+      </div>
+    </div>
+  `;
+  app.innerHTML = h;
+}
+
+function startGame() {
+  initAudio(); G.scores = G.teams.map(()=>0); G.qs = shuffle(QUESTIONS); // Revolver las 50 preguntas
+  G.qIndex = 0; G.turn = 0; G.lastRenderedQ = -1; G.hiddenOpts = []; G.currentEvent = null; G.activeWager = 0;
+  document.body.classList.remove('danger-mode'); hyperSpeed = false; confActive = false;
+  G.screen = 'game';
+  if(musicOn && !musicInterval) toggleMusic();
+  render();
+}
+
+// --- PANTALLA JUEGO ---
+function renderGame() {
+  if (!document.getElementById('game-layout')) {
+    app.innerHTML = `<div id="game-layout" style="width:100%;"><div id="toolbar-wrapper"></div><div class="glass-panel track-container" id="track-container"></div><div class="glass-panel hud" id="hud-container"></div><div id="event-container"></div><div class="glass-panel q-container" id="q-container"></div></div><div id="modal-container"></div>`;
+    let trackHTML = '';
+    G.teams.forEach((team, i) => { trackHTML += `<div class="lane" id="lane-${i}"><div class="lane-name" style="color:${team.color}">${team.name}</div><div class="track-line"><div class="track-fill" id="fill-${i}" style="width:0%; background:${team.color}; box-shadow: 0 0 15px ${team.color}"></div><div class="ship-avatar" id="ship-${i}" style="left: calc(0% - 20px)">${team.ship}</div></div><div class="score-badge" id="score-${i}" style="color:${team.color}; border-color:${team.color}">0</div></div>`; });
+    document.getElementById('track-container').innerHTML = trackHTML;
+  }
+
+  renderToolbarOnly();
+
+  // Track Update
+  G.teams.forEach((team, i) => {
+    const progress = Math.min((G.scores[i] / GOAL) * 100, 100);
+    document.getElementById(`lane-${i}`).className = `lane ${G.turn === i ? 'active' : ''}`;
+    document.getElementById(`fill-${i}`).style.width = `${progress}%`;
+    document.getElementById(`ship-${i}`).style.left = `calc(${progress}% - 20px)`;
+    document.getElementById(`score-${i}`).innerText = G.scores[i];
+  });
+
+  const t = G.teams[G.turn];
+  const isJammed = G.currentEvent === 'JAMMED';
+  
+  let llHtml = '';
+  if(!t.isIA) {
+    llHtml += `<button class="ll-btn ${t.lifelines.fifty ? (isJammed?'jammed':'') : 'used'}" onclick="useLifeline('fifty')">50/50</button>`;
+    llHtml += `<button class="ll-btn ${t.lifelines.time ? (isJammed?'jammed':'') : 'used'}" onclick="useLifeline('time')">+15s</button>`;
+    llHtml += `<button class="ll-btn ${t.lifelines.skip ? (isJammed?'jammed':'') : 'used'}" onclick="useLifeline('skip')">↻</button>`;
+    if(G.activeWager === 0 && !G.answered) { llHtml += `<button class="ll-btn btn-pro" style="color:black; padding:8px 15px; margin-left:10px; font-size:0.8rem; background:var(--neon-orange); border:none;" onclick="triggerWagerUI()" ${t.lifelines.wager&&!isJammed?'':'disabled'}>🚀 APUESTA</button>`; }
+    llHtml += `<button class="ll-btn btn-pro" style="color:black; padding:8px 15px; margin-left:10px; font-size:0.8rem; background:var(--neon-pink); border:none;" onclick="triggerSabotageUI()" ${t.lifelines.sabotage&&!isJammed?'':'disabled'}>💣 PEM</button>`;
+  }
+
+  document.getElementById('hud-container').innerHTML = `<div class="hud-turn"><span style="font-size:2rem; filter:drop-shadow(0 0 10px ${t.color})">${t.ship}</span><div><div class="label" style="color:var(--text-muted);font-size:0.8rem">Turno de</div><div class="value" style="color:${t.color};font-size:1.4rem;font-weight:bold">${t.name}</div></div></div><div class="lifelines">${llHtml}</div><div class="hud-timer ${G.timer<=5 && !G.answered ? 'danger':''}" id="main-timer">00:${G.timer.toString().padStart(2,'0')}</div>`;
+
+  let evHtml = '';
+  if (G.currentEvent === 'RISK') evHtml = `<div style="text-align:center; padding:10px; background:rgba(255,69,0,0.2); color:var(--neon-orange); font-weight:bold; margin-bottom:15px; border-radius:10px; border:2px solid var(--neon-orange); animation: pulseEvent 1s infinite">⚠️ EVENTO RIESGO: Puntos x2 | Fallo = -4 Pts</div>`;
+  else if (G.currentEvent === 'SPEED') evHtml = `<div style="text-align:center; padding:10px; background:rgba(255,0,255,0.2); color:#ff00ff; font-weight:bold; margin-bottom:15px; border-radius:10px; border:2px solid #ff00ff">⚡ EVENTO VELOCIDAD: 15 segundos max</div>`;
+  else if (G.currentEvent === 'JAMMED') evHtml = `<div style="text-align:center; padding:10px; background:rgba(255,0,127,0.2); color:var(--neon-pink); font-weight:bold; margin-bottom:15px; border-radius:10px; border:2px solid var(--neon-pink)">🚫 EVENTO INTERFERENCIA: Sin Comodines</div>`;
+  if (G.activeWager > 0) evHtml += `<div style="text-align:center; padding:10px; background:rgba(0,240,255,0.2); color:var(--neon-blue); font-weight:bold; margin-bottom:15px; border-radius:10px; border:2px solid var(--neon-blue)">🚀 HIPERIMPULSOR: Apuesta de ${G.activeWager} Puntos en Riesgo</div>`;
+  document.getElementById('event-container').innerHTML = evHtml;
+
+  if (G.currentEvent === 'RISK') document.body.classList.add('danger-mode'); else document.body.classList.remove('danger-mode');
+
+  const qContainer = document.getElementById('q-container');
+  const q = G.qs[G.qIndex];
+  let isGlitching = t.isSabotaged && G.timer > (G.initialTimer - 8) && !G.answered;
+
+  if (G.lastRenderedQ !== G.qIndex) {
+    qContainer.className = 'glass-panel q-container fade-in-quick'; void qContainer.offsetWidth; G.lastRenderedQ = G.qIndex;
+    if(q.type === 'match') G.matchData = { terms: q.pairs.map((p, i) => ({ id: i, text: p.t })), descs: shuffle(q.pairs.map((p, i) => ({ id: i, text: p.d }))), tentativePairs: [], selectedTermId: null };
+    if(t.isSabotaged) sfxGlitch();
+  }
+
+  if (isGlitching) qContainer.classList.add('glitched'); else qContainer.classList.remove('glitched');
+
+  let qHTML = `<div style="display:flex; justify-content:space-between; margin-bottom:20px"><span style="background:${CAT_COLORS[q.cat]}44; color:${CAT_COLORS[q.cat]}; padding:5px 15px; border-radius:20px; font-weight:bold">${q.cat}</span><span style="color:var(--text-muted)">Meta: ${GOAL} pts (P. ${G.qIndex+1}/${G.qs.length})</span></div><h2 style="font-size:1.4rem; margin-bottom:25px">${q.q}</h2>`;
+
+  if (q.type === 'choice') {
+    qHTML += `<div style="display:grid; gap:15px">`;
+    q.opts.forEach((opt, i) => {
+      let cls = 'btn';
+      if(G.hiddenOpts.includes(i)) cls += ' hidden'; 
+      if(G.answered) {
+        cls += ' locked';
+        if(i === q.ans) { cls += ' btn-success'; }
+        else if(G.picked === i) { cls += ' btn-primary'; }
+      }
+      qHTML += `<button class="${cls}" style="text-align:left; font-size:1rem; text-transform:none; padding:15px; ${G.answered?'opacity:0.7':''}" onclick="pickAnswer(${i})">${opt}</button>`;
+    });
+    qHTML += `</div>`;
+  } 
+  else if (q.type === 'calc') {
+    qHTML += `<div class="terminal-box"><div class="calc-input-wrapper"><span>></span><input type="number" class="calc-input" id="terminal-input" placeholder="INGRESA VALOR..." value="${G.calcVal}" oninput="G.calcVal=this.value" ${G.answered ? 'disabled' : ''} onkeydown="if(event.key==='Enter')checkMath()"></div>${!G.answered ? `<button class="btn btn-primary w-100" onclick="checkMath()">EJECUTAR CÁLCULO</button>` : ''}</div>`;
+  } 
+  else if (q.type === 'match') {
+    qHTML += `<div style="color:var(--neon-yellow); text-align:center; margin-bottom:15px; font-weight:bold">Conecta conceptos y definiciones. (Error resta tiempo)</div><div id="match-ui-container"></div>`;
+  }
+
+  if (t.isIA && !G.answered) { qHTML += `<div style="position:absolute; inset:0; background:rgba(0,0,0,0.8); display:flex; align-items:center; justify-content:center; flex-direction:column; border-radius:24px; z-index:50;"><h2 style="color:var(--neon-blue); animation:pulseEvent 1s infinite">🤖 IA CALCULANDO...</h2></div>`; }
+
+  if (G.answered) {
+    let isCorrect = false;
+    if(q.type === 'choice') isCorrect = (G.picked === q.ans);
+    else if(q.type === 'calc') isCorrect = (G.calcVal === q.ans);
+    else if(q.type === 'match') isCorrect = G.matchData.tentativePairs.length === q.pairs.length;
+    if (t.isIA && G.picked === q.ans) isCorrect = true;
+
+    qHTML += `<div class="feedback-box ${isCorrect?'success':'error'}" style="margin-top:20px; padding:20px; border-radius:15px; text-align:center; background: ${isCorrect?'rgba(0,255,102,0.1)':'rgba(255,0,127,0.1)'}"><h3 style="color:${isCorrect?'var(--neon-green)':'var(--neon-pink)'}">${isCorrect ? '✓ ACCESO CONCEDIDO' : '✗ ERROR DEL SISTEMA'}</h3><p style="margin-top:10px">${t.isIA ? 'IA finalizó turno.' : q.fb}</p></div><div style="text-align:right; margin-top:20px"><button class="btn btn-primary" onclick="sfxClick();nextTurn()">SIGUIENTE TURNO ➔</button></div>`;
+  }
+
+  qContainer.innerHTML = qHTML;
+  if (!t.isIA && q.type === 'calc' && !G.answered && !isGlitching) { setTimeout(()=> { const input = document.getElementById('terminal-input'); if (input) input.focus(); }, 100); } 
+  else if (!t.isIA && q.type === 'match') { renderMatchUI(); }
+}
+
+// --- MODALS PVP (NERFEADO A MAX 3 PUNTOS) ---
+function triggerWagerUI() {
+  if(G.answered || G.currentEvent === 'JAMMED' || !G.teams[G.turn].lifelines.wager) return;
+  const maxWager = Math.min(3, G.scores[G.turn]); // ¡NERF APLICADO! MAXIMO 3 PUNTOS
+  if(maxWager <= 0) { alert("¡Necesitas al menos 1 punto para activar el Hiperimpulsor!"); return; }
+  clearInterval(timerInt); sfxPowerup();
+  
+  const m = document.getElementById('modal-container');
+  m.innerHTML = `<div class="modal-overlay"><div class="glass-panel" style="border-color:var(--neon-orange); text-align:center; max-width:400px"><h2 style="color:var(--neon-orange); margin-bottom:15px">🚀 HIPERIMPULSOR</h2><p style="margin-bottom:20px; color:var(--text-muted)">Apuesta a ciegas antes de responder. Acierta y gana el doble. Falla y piérdelos. (Máximo de seguridad: 3 puntos)</p><div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">${Array.from({length: maxWager}, (_, i) => `<button class="btn" style="border-color:var(--neon-orange); color:var(--neon-orange)" onclick="confirmWager(${i+1})">Apostar ${i+1} Pts</button>`).join('')}</div><button class="btn w-100" onclick="cancelModal()">Abortar Activación</button></div></div>`;
+}
+function confirmWager(pts) { G.activeWager = pts; G.teams[G.turn].lifelines.wager = false; hyperSpeed = true; document.getElementById('modal-container').innerHTML = ''; sfxHyper(); resumeTimerLoop(); render(); }
+
+function triggerSabotageUI() {
+  if(G.answered || G.currentEvent === 'JAMMED' || !G.teams[G.turn].lifelines.sabotage) return;
+  clearInterval(timerInt); sfxPowerup();
+  const m = document.getElementById('modal-container');
+  let targets = G.teams.map((t,i) => i !== G.turn && !t.isSabotaged && !t.isIA ? `<button class="btn" onclick="confirmSabotage(${i})" style="color:${t.color}; border-color:${t.color}">${t.ship} ${t.name}</button>` : '').join('');
+  if(!targets) targets = "<p>No hay objetivos válidos para sabotear en este momento.</p>";
+  m.innerHTML = `<div class="modal-overlay"><div class="glass-panel" style="border-color:var(--neon-pink); text-align:center; max-width:400px"><h2 style="color:var(--neon-pink); margin-bottom:15px">💣 RAYO PEM</h2><p style="margin-bottom:20px">Selecciona rival para sabotear su pantalla con un Glitch visual durante los primeros 8 segundos de su turno.</p><div style="display:flex; flex-direction:column; gap:10px; margin-bottom:20px">${targets}</div><button class="btn w-100" onclick="cancelModal()">Cancelar</button></div></div>`;
+}
+function confirmSabotage(idx) { G.teams[idx].isSabotaged = true; G.teams[G.turn].lifelines.sabotage = false; document.getElementById('modal-container').innerHTML = ''; sfxGlitch(); resumeTimerLoop(); render(); }
+function cancelModal() { document.getElementById('modal-container').innerHTML = ''; resumeTimerLoop(); render(); }
+
+// --- LIFELINES COMUNES ---
+function useLifeline(type) {
+  if(G.answered || G.teams[G.turn].isIA || G.currentEvent === 'JAMMED' || !G.teams[G.turn].lifelines[type]) return;
+  const q = G.qs[G.qIndex];
+  if (type === 'fifty') {
+    if(q.type !== 'choice') { alert("El comodín 50/50 solo sirve en selección múltiple."); return; }
+    sfxPowerup(); let w = []; q.opts.forEach((o, i) => { if(i !== q.ans) w.push(i); });
+    w = shuffle(w); G.hiddenOpts = w.slice(0, Math.max(1, w.length - 1));
+    G.teams[G.turn].lifelines.fifty = false; render(); 
+  } 
+  else if (type === 'time') {
+    sfxPowerup(); G.timer += 15; G.teams[G.turn].lifelines.time = false;
+    const t = document.getElementById('main-timer'); if(t) { t.innerText = `00:${G.timer.toString().padStart(2,'0')}`; t.style.color = 'var(--neon-green)'; setTimeout(()=> t.style.color = '', 500); }
+    render();
+  }
+  else if (type === 'skip') {
+    sfxPowerup(); G.teams[G.turn].lifelines.skip = false; G.qIndex++;
+    if(G.qIndex >= G.qs.length) { G.qs = shuffle(QUESTIONS); G.qIndex = 0; }
+    G.lastRenderedQ = -1; G.hiddenOpts = []; startTurn(); render();
+  }
+}
+
+// --- MATCH UI ---
+function renderMatchUI() {
+  const c = document.getElementById('match-ui-container'); if(!c) return;
+  const md = G.matchData; let h = `<div style="display:flex; gap:20px; flex-direction:column; width:100%"><div style="display:flex; gap:20px; width:100%"><div style="flex:1; display:flex; flex-direction:column; gap:10px;">`;
+  
+  md.terms.forEach(t => {
+    const pair = md.tentativePairs.find(p => p.termId === t.id); const isSel = md.selectedTermId === t.id;
+    let cls = 'btn'; let st = 'padding:12px; font-size:0.9rem; text-transform:none; text-align:left; background:rgba(0,0,0,0.5);';
+    if(pair) { st += `border-color:${MATCH_COLORS[pair.colorIndex]}; color:${MATCH_COLORS[pair.colorIndex]}; box-shadow:inset 0 0 10px ${MATCH_COLORS[pair.colorIndex]}44;`; }
+    if(isSel) { st += `border-color:var(--neon-blue); box-shadow:0 0 15px rgba(0,240,255,0.4); transform:scale(1.02);`; }
+    if(G.answered && !pair) st += 'opacity:0.5; pointer-events:none;';
+    h += `<button class="${cls}" style="${st}" onclick="clickTerm(${t.id})">${t.text}</button>`;
+  });
+  h += `</div><div style="flex:1; display:flex; flex-direction:column; gap:10px;">`;
+  
+  md.descs.forEach(d => {
+    const pair = md.tentativePairs.find(p => p.descId === d.id);
+    let cls = 'btn'; let st = 'padding:12px; font-size:0.9rem; text-transform:none; text-align:left; background:rgba(0,0,0,0.5);';
+    if(pair) { st += `border-color:${MATCH_COLORS[pair.colorIndex]}; color:${MATCH_COLORS[pair.colorIndex]}; box-shadow:inset 0 0 10px ${MATCH_COLORS[pair.colorIndex]}44;`; }
+    if(G.answered && !pair) st += 'opacity:0.5; pointer-events:none;';
+    h += `<button class="${cls}" style="${st}" onclick="clickDesc(${d.id})">${d.text}</button>`;
+  });
+  h += `</div></div></div>`;
+
+  if (!G.answered && md.tentativePairs.length === G.qs[G.qIndex].pairs.length) { h += `<div style="text-align:center; margin-top:20px;"><button class="btn btn-primary" onclick="verifyMatchConnections()">🔍 COMPROBAR</button></div>`; }
+  c.innerHTML = h;
+}
+
+function clickTerm(id) {
+  if(G.answered || G.teams[G.turn].isIA) return; sfxClick();
+  const md = G.matchData; const ex = md.tentativePairs.findIndex(p => p.termId === id);
+  if (ex !== -1) { md.tentativePairs.splice(ex, 1); md.selectedTermId = null; renderMatchUI(); return; }
+  md.selectedTermId = id; renderMatchUI();
+}
+
+function clickDesc(descId) {
+  if(G.answered || G.teams[G.turn].isIA) return; sfxClick();
+  const md = G.matchData; const ex = md.tentativePairs.findIndex(p => p.descId === descId);
+  if (ex !== -1) { md.tentativePairs.splice(ex, 1); renderMatchUI(); return; }
+  if (md.selectedTermId !== null) {
+    let colorIndex = md.tentativePairs.length % MATCH_COLORS.length;
+    md.tentativePairs.push({ termId: md.selectedTermId, descId: descId, colorIndex: colorIndex });
+    md.selectedTermId = null; renderMatchUI();
+  }
+}
+
+function verifyMatchConnections() {
+  if (G.answered || G.teams[G.turn].isIA) return;
+  const md = G.matchData; let isAllCorrect = true;
+  md.tentativePairs.forEach(p => { if (p.termId !== p.descId) isAllCorrect = false; });
+
+  if (isAllCorrect) {
+    clearInterval(timerInt); G.answered = true; processCorrect(); render(); checkGoal();
+  } else {
+    sfxWrong(); triggerShake();
+    if(G.currentEvent === 'RISK') { applyPenalty(); G.answered = true; render(); checkGoal(); } 
+    else {
+      G.timer = Math.max(1, G.timer - 5); md.tentativePairs = []; md.selectedTermId = null; renderMatchUI();
+      const tDOM = document.getElementById('main-timer');
+      if(tDOM) { tDOM.innerText = `00:${G.timer.toString().padStart(2,'0')}`; tDOM.style.color = 'var(--neon-pink)'; setTimeout(()=> tDOM.style.color = '', 500); }
+    }
+  }
+}
+
+function triggerShake() { const el = document.getElementById('q-container'); if(!el) return; el.classList.remove('shake'); void el.offsetWidth; el.classList.add('shake'); }
+
+// --- CORE GAME LOOP & TIMER ---
+function applyPenalty() {
+  let p = 0; 
+  if(G.currentEvent === 'RISK') p += 4; // EVENTO RIESGO AHORA QUITA 4 PTS (MÁS LETAL)
+  if(G.activeWager > 0) p += G.activeWager;
+  if(p > 0) { G.scores[G.turn] = Math.max(0, G.scores[G.turn] - p); animateFloatPoints(-p, '(Fallo de Sistema)', 'var(--neon-pink)'); }
+}
+
+function resumeTimerLoop() {
+  clearInterval(timerInt);
+  const t = G.teams[G.turn];
+  timerInt = setInterval(() => {
+    G.timer--;
+    if(G.timer <= 5 && G.timer > 0) sfxTick();
+    if(t.isSabotaged && G.timer === (G.initialTimer - 8)) render(); // Quita el glitch
+    if(G.timer <= 0) { clearInterval(timerInt); handleTimeout(); return; }
+    
+    const tDOM = document.getElementById('main-timer');
+    if(tDOM) {
+      tDOM.innerText = `00:${G.timer.toString().padStart(2,'0')}`;
+      const isFast = G.timer >= (G.initialTimer * 0.5);
+      if(G.timer <= 5 && !G.answered) { tDOM.classList.add('danger'); tDOM.classList.remove('bonus'); } 
+      else if (isFast && !G.answered && !t.isIA) { tDOM.classList.add('bonus'); tDOM.classList.remove('danger'); } 
+      else { tDOM.classList.remove('danger', 'bonus'); }
+    }
+  }, 1000);
+}
+
+function startTurn() {
+  G.initialTimer = G.currentEvent === 'SPEED' ? 15 : 30; G.timer = G.initialTimer;
+  clearTimeout(G.iaTimeout);
+  resumeTimerLoop(); 
+  const t = G.teams[G.turn];
+  
+  if (t.isIA) {
+    let delay = Math.floor(Math.random() * 3000) + 3000;
+    if(G.currentEvent === 'SPEED') delay = 2000; 
+    if(t.isSabotaged) delay += 4000; 
+    
+    G.iaTimeout = setTimeout(() => {
+      if(G.answered) return;
+      clearInterval(timerInt); G.answered = true;
+      if(Math.random() < 0.60) { // IA Hardcore pero puede fallar
+        const q = G.qs[G.qIndex]; G.picked = q.ans; 
+        if(q.type==='calc') G.calcVal = q.ans;
+        processCorrectIA(); 
+      } else { sfxWrong(); triggerShake(); applyPenalty(); }
+      render(); checkGoal();
+    }, delay);
+  }
+}
+
+function handleTimeout() { G.answered = true; sfxWrong(); triggerShake(); applyPenalty(); render(); }
+
+function processCorrect() {
+  const isFast = G.timer >= (G.initialTimer * 0.5); 
+  const basePts = G.currentEvent === 'RISK' ? 4 : 2;
+  const speedPts = isFast ? (G.currentEvent === 'RISK' ? 2 : 1) : 0;
+  const ptsEarned = basePts + speedPts + G.activeWager;
+  
+  G.scores[G.turn] += ptsEarned; sfxCorrect();
+  let txt = isFast ? 'Bono Vel.' : ''; if(G.activeWager > 0) txt += ` +${G.activeWager} Apuesta`;
+  animateFloatPoints(ptsEarned, txt);
+}
+
+function processCorrectIA() {
+  const ptsEarned = G.currentEvent === 'RISK' ? 4 : 2; 
+  G.scores[G.turn] += ptsEarned; sfxCorrect(); 
+  animateFloatPoints(ptsEarned, '(Cálculo IA)');
+}
+
+function animateFloatPoints(pts, text, color = null) {
+  const lane = document.getElementById(`lane-${G.turn}`);
+  if (lane) {
+    const f = document.createElement('div'); f.className = 'floating-point'; f.style.color = color || G.teams[G.turn].color; 
+    f.innerHTML = `${pts > 0 ? '+':''}${pts} <span style="font-size:0.4em; display:block">${text}</span>`;
+    f.style.left = '50%'; f.style.top = '-10px'; lane.appendChild(f);
+    setTimeout(()=> f.remove(), 1800);
+  }
+}
+
+function pickAnswer(i) {
+  if(G.answered || G.teams[G.turn].isIA) return;
+  clearInterval(timerInt); G.answered = true; G.picked = i;
+  if(i === G.qs[G.qIndex].ans) processCorrect(); else { sfxWrong(); triggerShake(); applyPenalty(); }
+  render(); checkGoal();
+}
+
+function checkMath() {
+  if(G.answered || G.teams[G.turn].isIA || G.calcVal.trim()==='') return;
+  clearInterval(timerInt); G.answered = true;
+  if(G.calcVal.trim() === G.qs[G.qIndex].ans) processCorrect(); else { sfxWrong(); triggerShake(); applyPenalty(); }
+  render(); checkGoal();
+}
+
+function nextTurn() {
+  G.teams[G.turn].isSabotaged = false; hyperSpeed = false; G.activeWager = 0;
+  G.qIndex++; G.turn = (G.turn + 1) % G.teams.length;
+  G.answered = false; G.picked = -1; G.calcVal = ''; G.hiddenOpts = [];
+  
+  // Si se acabaran las 50 preguntas, se barajan de nuevo.
+  if(G.qIndex >= G.qs.length) { G.qs = shuffle(QUESTIONS); G.qIndex = 0; G.lastRenderedQ = -1; }
+  
+  G.currentEvent = null;
+  // Aumentada probabilidad de evento al 40%
+  if (Math.random() < 0.40) { G.currentEvent = EVENT_TYPES[Math.floor(Math.random() * EVENT_TYPES.length)]; sfxPowerup(); }
+  
+  startTurn(); render();
+}
+
+function checkGoal() { if (G.scores[G.turn] >= GOAL) { setTimeout(() => { G.screen = 'winner'; render(); }, 1800); } }
+
+// --- PANTALLA GANADOR ---
+function renderWinner() {
+  clearInterval(timerInt); clearTimeout(G.iaTimeout);
+  if(musicInterval) { clearInterval(musicInterval); musicInterval=null; }
+  sfxWin(); document.body.classList.remove('danger-mode'); hyperSpeed = false;
+  launchConfetti(); 
+  
+  const sorted = G.teams.map((t,i)=>({...t, score: G.scores[i]})).sort((a,b)=>b.score - a.score);
+  
+  let h = `<div id="toolbar-wrapper">${renderToolbarHTML()}</div>` + `
+    <div class="winner-screen" style="position:relative; z-index:999">
+      <div class="trophy">🏆</div>
+      <h2 style="color:var(--text-muted); letter-spacing:3px">MISIÓN HARDCORE COMPLETADA</h2>
+      <div style="font-size:3.5rem; font-weight:900; margin-bottom:10px; text-transform:uppercase; color:${sorted[0].color}; text-shadow: 0 0 20px ${sorted[0].color}">${sorted[0].name} TRIUNFA</div>
+      <div style="display:flex; flex-wrap:wrap; gap:20px; justify-content:center; margin:40px 0; width:100%; max-width:700px;">
+        ${sorted.map((t, i) => `
+          <div class="glass-panel" style="flex:1; min-width:150px; position:relative; overflow:hidden; padding:25px; border-top:4px solid ${t.color}">
+            <div style="font-size:1.5rem; margin-bottom:10px">${['🥇','🥈','🥉','🏅'][i] || '🎖️'} Lugar</div>
+            <div style="font-size:3rem; margin:10px 0; filter:drop-shadow(0 0 10px ${t.color})">${t.ship}</div>
+            <div style="font-size:1.2rem; font-weight:700">${t.name}</div>
+            <div style="font-family:'Space Grotesk'; font-size:2.5rem; font-weight:900; margin-top:10px;">${t.score} PTS</div>
+          </div>
+        `).join('')}
+      </div>
+      <button class="btn btn-primary" onclick="G.screen='select_mode'; confActive=false; render();" style="margin-top:20px">IR A LA BASE (VOLVER)</button>
+    </div>
+  `;
+  app.innerHTML = h;
+}
+
+// Inicializar Aplicación
+render();
+</script>
+</body>
+</html>
