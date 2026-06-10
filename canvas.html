@@ -16,32 +16,57 @@
     --sand: #E8DDD0;
     --muted: #8C7B6B;
     --white: #FEFCFA;
+    --rust-soft: rgba(196,82,42,0.12);
+    --shadow-sm: 0 1px 3px rgba(26,22,18,0.06), 0 1px 2px rgba(26,22,18,0.04);
+    --shadow-md: 0 4px 16px rgba(26,22,18,0.08), 0 2px 6px rgba(26,22,18,0.05);
+    --shadow-lg: 0 12px 40px rgba(26,22,18,0.14), 0 4px 12px rgba(26,22,18,0.08);
+    --radius: 14px;
+    --radius-sm: 10px;
+    --ease: cubic-bezier(0.22, 1, 0.36, 1);
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
 
+  html { scroll-behavior: smooth; }
+
   body {
     font-family: 'DM Sans', sans-serif;
-    background: var(--cream);
+    background:
+      radial-gradient(circle at 12% 8%, rgba(212,168,83,0.10), transparent 42%),
+      radial-gradient(circle at 88% 18%, rgba(196,82,42,0.07), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(74,124,89,0.06), transparent 55%),
+      var(--cream);
+    background-attachment: fixed;
     color: var(--ink);
     min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
   }
 
   /* HEADER */
   header {
-    background: var(--ink);
+    background: linear-gradient(135deg, #221D17 0%, #1A1612 60%, #2A2118 100%);
     color: var(--cream);
     padding: 24px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    border-bottom: 3px solid var(--rust);
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--rust), var(--gold), var(--sage));
   }
 
   header h1 {
     font-family: 'Playfair Display', serif;
     font-size: 1.6rem;
     letter-spacing: -0.02em;
+    position: relative;
   }
 
   header span {
@@ -55,13 +80,13 @@
   /* NAV TABS */
   .tabs {
     display: flex;
-    background: var(--ink);
+    background: linear-gradient(180deg, #1A1612, #211B15);
     padding: 0 40px;
     gap: 4px;
   }
 
   .tab {
-    padding: 10px 22px;
+    padding: 12px 22px;
     font-size: 0.8rem;
     font-weight: 500;
     text-transform: uppercase;
@@ -69,7 +94,7 @@
     color: var(--muted);
     cursor: pointer;
     border-bottom: 3px solid transparent;
-    transition: all 0.2s;
+    transition: color 0.25s var(--ease), border-color 0.25s var(--ease);
     background: none;
     border-top: none;
     border-left: none;
@@ -81,7 +106,12 @@
 
   /* SECTIONS */
   .section { display: none; padding: 40px; }
-  .section.active { display: block; }
+  .section.active { display: block; animation: sectionIn 0.5s var(--ease); }
+
+  @keyframes sectionIn {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
   /* ===== CANVAS SECTION ===== */
   .canvas-header {
@@ -93,8 +123,19 @@
 
   .canvas-header h2 {
     font-family: 'Playfair Display', serif;
-    font-size: 2rem;
-    line-height: 1.1;
+    font-size: 2.2rem;
+    line-height: 1.05;
+    letter-spacing: -0.02em;
+  }
+
+  .canvas-header h2::after {
+    content: '';
+    display: block;
+    width: 52px;
+    height: 4px;
+    margin-top: 12px;
+    border-radius: 4px;
+    background: linear-gradient(90deg, var(--rust), var(--gold));
   }
 
   .canvas-header p {
@@ -113,28 +154,35 @@
   }
 
   .btn {
-    padding: 9px 20px;
+    padding: 11px 22px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.8rem;
     font-weight: 600;
     text-transform: uppercase;
     letter-spacing: 0.08em;
     cursor: pointer;
-    transition: all 0.2s;
+    transition: transform 0.2s var(--ease), box-shadow 0.2s var(--ease), background 0.2s, color 0.2s, border-color 0.2s;
     border: none;
+    border-radius: 10px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
   }
 
-  .btn-primary { background: var(--rust); color: var(--white); }
-  .btn-primary:hover { background: #a84222; }
+  .btn:hover { transform: translateY(-2px); }
+  .btn:active { transform: translateY(0); }
+
+  .btn-primary { background: var(--rust); color: var(--white); box-shadow: 0 4px 14px rgba(196,82,42,0.30); }
+  .btn-primary:hover { background: #a84222; box-shadow: 0 8px 22px rgba(196,82,42,0.38); }
   .btn-outline { background: transparent; border: 2px solid var(--ink); color: var(--ink); }
   .btn-outline:hover { background: var(--ink); color: var(--cream); }
-  .btn-gold { background: var(--gold); color: var(--ink); }
-  .btn-gold:hover { background: #b8923e; }
-  .btn-sage { background: var(--sage); color: white; }
-  .btn-sage:hover { background: #3a6347; }
+  .btn-gold { background: var(--gold); color: var(--ink); box-shadow: 0 4px 14px rgba(212,168,83,0.30); }
+  .btn-gold:hover { background: #b8923e; box-shadow: 0 8px 22px rgba(212,168,83,0.38); }
+  .btn-sage { background: var(--sage); color: white; box-shadow: 0 4px 14px rgba(74,124,89,0.28); }
+  .btn-sage:hover { background: #3a6347; box-shadow: 0 8px 22px rgba(74,124,89,0.36); }
   .btn-outline-sage { background: transparent; border: 2px solid var(--sage); color: var(--sage); }
-  .btn-outline-sage:hover { background: var(--sage); color: white; }
-  .btn-ghost { background: transparent; border: 2px solid #ccc; color: var(--muted); }
+  .btn-outline-sage:hover { background: var(--sage); color: white; box-shadow: 0 6px 18px rgba(74,124,89,0.30); }
+  .btn-ghost { background: transparent; border: 2px solid rgba(140,123,107,0.4); color: var(--muted); }
   .btn-ghost:hover { border-color: var(--rust); color: var(--rust); }
 
   /* TOAST */
@@ -164,12 +212,14 @@
 
   /* CANVAS WRAPPER — contenedor único con borde */
   .canvas-wrapper {
-    background: var(--sand);
-    padding: 6px;
-    border: 2px solid var(--ink);
+    background: linear-gradient(160deg, #ECE2D5, #E0D3C2);
+    padding: 10px;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(26,22,18,0.06);
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 8px;
   }
 
   /* CANVAS GRID */
@@ -177,22 +227,43 @@
     display: grid;
     grid-template-columns: 1fr 1fr 1fr 1fr 1fr;
     grid-template-rows: auto auto auto;
-    gap: 6px;
+    gap: 8px;
   }
 
   .canvas-block {
     background: var(--white);
-    border: 1.5px solid #D4C9BC;
-    padding: 14px;
+    border: 1px solid rgba(26,22,18,0.07);
+    border-radius: var(--radius-sm);
+    padding: 16px 14px 14px;
     cursor: pointer;
-    transition: all 0.25s;
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease), border-color 0.3s var(--ease);
     position: relative;
     min-height: 160px;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
 
-  .canvas-block:hover { border-color: var(--rust); box-shadow: 0 4px 20px rgba(196,82,42,0.15); z-index: 2; transform: translateY(-1px); }
+  /* top accent strip using each block's --accent */
+  .canvas-block::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: var(--accent, var(--rust));
+    opacity: 0.9;
+    transition: height 0.3s var(--ease);
+  }
+
+  .canvas-block:hover {
+    border-color: transparent;
+    box-shadow: var(--shadow-lg);
+    z-index: 2;
+    transform: translateY(-4px);
+  }
+
+  .canvas-block:hover::before { height: 6px; }
 
   .canvas-block.span2 { grid-column: span 2; }
   .canvas-block.span1 { grid-column: span 1; }
@@ -210,28 +281,31 @@
   }
 
   .block-num {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.6rem;
+    font-size: 0.62rem;
     font-weight: 700;
     flex-shrink: 0;
+    box-shadow: 0 2px 6px rgba(26,22,18,0.18);
   }
 
   .block-title {
     font-family: 'Playfair Display', serif;
-    font-size: 1rem;
+    font-size: 1.05rem;
     font-weight: 700;
     margin-bottom: 8px;
     line-height: 1.2;
+    letter-spacing: -0.01em;
   }
 
   .block-icon {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
     margin-bottom: 6px;
+    filter: drop-shadow(0 2px 4px rgba(26,22,18,0.12));
   }
 
   .block-hint {
@@ -245,51 +319,67 @@
     margin-top: 10px;
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    gap: 5px;
     flex: 1;
   }
 
   .sticky-note {
-    background: #FFF9C4;
+    background: linear-gradient(135deg, #FFF8C0, #FCEFA1);
     border: 1px solid #E8D96B;
-    padding: 5px 8px;
+    padding: 7px 9px;
     font-size: 0.72rem;
-    border-radius: 2px;
+    border-radius: 4px;
+    line-height: 1.4;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     gap: 4px;
+    box-shadow: 0 1px 3px rgba(160,140,40,0.18);
+    animation: noteIn 0.35s var(--ease);
+  }
+
+  @keyframes noteIn {
+    from { opacity: 0; transform: scale(0.92) translateY(4px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
   }
 
   .sticky-note .del {
     cursor: pointer;
-    color: #999;
+    color: #b0a35c;
     font-size: 0.7rem;
     flex-shrink: 0;
     line-height: 1;
+    transition: color 0.2s, transform 0.2s;
   }
 
-  .sticky-note .del:hover { color: var(--rust); }
+  .sticky-note .del:hover { color: var(--rust); transform: scale(1.25); }
 
   .add-note-btn {
-    margin-top: 6px;
+    margin-top: 8px;
     font-size: 0.68rem;
-    color: var(--muted);
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    color: var(--accent, var(--muted));
     cursor: pointer;
-    padding: 3px 6px;
-    border: 1.5px dashed var(--muted);
+    padding: 6px 6px;
+    border: 1.5px dashed color-mix(in srgb, var(--accent, var(--muted)) 50%, transparent);
     text-align: center;
-    border-radius: 2px;
-    transition: all 0.2s;
+    border-radius: 6px;
+    transition: background 0.2s var(--ease), color 0.2s, border-color 0.2s;
   }
 
-  .add-note-btn:hover { color: var(--rust); border-color: var(--rust); }
+  .add-note-btn:hover {
+    color: var(--white);
+    background: var(--accent, var(--rust));
+    border-color: var(--accent, var(--rust));
+    border-style: solid;
+  }
 
   /* Bottom row */
   .canvas-bottom {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 6px;
+    gap: 8px;
   }
 
   .canvas-bottom .canvas-block {
@@ -299,31 +389,64 @@
   /* Tall blocks span 2 rows on desktop */
   .span-tall { grid-row: span 2; }
 
+  /* Staggered entrance for blocks */
+  .canvas-grid .canvas-block,
+  .canvas-bottom .canvas-block {
+    animation: blockIn 0.5s var(--ease) both;
+  }
+  @keyframes blockIn {
+    from { opacity: 0; transform: translateY(14px) scale(0.99); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+  .canvas-grid .canvas-block:nth-child(1) { animation-delay: 0.02s; }
+  .canvas-grid .canvas-block:nth-child(2) { animation-delay: 0.06s; }
+  .canvas-grid .canvas-block:nth-child(3) { animation-delay: 0.10s; }
+  .canvas-grid .canvas-block:nth-child(4) { animation-delay: 0.14s; }
+  .canvas-grid .canvas-block:nth-child(5) { animation-delay: 0.18s; }
+  .canvas-grid .canvas-block:nth-child(6) { animation-delay: 0.22s; }
+  .canvas-grid .canvas-block:nth-child(7) { animation-delay: 0.26s; }
+  .canvas-bottom .canvas-block:nth-child(1) { animation-delay: 0.30s; }
+  .canvas-bottom .canvas-block:nth-child(2) { animation-delay: 0.34s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.001s !important; transition-duration: 0.001s !important; }
+  }
+
   /* Color variants */
   .kp { --accent: #4A7C59; }
   .ka { --accent: #3D5A73; }
   .kr { --accent: #7B5EA7; }
   .vp { --accent: #C4522A; }
-  .cr { --accent: #D4A853; }
+  .cr { --accent: #C9982F; }
   .cs { --accent: #2A7D8C; }
   .ch { --accent: #5C8A3C; }
   .cost { --accent: #5A5A5A; }
   .rev { --accent: #8B4513; }
 
-  .canvas-block .block-num { background: var(--accent, #888); color: white; }
-  .canvas-block:hover { border-color: var(--accent, var(--rust)) !important; }
+  .canvas-block .block-num {
+    background: var(--accent, #888);
+    color: white;
+  }
+
+  /* subtle accent tint on the icon area */
+  .canvas-block .block-label { color: color-mix(in srgb, var(--accent) 70%, var(--muted)); }
 
   /* MODAL */
   .modal-overlay {
     position: fixed;
     inset: 0;
-    background: rgba(26,22,18,0.7);
+    background: rgba(26,22,18,0.55);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
     z-index: 100;
     display: none;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    animation: overlayIn 0.25s ease;
   }
+
+  @keyframes overlayIn { from { opacity: 0; } to { opacity: 1; } }
 
   .modal-overlay.open { display: flex; }
 
@@ -333,13 +456,15 @@
     width: 100%;
     max-height: 85vh;
     overflow-y: auto;
-    border: 2px solid var(--ink);
-    animation: slideUp 0.3s ease;
+    border: none;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-lg);
+    animation: slideUp 0.35s var(--ease);
   }
 
   @keyframes slideUp {
-    from { transform: translateY(30px); opacity: 0; }
-    to { transform: translateY(0); opacity: 1; }
+    from { transform: translateY(30px) scale(0.98); opacity: 0; }
+    to { transform: translateY(0) scale(1); opacity: 1; }
   }
 
   .modal-header {
@@ -503,35 +628,47 @@
 
   .learn-card {
     background: var(--white);
-    border: 2px solid var(--sand);
-    padding: 24px;
+    border: 1px solid rgba(26,22,18,0.07);
+    border-radius: var(--radius);
+    padding: 26px 24px;
     cursor: pointer;
-    transition: all 0.25s;
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
     position: relative;
     overflow: hidden;
+    box-shadow: var(--shadow-sm);
   }
 
   .learn-card::before {
     content: '';
     position: absolute;
     top: 0; left: 0;
-    width: 4px;
-    height: 100%;
+    width: 100%;
+    height: 4px;
     background: var(--accent, var(--rust));
+    transition: height 0.3s var(--ease);
   }
 
   .learn-card:hover {
-    border-color: var(--accent, var(--rust));
-    transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(0,0,0,0.1);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
   }
 
-  .learn-card-icon { font-size: 2rem; margin-bottom: 10px; }
+  .learn-card:hover::before { height: 6px; }
+
+  .learn-card-icon {
+    font-size: 1.7rem;
+    margin-bottom: 12px;
+    width: 52px; height: 52px;
+    display: flex; align-items: center; justify-content: center;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--accent, var(--rust)) 12%, transparent);
+  }
 
   .learn-card h3 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     margin-bottom: 8px;
+    letter-spacing: -0.01em;
   }
 
   .learn-card p {
@@ -542,11 +679,11 @@
 
   .learn-card-num {
     position: absolute;
-    top: 16px; right: 16px;
-    font-size: 2.5rem;
+    top: 14px; right: 18px;
+    font-size: 2.6rem;
     font-family: 'Playfair Display', serif;
     font-weight: 900;
-    color: var(--sand);
+    color: color-mix(in srgb, var(--accent, var(--sand)) 18%, transparent);
     line-height: 1;
   }
 
@@ -671,48 +808,56 @@
 
   .pattern-card {
     background: var(--white);
-    border: 2px solid var(--sand);
+    border: 1px solid rgba(26,22,18,0.07);
+    border-radius: var(--radius);
     overflow: hidden;
-    transition: all 0.25s;
+    transition: transform 0.3s var(--ease), box-shadow 0.3s var(--ease);
     cursor: pointer;
+    box-shadow: var(--shadow-sm);
   }
 
-  .pattern-card:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(0,0,0,0.12); }
+  .pattern-card:hover { transform: translateY(-5px); box-shadow: var(--shadow-lg); }
 
   .pattern-header {
-    padding: 20px 20px 16px;
+    padding: 22px 22px 18px;
     background: var(--accent, var(--ink));
+    background-image: linear-gradient(135deg, color-mix(in srgb, var(--accent, var(--ink)) 100%, white 8%), var(--accent, var(--ink)));
     color: white;
+    position: relative;
   }
 
   .pattern-header h3 {
     font-family: 'Playfair Display', serif;
-    font-size: 1.1rem;
+    font-size: 1.15rem;
     margin-bottom: 4px;
+    letter-spacing: -0.01em;
   }
 
-  .pattern-header span { font-size: 0.72rem; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.1em; }
+  .pattern-header span { font-size: 0.72rem; opacity: 0.78; text-transform: uppercase; letter-spacing: 0.1em; }
 
-  .pattern-body { padding: 18px 20px; }
+  .pattern-body { padding: 18px 22px 22px; }
 
   .pattern-body p { font-size: 0.82rem; line-height: 1.6; color: var(--muted); }
 
   .pattern-examples {
     display: flex;
-    gap: 6px;
+    gap: 7px;
     flex-wrap: wrap;
-    margin-top: 12px;
+    margin-top: 14px;
   }
 
   .tag {
     background: var(--cream);
     border: 1px solid var(--sand);
-    padding: 3px 10px;
+    padding: 4px 12px;
     font-size: 0.7rem;
     font-weight: 600;
-    border-radius: 2px;
+    border-radius: 999px;
     color: var(--muted);
+    transition: background 0.2s, color 0.2s, border-color 0.2s;
   }
+
+  .pattern-card:hover .tag { border-color: color-mix(in srgb, var(--accent) 35%, var(--sand)); }
 
   /* ===== ABOUT SECTION ===== */
   .about-grid {
@@ -790,15 +935,104 @@
 
   /* STUDENT CARD */
   .student-card {
-    background: var(--white);
-    border: 2px solid var(--sand);
-    border-left: 5px solid var(--gold);
-    padding: 16px 20px;
-    margin-bottom: 16px;
+    background: linear-gradient(135deg, var(--white), #FBF7F1);
+    border: 1px solid rgba(26,22,18,0.07);
+    border-radius: var(--radius);
+    padding: 18px 22px;
+    margin-bottom: 18px;
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 22px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
   }
+
+  .student-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 5px;
+    background: linear-gradient(180deg, var(--gold), var(--rust));
+  }
+
+  .student-info-main { flex: 1; }
+
+  /* LOGO UPLOADER */
+  .logo-uploader {
+    flex-shrink: 0;
+    width: 104px;
+    height: 104px;
+    border-radius: 14px;
+    border: 2px dashed color-mix(in srgb, var(--gold) 55%, var(--sand));
+    background: var(--cream);
+    cursor: pointer;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    transition: border-color 0.2s var(--ease), background 0.2s, transform 0.2s var(--ease);
+  }
+
+  .logo-uploader:hover {
+    border-color: var(--gold);
+    background: #fff;
+    transform: translateY(-2px);
+  }
+
+  .logo-uploader.dragover {
+    border-color: var(--rust);
+    background: var(--rust-soft);
+  }
+
+  .logo-empty {
+    text-align: center;
+    padding: 6px;
+    pointer-events: none;
+  }
+
+  .logo-icon { font-size: 1.5rem; margin-bottom: 3px; }
+  .logo-text {
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .logo-hint {
+    font-size: 0.55rem;
+    color: var(--muted);
+    margin-top: 3px;
+    line-height: 1.3;
+  }
+
+  .logo-preview {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 8px;
+    background: #fff;
+  }
+
+  .logo-remove {
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: var(--rust);
+    color: #fff;
+    font-size: 0.7rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    box-shadow: var(--shadow-sm);
+    transition: transform 0.2s var(--ease);
+  }
+  .logo-remove:hover { transform: scale(1.15); }
 
   .student-card-title {
     font-size: 0.75rem;
@@ -807,6 +1041,7 @@
     letter-spacing: 0.1em;
     color: var(--gold);
     white-space: nowrap;
+    margin-bottom: 12px;
   }
 
   .student-fields {
@@ -821,7 +1056,7 @@
     flex-direction: column;
     gap: 4px;
     flex: 1;
-    min-width: 160px;
+    min-width: 150px;
   }
 
   .student-field label {
@@ -832,19 +1067,70 @@
     color: var(--muted);
   }
 
+  .student-field label .opt {
+    font-weight: 500;
+    text-transform: none;
+    letter-spacing: 0;
+    color: color-mix(in srgb, var(--muted) 70%, transparent);
+  }
+
   .student-field input {
     border: 1.5px solid var(--sand);
-    padding: 7px 10px;
+    border-radius: 8px;
+    padding: 9px 12px;
     font-family: 'DM Sans', sans-serif;
     font-size: 0.82rem;
     color: var(--ink);
     background: var(--cream);
     outline: none;
-    transition: border-color 0.2s;
+    transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
   }
 
-  .student-field input:focus { border-color: var(--gold); background: var(--white); }
-  .student-field:first-child { min-width: 200px; flex: 1.4; }
+  .student-field input:focus {
+    border-color: var(--gold);
+    background: var(--white);
+    box-shadow: 0 0 0 3px rgba(212,168,83,0.18);
+  }
+  .student-field.field-wide { min-width: 220px; flex: 1.5; }
+
+  /* COLOR PICKER */
+  .field-color { min-width: 180px; }
+  .color-picker {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+    align-items: center;
+    padding-top: 2px;
+  }
+  .swatch {
+    width: 26px; height: 26px;
+    border-radius: 7px;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    transition: transform 0.15s var(--ease), border-color 0.15s, box-shadow 0.15s;
+    position: relative;
+    box-shadow: var(--shadow-sm);
+  }
+  .swatch:hover { transform: translateY(-2px) scale(1.08); }
+  .swatch.selected {
+    border-color: var(--ink);
+    box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--ink);
+  }
+  .swatch-custom {
+    background: linear-gradient(135deg,#fff,#eee);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden;
+    font-size: 0.8rem;
+  }
+  .swatch-custom input[type="color"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%; height: 100%;
+    border: none;
+  }
 
   /* ===== RESPONSIVE ===== */
 
@@ -868,6 +1154,7 @@
     .patterns-grid { grid-template-columns: 1fr 1fr; }
     .student-card { flex-direction: column; align-items: flex-start; gap: 12px; }
     .student-card-title { white-space: normal; }
+    .student-info-main { width: 100%; }
     .student-fields { gap: 10px; }
     .student-field { min-width: 140px; }
   }
@@ -909,9 +1196,10 @@
 
     /* Student card */
     .student-card { padding: 14px; }
+    .logo-uploader { width: 88px; height: 88px; align-self: center; }
     .student-fields { flex-direction: column; gap: 10px; }
     .student-field { min-width: 100%; flex: none; }
-    .student-field:first-child { min-width: 100%; flex: none; }
+    .student-field.field-wide { min-width: 100%; flex: none; }
     .student-field input { font-size: 0.9rem; padding: 10px 12px; }
 
     /* Modal */
@@ -972,23 +1260,56 @@
 
   <!-- Student info card -->
   <div class="student-card">
-    <div class="student-card-title">👤 Información del equipo</div>
-    <div class="student-fields">
-      <div class="student-field">
-        <label>Nombre del Emprendimiento</label>
-        <input type="text" id="emp-nombre" placeholder="Ej: EcoRide S.A." oninput="saveStudents()">
+    <!-- Logo uploader -->
+    <div class="logo-uploader" id="logoUploader" onclick="document.getElementById('logoInput').click()">
+      <input type="file" id="logoInput" accept="image/png,image/jpeg,image/webp" style="display:none" onchange="handleLogo(event)">
+      <div class="logo-empty" id="logoEmpty">
+        <div class="logo-icon">🖼️</div>
+        <div class="logo-text">Subir logo</div>
+        <div class="logo-hint">PNG/JPG · cuadrado · 500×500px</div>
       </div>
-      <div class="student-field">
-        <label>Estudiante 1</label>
-        <input type="text" id="est-1" placeholder="Nombre completo" oninput="saveStudents()">
-      </div>
-      <div class="student-field">
-        <label>Estudiante 2</label>
-        <input type="text" id="est-2" placeholder="Nombre completo" oninput="saveStudents()">
-      </div>
-      <div class="student-field">
-        <label>Estudiante 3</label>
-        <input type="text" id="est-3" placeholder="Nombre completo" oninput="saveStudents()">
+      <img id="logoPreview" class="logo-preview" style="display:none" alt="Logo">
+      <button class="logo-remove" id="logoRemove" style="display:none" onclick="removeLogo(event)" title="Quitar logo">✕</button>
+    </div>
+
+    <div class="student-info-main">
+      <div class="student-card-title">👤 Información del equipo</div>
+      <div class="student-fields">
+        <div class="student-field field-wide">
+          <label>Nombre del Emprendimiento</label>
+          <input type="text" id="emp-nombre" placeholder="Ej: EcoRide S.A." oninput="saveStudents()">
+        </div>
+        <div class="student-field field-wide">
+          <label>Eslogan <span class="opt">(opcional)</span></label>
+          <input type="text" id="emp-eslogan" placeholder="Ej: Movilidad limpia para tu ciudad" oninput="saveStudents()">
+        </div>
+        <div class="student-field">
+          <label>Estudiante 1</label>
+          <input type="text" id="est-1" placeholder="Nombre completo" oninput="saveStudents()">
+        </div>
+        <div class="student-field">
+          <label>Estudiante 2</label>
+          <input type="text" id="est-2" placeholder="Nombre completo" oninput="saveStudents()">
+        </div>
+        <div class="student-field">
+          <label>Estudiante 3</label>
+          <input type="text" id="est-3" placeholder="Nombre completo" oninput="saveStudents()">
+        </div>
+        <div class="student-field field-color">
+          <label>Color de acento</label>
+          <div class="color-picker">
+            <button class="swatch" data-color="#C4522A" style="background:#C4522A" onclick="setAccent('#C4522A')" title="Óxido"></button>
+            <button class="swatch" data-color="#4A7C59" style="background:#4A7C59" onclick="setAccent('#4A7C59')" title="Verde"></button>
+            <button class="swatch" data-color="#3D5A73" style="background:#3D5A73" onclick="setAccent('#3D5A73')" title="Azul"></button>
+            <button class="swatch" data-color="#7B5EA7" style="background:#7B5EA7" onclick="setAccent('#7B5EA7')" title="Morado"></button>
+            <button class="swatch" data-color="#C9982F" style="background:#C9982F" onclick="setAccent('#C9982F')" title="Dorado"></button>
+            <button class="swatch" data-color="#B23A6B" style="background:#B23A6B" onclick="setAccent('#B23A6B')" title="Magenta"></button>
+            <label class="swatch swatch-custom" title="Color personalizado">
+              <input type="color" id="accentCustom" onchange="setAccent(this.value)">
+              <span>🎨</span>
+            </label>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -998,6 +1319,7 @@
     <button class="btn btn-sage btn-outline-sage" onclick="document.getElementById('loadFileInput').click()">📂 Cargar progreso</button>
     <input type="file" id="loadFileInput" accept=".json" style="display:none" onchange="loadProgress(event)">
     <button class="btn btn-primary" onclick="exportPDF()" style="background:#3D5A73;">📄 Exportar PDF</button>
+    <button class="btn btn-primary" onclick="exportPNG()" style="background:#2A7D8C;">🖼️ Exportar PNG</button>
     <button class="btn btn-ghost" onclick="clearCanvas()">🗑 Limpiar</button>
   </div>
 
@@ -1427,22 +1749,130 @@ function showToast(msg, type = 'ok') {
 }
 
 // ===== SAVE / LOAD PROGRESS =====
+// ===== LOGO =====
+let logoData = null;  // dataURL del logo
+let accentColor = '#C4522A';  // color de acento por defecto (óxido)
+
+function setAccent(color) {
+  accentColor = color;
+  // marcar swatch seleccionado
+  document.querySelectorAll('.swatch[data-color]').forEach(s => {
+    s.classList.toggle('selected', s.dataset.color.toLowerCase() === color.toLowerCase());
+  });
+  // sincronizar el input custom
+  const custom = document.getElementById('accentCustom');
+  if (custom) custom.value = color;
+  saveStudents();
+}
+
+function hexToRgb(hex) {
+  const h = hex.replace('#','');
+  return [
+    parseInt(h.substring(0,2),16),
+    parseInt(h.substring(2,4),16),
+    parseInt(h.substring(4,6),16)
+  ];
+}
+
+function handleLogo(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  if (!/image\/(png|jpe?g|webp)/.test(file.type)) {
+    showToast('❌ Formato no válido. Usa PNG, JPG o WebP', 'error');
+    return;
+  }
+  if (file.size > 2 * 1024 * 1024) {
+    showToast('❌ El logo es muy pesado (máx. 2 MB)', 'error');
+    return;
+  }
+  const reader = new FileReader();
+  reader.onload = e => {
+    // Redimensionar a máx 500px para no inflar el almacenamiento
+    const img = new Image();
+    img.onload = () => {
+      const max = 500;
+      let { width, height } = img;
+      if (width > max || height > max) {
+        const r = Math.min(max / width, max / height);
+        width = Math.round(width * r);
+        height = Math.round(height * r);
+      }
+      const cv = document.createElement('canvas');
+      cv.width = width; cv.height = height;
+      const ctx = cv.getContext('2d');
+      ctx.drawImage(img, 0, 0, width, height);
+      // PNG conserva transparencia
+      logoData = cv.toDataURL('image/png');
+      renderLogo();
+      saveStudents();
+      showToast('✅ Logo cargado');
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  event.target.value = '';
+}
+
+function renderLogo() {
+  const empty = document.getElementById('logoEmpty');
+  const preview = document.getElementById('logoPreview');
+  const remove = document.getElementById('logoRemove');
+  if (logoData) {
+    preview.src = logoData;
+    preview.style.display = 'block';
+    empty.style.display = 'none';
+    remove.style.display = 'flex';
+  } else {
+    preview.style.display = 'none';
+    empty.style.display = 'block';
+    remove.style.display = 'none';
+  }
+}
+
+function removeLogo(event) {
+  event.stopPropagation();
+  logoData = null;
+  renderLogo();
+  saveStudents();
+  showToast('Logo eliminado');
+}
+
+// Drag & drop sobre el área de logo
+function initLogoDnD() {
+  const u = document.getElementById('logoUploader');
+  if (!u) return;
+  ['dragenter','dragover'].forEach(ev => u.addEventListener(ev, e => {
+    e.preventDefault(); u.classList.add('dragover');
+  }));
+  ['dragleave','drop'].forEach(ev => u.addEventListener(ev, e => {
+    e.preventDefault(); u.classList.remove('dragover');
+  }));
+  u.addEventListener('drop', e => {
+    const file = e.dataTransfer.files[0];
+    if (file) handleLogo({ target: { files: [file], value: '' } });
+  });
+}
+
 function getStudentData() {
   return {
-    nombre: document.getElementById('emp-nombre').value.trim(),
-    est1:   document.getElementById('est-1').value.trim(),
-    est2:   document.getElementById('est-2').value.trim(),
-    est3:   document.getElementById('est-3').value.trim(),
+    nombre:  document.getElementById('emp-nombre').value.trim(),
+    eslogan: document.getElementById('emp-eslogan').value.trim(),
+    est1:    document.getElementById('est-1').value.trim(),
+    est2:    document.getElementById('est-2').value.trim(),
+    est3:    document.getElementById('est-3').value.trim(),
   };
 }
 
 function saveProgress() {
   const s = getStudentData();
   const payload = {
-    version: 2,
+    version: 3,
     savedAt: new Date().toISOString(),
     emprendimiento: s.nombre,
+    eslogan: s.eslogan,
     estudiantes: [s.est1, s.est2, s.est3].filter(Boolean),
+    logo: logoData || null,
+    accent: accentColor,
     notas: notes
   };
   const json = JSON.stringify(payload, null, 2);
@@ -1470,13 +1900,19 @@ function loadProgress(event) {
       }
       // Restore student info
       if (data.emprendimiento) document.getElementById('emp-nombre').value = data.emprendimiento;
+      document.getElementById('emp-eslogan').value = data.eslogan || '';
       if (data.estudiantes) {
         const est = data.estudiantes;
         if (est[0]) document.getElementById('est-1').value = est[0];
         if (est[1]) document.getElementById('est-2').value = est[1];
         if (est[2]) document.getElementById('est-3').value = est[2];
-        saveStudents();
       }
+      // Restore logo
+      logoData = data.logo || null;
+      renderLogo();
+      // Restore accent
+      setAccent(data.accent || '#C4522A');
+      saveStudents();
       const fecha = data.savedAt ? new Date(data.savedAt).toLocaleDateString('es-CR') : '';
       showToast('✅ Progreso cargado' + (fecha ? ' · Guardado el ' + fecha : ''));
     } catch(err) {
@@ -1574,267 +2010,512 @@ function buildPatterns() {
 // ===== PDF EXPORT =====
 // ===== STUDENTS =====
 function saveStudents() {
-  localStorage.setItem('canvas-students-v1', JSON.stringify({
-    nombre: document.getElementById('emp-nombre').value,
-    est1: document.getElementById('est-1').value,
-    est2: document.getElementById('est-2').value,
-    est3: document.getElementById('est-3').value,
-  }));
+  try {
+    localStorage.setItem('canvas-students-v1', JSON.stringify({
+      nombre: document.getElementById('emp-nombre').value,
+      eslogan: document.getElementById('emp-eslogan').value,
+      est1: document.getElementById('est-1').value,
+      est2: document.getElementById('est-2').value,
+      est3: document.getElementById('est-3').value,
+      logo: logoData || null,
+      accent: accentColor,
+    }));
+  } catch(e) {
+    // localStorage puede llenarse con logos grandes; guardamos sin logo
+    try {
+      localStorage.setItem('canvas-students-v1', JSON.stringify({
+        nombre: document.getElementById('emp-nombre').value,
+        eslogan: document.getElementById('emp-eslogan').value,
+        est1: document.getElementById('est-1').value,
+        est2: document.getElementById('est-2').value,
+        est3: document.getElementById('est-3').value,
+        logo: null,
+        accent: accentColor,
+      }));
+    } catch(e2) {}
+  }
 }
 
 function loadStudents() {
   try {
     const s = JSON.parse(localStorage.getItem('canvas-students-v1') || '{}');
-    if (s.nombre) document.getElementById('emp-nombre').value = s.nombre;
-    if (s.est1)   document.getElementById('est-1').value = s.est1;
-    if (s.est2)   document.getElementById('est-2').value = s.est2;
-    if (s.est3)   document.getElementById('est-3').value = s.est3;
-  } catch(e) {}
+    if (s.nombre)  document.getElementById('emp-nombre').value = s.nombre;
+    if (s.eslogan) document.getElementById('emp-eslogan').value = s.eslogan;
+    if (s.est1)    document.getElementById('est-1').value = s.est1;
+    if (s.est2)    document.getElementById('est-2').value = s.est2;
+    if (s.est3)    document.getElementById('est-3').value = s.est3;
+    if (s.logo)    { logoData = s.logo; renderLogo(); }
+    setAccent(s.accent || '#C4522A');
+  } catch(e) { setAccent('#C4522A'); }
 }
 
-// ===== PDF EXPORT (tamaño dinámico según contenido) =====
-async function exportPDF() {
-  if (!window.jspdf) {
-    await new Promise((res, rej) => {
-      const s = document.createElement('script');
-      s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
-      s.onload = res; s.onerror = rej;
-      document.head.appendChild(s);
-    });
-  }
-  const { jsPDF } = window.jspdf;
+// ===== Cargar jsPDF bajo demanda =====
+function loadJsPDF() {
+  if (window.jspdf) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
 
-  // ── Datos de estudiantes ────────────────────────────────────────────────
+// ===== Construir el documento del lienzo (devuelve {doc, empNombre, W, TOTAL_H}) =====
+function buildCanvasDoc(jsPDF) {
+  // ── Datos ────────────────────────────────────────────────────────────────
   const empNombre = document.getElementById('emp-nombre').value.trim() || '—';
-  const est1 = document.getElementById('est-1').value.trim();
-  const est2 = document.getElementById('est-2').value.trim();
-  const est3 = document.getElementById('est-3').value.trim();
+  const eslogan = document.getElementById('emp-eslogan').value.trim();
+  const estudiantes = [
+    document.getElementById('est-1').value.trim(),
+    document.getElementById('est-2').value.trim(),
+    document.getElementById('est-3').value.trim()
+  ].filter(Boolean);
 
-  // ── Colores ─────────────────────────────────────────────────────────────
-  const CREAM  = [247, 243, 238];
-  const INK    = [26, 22, 18];
+  // ── Paleta refinada ───────────────────────────────────────────────────────
+  const INK    = [36, 30, 24];
+  const INK2   = [58, 50, 42];
+  const CREAM  = [251, 247, 240];
+  const PAPER  = [255, 255, 255];
   const RUST   = [196, 82, 42];
-  const GOLDC  = [212, 168, 83];
-  const SANDC  = [232, 221, 208];
-  const WHITEC = [254, 252, 250];
-  const MUTEDC = [140, 123, 107];
-  const HDR_BG = [58, 50, 42];
+  const GOLD   = [212, 168, 83];
+  const MUTED  = [154, 139, 122];
+  const LINE   = [234, 224, 211];
+  const ACCENT = hexToRgb(accentColor);   // color de acento del equipo
 
   const blockColors = {
-    kp: [74,124,89],  ka: [61,90,115],   kr: [123,94,167],
-    vp: [196,82,42],  cr: [212,168,83],  cs: [42,125,140],
-    ch: [92,138,60],  cost: [74,74,74],  rev: [122,59,16]
+    kp: [74,124,89],  ka: [61,90,115],  kr: [123,94,167],
+    vp: [196,82,42],  cr: [201,152,47], cs: [42,125,140],
+    ch: [92,138,60],  cost: [90,80,72], rev: [156,90,40]
   };
 
-  // ── Layout fijo ─────────────────────────────────────────────────────────
-  const W      = 420;   // ancho fijo (mm) — estilo A3 landscape
-  const PAD    = 4;
-  const GAP    = 2;
-  const HDR    = 26;
-  const ACCENT = 1.5;
-  const TOP    = HDR + ACCENT + 1;
-  const COL_W  = (W - 2*PAD - 4*GAP) / 5;
-  const colX   = n => PAD + n * (COL_W + GAP);
-  const FOOT   = 7;
+  // mezcla con blanco: pct 0 = blanco, 1 = color puro
+  const tint = (c, pct) => [
+    Math.round(255 - (255-c[0])*pct),
+    Math.round(255 - (255-c[1])*pct),
+    Math.round(255 - (255-c[2])*pct)
+  ];
 
-  // ── Altura de bloque según contenido ────────────────────────────────────
-  // Necesitamos un doc temporal solo para medir texto
-  const docMeasure = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, 400] });
-
-  const NOTE_FONT = 5.5;
-  const NOTE_PAD_V = 3;
-  const NOTE_LINE_H = 4.2;
-  const NOTE_GAP = 2.5;
-  const BLOCK_HEADER_H = 16;
-  const MIN_BLOCK_H = 22;
-
-  function calcBlockHeight(blockId) {
-    const items = notes[blockId] || [];
-    if (items.length === 0) return MIN_BLOCK_H;
-    let total = BLOCK_HEADER_H;
-    items.forEach(note => {
-      const lines = docMeasure.splitTextToSize(pdfText(note), COL_W - 12);
-      total += lines.length * NOTE_LINE_H + NOTE_PAD_V * 2 + NOTE_GAP;
-    });
-    return Math.max(total + 4, MIN_BLOCK_H);
-  }
-
-  // Alturas por bloque
-  const H_kp   = calcBlockHeight('kp');
-  const H_ka   = calcBlockHeight('ka');
-  const H_kr   = calcBlockHeight('kr');
-  const H_vp   = calcBlockHeight('vp');
-  const H_cr   = calcBlockHeight('cr');
-  const H_cs   = calcBlockHeight('cs');
-  const H_ch   = calcBlockHeight('ch');
-  const H_cost = calcBlockHeight('cost');
-  const H_rev  = calcBlockHeight('rev');
-
-  // Columna 0: KP solo
-  const COL0_H = H_kp;
-  // Columna 1: KA + KR apilados
-  const COL1_H = H_ka + GAP + H_kr;
-  // Columna 2: VP solo
-  const COL2_H = H_vp;
-  // Columna 3: CR + CH apilados
-  const COL3_H = H_cr + GAP + H_ch;
-  // Columna 4: CS solo
-  const COL4_H = H_cs;
-
-  // Altura del grid principal = máximo de todas las columnas
-  const MAIN_H = Math.max(COL0_H, COL1_H, COL2_H, COL3_H, COL4_H);
-
-  // Fila inferior: costes e ingresos
-  const BOT_H = Math.max(H_cost, H_rev);
-  const BOT_ROW_Y = TOP + MAIN_H + GAP;
-
-  // Altura total del documento
-  const TOTAL_H = BOT_ROW_Y + BOT_H + GAP + FOOT;
-
-  // ── Crear documento con tamaño exacto ───────────────────────────────────
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'mm', format: [W, TOTAL_H] });
-
-  // Fondo
-  doc.setFillColor(...CREAM);
-  doc.rect(0, 0, W, TOTAL_H, 'F');
-
-  // ── Header ───────────────────────────────────────────────────────────────
-  doc.setFillColor(...HDR_BG);
-  doc.rect(0, 0, W, HDR, 'F');
-
-  doc.setTextColor(255,255,255);
-  doc.setFontSize(13); doc.setFont('helvetica','bold');
-  doc.text('LIENZO DEL MODELO DE NEGOCIO', 8, 10);
-  doc.setFontSize(6); doc.setFont('helvetica','normal');
-  doc.setTextColor(...GOLDC);
-  doc.text('Business Model Canvas  ·  Osterwalder & Pigneur (2010)', 8, 17);
-
-  // Centro: emprendimiento
-  const empX = W * 0.42;
-  doc.setFontSize(5.5); doc.setFont('helvetica','bold');
-  doc.setTextColor(...GOLDC);
-  doc.text('EMPRENDIMIENTO', empX, 8);
-  doc.setFontSize(10); doc.setFont('helvetica','bold');
-  doc.setTextColor(255,255,255);
-  doc.text(doc.splitTextToSize(pdfText(empNombre), W * 0.26)[0], empX, 18);
-
-  // Derecha: equipo
-  const estX = W * 0.72;
-  doc.setFontSize(5.5); doc.setFont('helvetica','bold');
-  doc.setTextColor(...GOLDC);
-  doc.text('EQUIPO', estX, 8);
-  doc.setFontSize(7); doc.setFont('helvetica','normal');
-  doc.setTextColor(255,255,255);
-  let ey = 14;
-  [est1, est2, est3].forEach(e => { if (e) { doc.text('· ' + e, estX, ey); ey += 5; } });
-
-  // Barra acento
-  doc.setFillColor(...RUST);
-  doc.rect(0, HDR, W, ACCENT, 'F');
-
-  // Sanitiza caracteres que jsPDF no puede renderizar correctamente
+  // Sanitiza caracteres no Latin-1
   function pdfText(str) {
     return (str || '')
       .replace(/₡/g, 'CRC')
-      .replace(/[^\x00-\xFF]/g, c => {
-        const map = { '–': '-', '—': '-', '\u2018': "'", '\u2019': "'",
-                      '\u201C': '"', '\u201D': '"', '\u2026': '...' };
-        return map[c] || '?';
+      .replace(/[^\x00-\xFF]/g, ch => {
+        const map = { '–':'-','—':'-','\u2018':"'",'\u2019':"'",
+                      '\u201C':'"','\u201D':'"','\u2026':'...' };
+        return map[ch] || '?';
       });
   }
 
-  // ── Función drawBlock dinámica ──────────────────────────────────────────
-  function drawBlock(bx, by, bw, bh, num, title, sub, color, blockId) {
-    // Fondo y borde
-    doc.setFillColor(...WHITEC);
-    doc.setDrawColor(...SANDC);
-    doc.setLineWidth(0.35);
-    doc.rect(bx, by, bw, bh, 'FD');
+  // ── Geometría ──────────────────────────────────────────────────────────────
+  const W      = 480;
+  const PAD    = 16;
+  const GAP    = 8;
+  const HDR    = 52;
+  const TOP    = HDR + 10;
+  const FOOT   = 16;
+  const COL_W  = (W - 2*PAD - 4*GAP) / 5;
+  const HALF_W = (W - 2*PAD - GAP) / 2;
+  const colX   = n => PAD + n * (COL_W + GAP);
 
-    // Barra lateral izquierda
-    doc.setFillColor(...color);
-    doc.rect(bx, by, 2, bh, 'F');
+  const NOTE_FONT = 9;
+  const NOTE_LH   = 12.5;   // pt → mm-ish (jsPDF mm unit, font in pt rendered)
+  const NOTE_PAD  = 7;
+  const NOTE_GAP  = 6;
+  const BLOCK_HEAD = 30;
+  const MIN_BLOCK_H = 46;
 
-    // Círculo número
-    doc.setFillColor(...color);
-    doc.circle(bx + 6, by + 5.5, 3.2, 'F');
-    doc.setTextColor(255,255,255);
-    doc.setFontSize(5.5); doc.setFont('helvetica','bold');
-    doc.text(String(num), bx + 6, by + 7, { align: 'center' });
+  // títulos completos del metodo Canvas (para medir alto)
+  const blockTitles = {
+    kp:'Socios Clave', ka:'Actividades Clave', kr:'Recursos Clave',
+    vp:'Propuesta de Valor', cr:'Relacion con los Clientes', ch:'Canales',
+    cs:'Segmentos de Clientes', cost:'Estructura de Costos', rev:'Fuentes de Ingresos'
+  };
 
-    // Subtítulo
-    doc.setTextColor(...color);
-    doc.setFontSize(4.8); doc.setFont('helvetica','bold');
-    doc.text(sub.toUpperCase(), bx + 11.5, by + 4.5);
+  // doc temporal para medir
+  const m = new jsPDF({ orientation:'landscape', unit:'mm', format:[W, 600] });
 
-    // Título
-    doc.setTextColor(...INK);
-    doc.setFontSize(8); doc.setFont('helvetica','bold');
-    doc.text(title, bx + 11.5, by + 10);
+  function noteHeight(text, w) {
+    m.setFontSize(NOTE_FONT); m.setFont('helvetica','normal');
+    const lines = m.splitTextToSize(pdfText(text), w - 2*NOTE_PAD - 6);
+    return lines.length * (NOTE_LH * 0.3528) + 2 * NOTE_PAD;  // pt→mm for line height
+  }
 
-    // Línea separadora
-    doc.setDrawColor(...SANDC); doc.setLineWidth(0.25);
-    doc.line(bx + 3, by + 12.5, bx + bw - 3, by + 12.5);
+  // calcula líneas extra del título (0 si cabe en 1 línea)
+  function titleExtra(blockId, w) {
+    const title = blockTitles[blockId] || '';
+    m.setFont('times','bold');
+    let size = 11;
+    let lines = m.setFontSize(size).splitTextToSize(pdfText(title), w - 19 - 5);
+    if (lines.length > 2) { size = 9.5; lines = m.setFontSize(size).splitTextToSize(pdfText(title), w - 19 - 5); }
+    lines = lines.slice(0,2);
+    return (lines.length - 1) * (size * 0.42);
+  }
 
-    // Notas (stickies dinámicos — texto completo)
+  function blockHeight(blockId, w) {
     const items = notes[blockId] || [];
-    let ny = by + 15;
-    const maxW = bw - 8;
+    const extra = titleExtra(blockId, w);
+    if (!items.length) return MIN_BLOCK_H + extra;
+    let h = BLOCK_HEAD + extra;
+    items.forEach(n => { h += noteHeight(n, w) + NOTE_GAP; });
+    return h + 8;
+  }
 
-    items.forEach(note => {
-      const noteLines = doc.splitTextToSize(pdfText(note), maxW - 4);
-      const noteH = noteLines.length * NOTE_LINE_H + NOTE_PAD_V * 2;
-      doc.setFillColor(255, 249, 196);
-      doc.setDrawColor(232, 217, 107);
-      doc.setLineWidth(0.2);
-      doc.rect(bx + 3, ny, maxW, noteH, 'FD');
-      doc.setTextColor(...INK);
+  const H = {};
+  ['kp','ka','kr','vp','cr','cs','ch'].forEach(k => H[k] = blockHeight(k, COL_W));
+  const colHeights = [
+    H.kp,
+    H.ka + GAP + H.kr,
+    H.vp,
+    H.cr + GAP + H.ch,
+    H.cs
+  ];
+  const MAIN_H = Math.max(...colHeights);
+  const H_cost = blockHeight('cost', HALF_W);
+  const H_rev  = blockHeight('rev', HALF_W);
+  const BOT_H  = Math.max(H_cost, H_rev);
+  const BOT_Y  = TOP + MAIN_H + GAP;
+  const TOTAL_H = BOT_Y + BOT_H + GAP + FOOT;
+
+  // ── Crear documento ──────────────────────────────────────────────────────
+  const doc = new jsPDF({ orientation:'landscape', unit:'mm', format:[W, TOTAL_H] });
+
+  // Fondo crema
+  doc.setFillColor(...CREAM);
+  doc.rect(0, 0, W, TOTAL_H, 'F');
+
+  // ── HEADER ──────────────────────────────────────────────────────────────
+  doc.setFillColor(...INK);
+  doc.rect(0, 0, W, HDR, 'F');
+  // franja de acento (degradado simulado del acento hacia dorado)
+  const seg = W/3;
+  doc.setFillColor(...ACCENT);          doc.rect(0,      HDR, seg, 2.5, 'F');
+  doc.setFillColor(...tint(ACCENT,0.7));doc.rect(seg,    HDR, seg, 2.5, 'F');
+  doc.setFillColor(...GOLD);            doc.rect(2*seg,  HDR, seg, 2.5, 'F');
+
+  // Logo (placa blanca redondeada a la izquierda)
+  let titleX = PAD;
+  if (logoData) {
+    const LS = 34;            // tamaño placa logo
+    const ly = (HDR - LS) / 2;
+    doc.setFillColor(...PAPER);
+    doc.roundedRect(PAD, ly, LS, LS, 4, 4, 'F');
+    try {
+      // detectar dimensiones para encajar manteniendo proporción
+      const props = doc.getImageProperties(logoData);
+      const pad = 3;
+      const box = LS - 2*pad;
+      const r = Math.min(box / props.width, box / props.height);
+      const dw = props.width * r, dh = props.height * r;
+      doc.addImage(logoData, 'PNG', PAD + (LS-dw)/2, ly + (LS-dh)/2, dw, dh);
+    } catch(e) {}
+    titleX = PAD + LS + 10;
+  }
+
+  // Título
+  doc.setTextColor(...PAPER);
+  doc.setFont('times','bold'); doc.setFontSize(19);
+  doc.text('Lienzo del Modelo de Negocio', titleX, 22);
+  doc.setTextColor(...tint(ACCENT, 0.82));
+  doc.setFont('helvetica','bold'); doc.setFontSize(7);
+  doc.text('BUSINESS MODEL CANVAS', titleX, 31);
+  doc.setTextColor(...tint(PAPER, 0.55));
+  doc.setFont('helvetica','italic'); doc.setFontSize(6.5);
+  doc.text('Osterwalder & Pigneur  ·  Generacion de Modelos de Negocio', titleX, 39);
+
+  // separador vertical
+  doc.setDrawColor(...tint(INK, 0.4)); doc.setLineWidth(0.4);
+  doc.line(W*0.54, 10, W*0.54, HDR-8);
+
+  // Emprendimiento + eslogan
+  const ex = W*0.57;
+  const empMaxW = W*0.21;
+  doc.setTextColor(...GOLD); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+  doc.text('EMPRENDIMIENTO', ex, 15);
+  doc.setTextColor(...PAPER); doc.setFont('times','bold'); doc.setFontSize(15);
+  let empDisp = empNombre;
+  while (doc.getTextWidth(pdfText(empDisp)) > empMaxW && empDisp.length > 3) empDisp = empDisp.slice(0,-1);
+  const empOut = doc.getTextWidth(pdfText(empNombre)) <= empMaxW ? pdfText(empNombre) : pdfText(empDisp.trim()) + '…';
+  doc.text(empOut, ex, 28);
+  // eslogan en itálica dorada suave
+  if (eslogan) {
+    doc.setTextColor(...tint(GOLD, 0.85)); doc.setFont('times','italic'); doc.setFontSize(8.5);
+    let slDisp = eslogan;
+    while (doc.getTextWidth(pdfText('“'+slDisp+'”')) > empMaxW + 8 && slDisp.length > 3) slDisp = slDisp.slice(0,-1);
+    const slOut = doc.getTextWidth(pdfText('"'+eslogan+'"')) <= empMaxW + 8 ? eslogan : slDisp.trim()+'…';
+    doc.text(pdfText('"' + slOut + '"'), ex, 37);
+  }
+
+  // Equipo
+  const tx = W*0.80;
+  doc.setTextColor(...GOLD); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+  doc.text('EQUIPO', tx, 15);
+  doc.setTextColor(...PAPER); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  let yy = 23;
+  estudiantes.slice(0,3).forEach(e => {
+    let ed = e;
+    while (doc.getTextWidth('· '+pdfText(ed)) > W - tx - 6 && ed.length > 3) ed = ed.slice(0,-1);
+    doc.text('· ' + pdfText(ed === e ? e : ed.trim()+'…'), tx, yy);
+    yy += 9.5;
+  });
+
+  // ── BLOQUE ──────────────────────────────────────────────────────────────
+  function drawBlock(x, yTop, w, h, num, title, sub, blockId) {
+    const color = blockColors[blockId];
+
+    // sombra sutil
+    doc.setFillColor(0,0,0);
+    doc.setGState(new doc.GState({ opacity: 0.06 }));
+    doc.roundedRect(x+1.2, yTop+1.2, w, h, 4, 4, 'F');
+    doc.setGState(new doc.GState({ opacity: 1 }));
+
+    // tarjeta
+    doc.setFillColor(...PAPER);
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.5);
+    doc.roundedRect(x, yTop, w, h, 4, 4, 'FD');
+
+    // franja superior de color
+    doc.setFillColor(...color);
+    doc.roundedRect(x, yTop, w, 4, 2, 2, 'F');
+    doc.rect(x, yTop+2, w, 2, 'F');
+
+    // círculo número
+    const cx = x+9, cy = yTop+15;
+    doc.setFillColor(...color);
+    doc.circle(cx, cy, 5.5, 'F');
+    doc.setTextColor(...PAPER); doc.setFont('helvetica','bold'); doc.setFontSize(9);
+    doc.text(String(num), cx, cy+1.6, { align:'center' });
+
+    // subtítulo + título
+    doc.setTextColor(...color); doc.setFont('helvetica','bold'); doc.setFontSize(6);
+    doc.text(sub.toUpperCase(), x+19, yTop+11.5);
+
+    // título: ajustar a 1 o 2 líneas según quepa
+    doc.setTextColor(...INK); doc.setFont('times','bold');
+    let titleSize = 11;
+    const titleMaxW = w - 19 - 5;
+    let titleLines = doc.setFontSize(titleSize).splitTextToSize(pdfText(title), titleMaxW);
+    if (titleLines.length > 2) {
+      titleSize = 9.5;
+      titleLines = doc.setFontSize(titleSize).splitTextToSize(pdfText(title), titleMaxW);
+    }
+    titleLines = titleLines.slice(0, 2);
+    const titleLineH = titleSize * 0.42;
+    titleLines.forEach((ln, i) => {
+      doc.text(ln, x+19, yTop + 19.5 + i * titleLineH);
+    });
+    // posición de separador y notas depende de cuántas líneas tomó el título
+    const headExtra = (titleLines.length - 1) * titleLineH;
+    const sepY = yTop + 24 + headExtra;
+    const notesStartY = yTop + 29 + headExtra;
+
+    // separador
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.4);
+    doc.line(x+7, sepY, x+w-7, sepY);
+
+    // notas (stickies con barrita lateral)
+    const items = notes[blockId] || [];
+    let ny = notesStartY;
+    items.forEach(n => {
       doc.setFontSize(NOTE_FONT); doc.setFont('helvetica','normal');
-      noteLines.forEach((line, i) => {
-        doc.text(line, bx + 5, ny + NOTE_PAD_V + 1 + i * NOTE_LINE_H);
-      });
-      ny += noteH + NOTE_GAP;
+      const lines = doc.splitTextToSize(pdfText(n), w - 2*NOTE_PAD - 6);
+      const lineHmm = NOTE_LH * 0.3528;
+      const nh = lines.length * lineHmm + 2*NOTE_PAD;
+      // fondo sticky tintado
+      doc.setFillColor(...tint(color, 0.10));
+      doc.roundedRect(x+5, ny, w-10, nh, 2.5, 2.5, 'F');
+      // barrita lateral
+      doc.setFillColor(...color);
+      doc.roundedRect(x+5, ny, 2.2, nh, 1, 1, 'F');
+      // texto
+      doc.setTextColor(...INK2);
+      let ty = ny + NOTE_PAD + 2;
+      lines.forEach(ln => { doc.text(ln, x+5+NOTE_PAD, ty); ty += lineHmm; });
+      ny += nh + NOTE_GAP;
     });
   }
 
   // ── Dibujar bloques ──────────────────────────────────────────────────────
-  // Col 0: KP (alto = MAIN_H para alinearse visualmente)
-  drawBlock(colX(0), TOP, COL_W, MAIN_H,  1, 'Socios Clave',         'Alianzas clave',        blockColors.kp,   'kp');
-  // Col 1: KA arriba, KR abajo
-  drawBlock(colX(1), TOP,             COL_W, H_ka, 2, 'Actividades Clave',  'Actividades',           blockColors.ka, 'ka');
-  drawBlock(colX(1), TOP + H_ka + GAP, COL_W, MAIN_H - H_ka - GAP,  6, 'Recursos Clave', 'Recursos', blockColors.kr, 'kr');
-  // Col 2: VP (alto = MAIN_H)
-  drawBlock(colX(2), TOP, COL_W, MAIN_H,  3, 'Propuesta de Valor',   'El corazon del Canvas', blockColors.vp,   'vp');
-  // Col 3: CR arriba, CH abajo
-  drawBlock(colX(3), TOP,             COL_W, H_cr, 4, 'Relacion con Clientes','Relaciones',          blockColors.cr, 'cr');
-  drawBlock(colX(3), TOP + H_cr + GAP, COL_W, MAIN_H - H_cr - GAP,  7, 'Canales',        'Distribucion',          blockColors.ch, 'ch');
-  // Col 4: CS (alto = MAIN_H)
-  drawBlock(colX(4), TOP, COL_W, MAIN_H,  5, 'Segmentos de Clientes','Mercado',               blockColors.cs,   'cs');
+  drawBlock(colX(0), TOP, COL_W, MAIN_H, 1, 'Socios Clave', 'Alianzas clave', 'kp');
+  drawBlock(colX(1), TOP, COL_W, H.ka, 2, 'Actividades Clave', 'Actividades', 'ka');
+  drawBlock(colX(1), TOP+H.ka+GAP, COL_W, MAIN_H-H.ka-GAP, 6, 'Recursos Clave', 'Recursos', 'kr');
+  drawBlock(colX(2), TOP, COL_W, MAIN_H, 3, 'Propuesta de Valor', 'El corazon', 'vp');
+  drawBlock(colX(3), TOP, COL_W, H.cr, 4, 'Relacion con los Clientes', 'Relaciones', 'cr');
+  drawBlock(colX(3), TOP+H.cr+GAP, COL_W, MAIN_H-H.cr-GAP, 7, 'Canales', 'Distribucion', 'ch');
+  drawBlock(colX(4), TOP, COL_W, MAIN_H, 5, 'Segmentos de Clientes', 'Mercado', 'cs');
 
-  // Fila inferior
-  const HALF_W = (W - 2*PAD - GAP) / 2;
-  drawBlock(PAD,              BOT_ROW_Y, HALF_W, BOT_H, 8, 'Estructura de Costes', 'Finanzas', blockColors.cost, 'cost');
-  drawBlock(PAD + HALF_W + GAP, BOT_ROW_Y, HALF_W, BOT_H, 9, 'Fuentes de Ingresos','Ingresos', blockColors.rev,  'rev');
+  drawBlock(PAD, BOT_Y, HALF_W, BOT_H, 8, 'Estructura de Costos', 'Finanzas', 'cost');
+  drawBlock(PAD+HALF_W+GAP, BOT_Y, HALF_W, BOT_H, 9, 'Fuentes de Ingresos', 'Ingresos', 'rev');
 
-  // ── Footer ───────────────────────────────────────────────────────────────
-  doc.setFillColor(...RUST);
-  doc.rect(0, TOTAL_H - FOOT, W, 1.5, 'F');
-  doc.setTextColor(...MUTEDC);
-  doc.setFontSize(4.8); doc.setFont('helvetica','normal');
-  doc.text(
-    'Basado en: Osterwalder, A. & Pigneur, Y. (2010) Generacion de Modelos de Negocio. Deusto.  ·  Herramienta educativa de uso libre.',
-    W / 2, TOTAL_H - 2, { align: 'center' }
-  );
+  // ── FOOTER ──────────────────────────────────────────────────────────────
+  doc.setFillColor(...INK);
+  doc.rect(0, TOTAL_H - FOOT, W, FOOT, 'F');
+  doc.setTextColor(...tint(PAPER, 0.5));
+  doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
+  doc.text('Basado en Osterwalder & Pigneur (2010)  ·  Generacion de Modelos de Negocio  ·  Deusto',
+           W/2, TOTAL_H - 6, { align:'center' });
 
-  const filename = empNombre !== '—'
-    ? 'canvas-' + empNombre.replace(/[^a-zA-Z0-9áéíóúñ]/g, '-').toLowerCase() + '.pdf'
-    : 'mi-lienzo-canvas.pdf';
-  doc.save(filename);
+  const slug = empNombre !== '—'
+    ? 'canvas-' + empNombre.replace(/[^a-zA-Z0-9áéíóúñ]/g, '-').toLowerCase()
+    : 'mi-lienzo-canvas';
+  return { doc, slug, W, TOTAL_H };
 }
 
-// ===== INIT =====
+// ===== EXPORTAR PDF =====
+async function exportPDF() {
+  await loadJsPDF();
+  const { jsPDF } = window.jspdf;
+  const { doc, slug } = buildCanvasDoc(jsPDF);
+  doc.save(slug + '.pdf');
+  showToast('✅ PDF exportado');
+}
+
+// ===== EXPORTAR PNG =====
+async function exportPNG() {
+  showToast('⏳ Generando imagen…');
+  await loadHtml2Canvas();
+  const slug = (document.getElementById('emp-nombre').value.trim() || 'mi-lienzo-canvas')
+    .replace(/[^a-zA-Z0-9áéíóúñ]/g, '-').toLowerCase();
+  const node = buildCanvasHTMLForCapture();
+  document.body.appendChild(node);
+  try {
+    // esperar a que la imagen del logo cargue si existe
+    const img = node.querySelector('img.cap-logo');
+    if (img && !img.complete) await new Promise(r => { img.onload = r; img.onerror = r; });
+    const canvas = await window.html2canvas(node, { scale: 2.5, backgroundColor: '#FBF7F0', useCORS: true });
+    const a = document.createElement('a');
+    a.download = slug + '.png';
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+    showToast('✅ Imagen PNG exportada');
+  } catch (err) {
+    showToast('❌ No se pudo generar la imagen', 'error');
+  } finally {
+    node.remove();
+  }
+}
+
+function loadHtml2Canvas() {
+  if (window.html2canvas) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = res; s.onerror = rej;
+    document.head.appendChild(s);
+  });
+}
+
+// Construye un nodo HTML que replica el lienzo, para capturarlo como PNG
+function buildCanvasHTMLForCapture() {
+  const s = getStudentData();
+  const estudiantes = [s.est1, s.est2, s.est3].filter(Boolean);
+  const blockMeta = {
+    kp:{n:1,t:'Socios Clave',s:'Alianzas clave',c:'#4A7C59'},
+    ka:{n:2,t:'Actividades Clave',s:'Actividades',c:'#3D5A73'},
+    kr:{n:6,t:'Recursos Clave',s:'Recursos',c:'#7B5EA7'},
+    vp:{n:3,t:'Propuesta de Valor',s:'El corazon',c:'#C4522A'},
+    cr:{n:4,t:'Relación con los Clientes',s:'Relaciones',c:'#C9982F'},
+    ch:{n:7,t:'Canales',s:'Distribucion',c:'#5C8A3C'},
+    cs:{n:5,t:'Segmentos de Clientes',s:'Mercado',c:'#2A7D8C'},
+    cost:{n:8,t:'Estructura de Costos',s:'Finanzas',c:'#5A5048'},
+    rev:{n:9,t:'Fuentes de Ingresos',s:'Ingresos',c:'#9C5A28'},
+  };
+  const esc = t => (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const tintCss = (hex, pct) => {
+    const [r,g,b] = hexToRgb(hex);
+    const m = v => Math.round(255 - (255-v)*pct);
+    return `rgb(${m(r)},${m(g)},${m(b)})`;
+  };
+
+  function blockHTML(id, extraStyle='') {
+    const meta = blockMeta[id];
+    const items = notes[id] || [];
+    const notesHTML = items.map(n => `
+      <div style="background:${tintCss(meta.c,0.10)};border-left:3px solid ${meta.c};
+        border-radius:5px;padding:8px 10px;margin-bottom:7px;font-size:13px;line-height:1.5;color:#3A322A;">
+        ${esc(n)}
+      </div>`).join('');
+    return `
+      <div style="background:#fff;border:1px solid #EAE0D3;border-radius:8px;overflow:hidden;
+        box-shadow:0 1px 4px rgba(0,0,0,0.05);${extraStyle}">
+        <div style="height:6px;background:${meta.c};"></div>
+        <div style="padding:12px 14px;">
+          <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px;">
+            <div style="width:24px;height:24px;border-radius:50%;background:${meta.c};color:#fff;
+              font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">${meta.n}</div>
+            <div>
+              <div style="font-size:9px;font-weight:700;letter-spacing:0.08em;color:${meta.c};text-transform:uppercase;">${esc(meta.s)}</div>
+              <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#241E18;">${esc(meta.t)}</div>
+            </div>
+          </div>
+          <div style="border-top:1px solid #EAE0D3;margin:6px 0 10px;"></div>
+          ${notesHTML || '<div style="font-size:12px;color:#bbb;font-style:italic;">—</div>'}
+        </div>
+      </div>`;
+  }
+
+  const accent = accentColor;
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-99999px;top:0;width:1180px;background:#FBF7F0;padding:0;font-family:\'DM Sans\',sans-serif;';
+
+  const logoHTML = logoData
+    ? `<div style="width:70px;height:70px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
+         <img class="cap-logo" src="${logoData}" style="max-width:90%;max-height:90%;object-fit:contain;">
+       </div>` : '';
+
+  const eslHTML = s.eslogan
+    ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:${tintCss(accent,0.85)};margin-top:4px;">"${esc(s.eslogan)}"</div>` : '';
+
+  wrap.innerHTML = `
+    <!-- HEADER -->
+    <div style="background:#241E18;padding:22px 28px;display:flex;align-items:center;gap:18px;">
+      ${logoHTML}
+      <div style="flex:1;">
+        <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#fff;line-height:1;">Lienzo del Modelo de Negocio</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;color:${tintCss(accent,0.82)};margin-top:7px;">BUSINESS MODEL CANVAS</div>
+        <div style="font-size:10px;font-style:italic;color:rgba(255,255,255,0.55);margin-top:3px;">Osterwalder &amp; Pigneur · Generación de Modelos de Negocio</div>
+      </div>
+      <div style="border-left:1px solid rgba(255,255,255,0.18);padding-left:20px;min-width:180px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:${tintCss(accent,0.82)};">EMPRENDIMIENTO</div>
+        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-top:2px;">${esc(s.nombre||'—')}</div>
+        ${eslHTML}
+      </div>
+      <div style="min-width:160px;">
+        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:${tintCss(accent,0.82)};">EQUIPO</div>
+        ${estudiantes.map(e=>`<div style="font-size:12px;color:#fff;margin-top:5px;">· ${esc(e)}</div>`).join('') || '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:5px;">—</div>'}
+      </div>
+    </div>
+    <!-- franja acento -->
+    <div style="display:flex;height:5px;">
+      <div style="flex:1;background:${accent};"></div>
+      <div style="flex:1;background:${tintCss(accent,0.7)};"></div>
+      <div style="flex:1;background:#D4A853;"></div>
+    </div>
+
+    <!-- GRID -->
+    <div style="padding:18px 20px;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;">
+        ${blockHTML('kp')}
+        <div style="display:flex;flex-direction:column;gap:10px;">${blockHTML('ka')}${blockHTML('kr')}</div>
+        ${blockHTML('vp')}
+        <div style="display:flex;flex-direction:column;gap:10px;">${blockHTML('cr')}${blockHTML('ch')}</div>
+        ${blockHTML('cs')}
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+        ${blockHTML('cost')}
+        ${blockHTML('rev')}
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div style="background:#241E18;padding:10px;text-align:center;">
+      <span style="font-size:10px;color:rgba(255,255,255,0.5);">Basado en Osterwalder &amp; Pigneur (2010) · Generación de Modelos de Negocio · Deusto</span>
+    </div>
+  `;
+  return wrap;
+}
 loadNotes();
 loadStudents();
+initLogoDnD();
 buildLearn();
 buildPatterns();
 </script>
