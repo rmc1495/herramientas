@@ -6,6 +6,8 @@
 <title>Calculadora del Emprendedor — Análisis Financiero Integral</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 :root {
   --bg: #F7F0F8;
@@ -1602,6 +1604,7 @@ function calcular() {
   const diffUnits = Math.abs(prodMensual - Math.ceil(peUnidades));
 
   // Store globally
+  const _labels = BUSINESS_TYPES[currentBizType].labels;
   window._D = {
     product, unidades, margen, porDia, diasMes, impuesto,
     ings, vars_, fixed,
@@ -1612,8 +1615,9 @@ function calcular() {
     prodMensual, ingresosMensuales, costosVariablesMes, costosTotalesMes, utilidadMes, roi,
     margenSeguridad, superavit, diffUnits,
     bizType: currentBizType,
-    unidad: BUSINESS_TYPES[currentBizType].labels.unidad,
-    unidadPlural: BUSINESS_TYPES[currentBizType].labels.unidadPlural,
+    labels: _labels,
+    unidad: _labels.unidad,
+    unidadPlural: _labels.unidadPlural,
   };
 
   renderResults();
@@ -1633,6 +1637,10 @@ function renderResults() {
       <button class="action-btn" onclick="exportarPDF()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Exportar PDF
+      </button>
+      <button class="action-btn" onclick="exportarExcel()" style="background:var(--green-d);color:white;">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+        Exportar Excel
       </button>
     </div>
 
@@ -1776,16 +1784,16 @@ function renderCostos() {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">📦 Insumos / Materia Prima</div>
-          <div class="card-subtitle">Costo directo por lote de ${d.unidades} unidades</div>
+          <div class="card-title">📦 ${d.labels.insumos}</div>
+          <div class="card-subtitle">Costo directo por lote de ${d.unidades} ${d.unidadPlural}</div>
         </div>
       </div>
       <div class="table-scroll has-many">
       <table>
-        <thead><tr><th>Insumo</th><th>Costo total</th><th>Costo/ud</th><th>% del total</th></tr></thead>
+        <thead><tr><th>${d.labels.insumos.split('/')[0].trim()}</th><th>Costo total</th><th>Costo/${d.unidad}</th><th>% del total</th></tr></thead>
         <tbody>
           ${ingsRows}
-          <tr><td class="total"><strong>Subtotal insumos</strong></td><td class="total mono right">${col(d.costoInsumos)}</td><td class="total accent right"><strong>${col(d.costoInsumosPorUd)}</strong></td><td class="total mono right">100%</td></tr>
+          <tr><td class="total"><strong>Subtotal ${d.labels.insumos.toLowerCase()}</strong></td><td class="total mono right">${col(d.costoInsumos)}</td><td class="total accent right"><strong>${col(d.costoInsumosPorUd)}</strong></td><td class="total mono right">100%</td></tr>
         </tbody>
       </table>
       </div>
@@ -1795,13 +1803,13 @@ function renderCostos() {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">📦 Otros Costos Variables</div>
-          <div class="card-subtitle">Costos que varían con cada unidad vendida</div>
+          <div class="card-title">📦 ${d.labels.variables}</div>
+          <div class="card-subtitle">${d.labels.variablesTooltip}</div>
         </div>
       </div>
       <div class="table-scroll has-many">
       <table>
-        <thead><tr><th>Concepto</th><th></th><th>₡/ud</th><th>%</th></tr></thead>
+        <thead><tr><th>Concepto</th><th></th><th>₡/${d.unidad}</th><th>%</th></tr></thead>
         <tbody>
           ${varsRows}
           <tr><td class="total"><strong>Subtotal variables extra</strong></td><td class="total"></td><td class="total accent right"><strong>${col(d.costoVariableExtra)}</strong></td><td class="total mono right">100%</td></tr>
@@ -1813,18 +1821,18 @@ function renderCostos() {
     <div class="card">
       <div class="card-header">
         <div>
-          <div class="card-title">💸 Costo Variable Total</div>
-          <div class="card-subtitle">Suma de todos los costos por unidad</div>
+          <div class="card-title">💸 Estructura de Precio por ${d.unidad}</div>
+          <div class="card-subtitle">Desglose del costo y precio sugerido</div>
         </div>
       </div>
       <div class="table-scroll">
       <table>
         <tbody>
-          <tr><td>Insumos por unidad</td><td class="mono right">${col(d.costoInsumosPorUd)}</td></tr>
-          <tr><td>Otros costos variables</td><td class="mono right">${col(d.costoVariableExtra)}</td></tr>
-          <tr><td class="total"><strong>COSTO VARIABLE / UNIDAD</strong></td><td class="total accent right"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
-          <tr><td>Costo fijo / unidad (${col0(d.totalFijos)} ÷ ${d.prodMensual} uds)</td><td class="mono right">${col(d.costoFijoPorUd)}</td></tr>
-          <tr><td class="total"><strong>COSTO TOTAL / UNIDAD</strong></td><td class="total accent right"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
+          <tr><td>${d.labels.insumos} por ${d.unidad}</td><td class="mono right">${col(d.costoInsumosPorUd)}</td></tr>
+          <tr><td>${d.labels.variables} por ${d.unidad}</td><td class="mono right">${col(d.costoVariableExtra)}</td></tr>
+          <tr><td class="total"><strong>COSTO VARIABLE / ${d.unidad.toUpperCase()}</strong></td><td class="total accent right"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
+          <tr><td>Costo fijo / ${d.unidad} (${col0(d.totalFijos)} ÷ ${d.prodMensual} ${d.unidadPlural})</td><td class="mono right">${col(d.costoFijoPorUd)}</td></tr>
+          <tr><td class="total"><strong>COSTO TOTAL / ${d.unidad.toUpperCase()}</strong></td><td class="total accent right"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
           <tr><td>Margen de ganancia aplicado (${d.margen}%)</td><td class="mono right">+ ${col(d.costoTotalUnitario * d.margen / 100)}</td></tr>
           <tr><td class="total"><strong style="color:var(--green-d)">PRECIO DE VENTA</strong></td><td class="total right" style="color:var(--green-d);font-family:'JetBrains Mono',monospace;font-weight:700">${col(d.precioVenta)}</td></tr>
         </tbody>
@@ -1894,7 +1902,7 @@ function renderEquilibrio() {
       </div>
       <canvas id="eq-chart" height="280"></canvas>
       <div class="tags">
-        <span class="tag lav">PE: ${Math.ceil(d.peUnidades)} uds/mes</span>
+        <span class="tag lav">PE: ${Math.ceil(d.peUnidades)} ${d.unidadPlural}/mes</span>
         <span class="tag g">Ingreso PE: ${col0(d.peColones)}</span>
         <span class="tag y">Margen contrib: ${col(d.margenContrib)}/ud</span>
         <span class="tag r">Gastos fijos: ${col0(d.totalFijos)}/mes</span>
@@ -1912,9 +1920,9 @@ function renderEquilibrio() {
       <table>
         <tbody>
           <tr><td>1. Margen de contribución por unidad</td><td class="right">${col(d.precioVenta)} − ${col(d.costoVariableTotal)} = <strong style="color:var(--accent)">${col(d.margenContrib)}</strong></td></tr>
-          <tr><td>2. PE en unidades</td><td class="right">${col0(d.totalFijos)} ÷ ${col(d.margenContrib)} = <strong style="color:var(--accent)">${d.peUnidades.toFixed(2)} ≈ ${Math.ceil(d.peUnidades)} uds</strong></td></tr>
+          <tr><td>2. PE en ${d.unidadPlural}</td><td class="right">${col0(d.totalFijos)} ÷ ${col(d.margenContrib)} = <strong style="color:var(--accent)">${d.peUnidades.toFixed(2)} ≈ ${Math.ceil(d.peUnidades)} ${d.unidadPlural}</strong></td></tr>
           <tr><td>3. PE en colones</td><td class="right">${d.peUnidades.toFixed(2)} × ${col(d.precioVenta)} = <strong style="color:var(--accent)">${col0(d.peColones)}</strong></td></tr>
-          <tr><td>4. PE diario (${d.diasMes} días)</td><td class="right">${d.peUnidades.toFixed(2)} ÷ ${d.diasMes} = <strong style="color:var(--accent)">${Math.ceil(d.peDiario)} uds/día</strong></td></tr>
+          <tr><td>4. PE diario (${d.diasMes} días)</td><td class="right">${d.peUnidades.toFixed(2)} ÷ ${d.diasMes} = <strong style="color:var(--accent)">${Math.ceil(d.peDiario)} ${d.unidadPlural}/día</strong></td></tr>
           <tr><td>5. Margen de seguridad</td><td class="right">(${d.prodMensual} − ${Math.ceil(d.peUnidades)}) ÷ ${d.prodMensual} × 100 = <strong style="color:${d.superavit ? 'var(--green-d)' : 'var(--red-d)'}">${d.margenSeguridad.toFixed(1)}%</strong></td></tr>
         </tbody>
       </table>
@@ -1937,13 +1945,13 @@ function renderEscenarios() {
       <div class="scenario ${cssClass}">
         <div class="scenario-label">${name.label}</div>
         <div class="scenario-title">${name.title}</div>
-        <div class="scenario-row"><span class="lbl">Unidades vendidas</span><span class="val">${uds}/mes</span></div>
+        <div class="scenario-row"><span class="lbl">${d.labels.product} vendidos</span><span class="val">${uds}/mes</span></div>
         <div class="scenario-row"><span class="lbl">Ingresos</span><span class="val">${col0(ingresos)}</span></div>
         <div class="scenario-row"><span class="lbl">Costos variables</span><span class="val">${col0(cv)}</span></div>
         <div class="scenario-row"><span class="lbl">Costos fijos</span><span class="val">${col0(d.totalFijos)}</span></div>
         <div class="scenario-row"><span class="lbl"><strong>Utilidad</strong></span><span class="val ${utilidad >= 0 ? 'pos' : 'neg'}"><strong>${utilidad >= 0 ? '+' : ''}${col0(utilidad)}</strong></span></div>
         <div class="scenario-row"><span class="lbl">ROI mensual</span><span class="val ${roi >= 0 ? 'pos' : 'neg'}">${roi.toFixed(1)}%</span></div>
-        <div class="scenario-row"><span class="lbl">vs Punto Equilibrio</span><span class="val ${diffPE >= 0 ? 'pos' : 'neg'}">${diffPE >= 0 ? '+' : ''}${diffPE} uds</span></div>
+        <div class="scenario-row"><span class="lbl">vs Punto Equilibrio</span><span class="val ${diffPE >= 0 ? 'pos' : 'neg'}">${diffPE >= 0 ? '+' : ''}${diffPE} ${d.unidadPlural}</span></div>
       </div>
     `;
   };
@@ -1953,7 +1961,7 @@ function renderEscenarios() {
       <div class="card-header">
         <div>
           <div class="card-title">🎯 Análisis de Escenarios</div>
-          <div class="card-subtitle">Proyección con diferentes niveles de venta (basado en ${d.prodMensual} uds actuales)</div>
+          <div class="card-subtitle">Proyección con diferentes niveles de venta (basado en ${d.prodMensual} ${d.unidadPlural} actuales)</div>
         </div>
       </div>
       <div class="scenarios-grid">
@@ -1974,7 +1982,7 @@ function renderEscenarios() {
       <table>
         <thead><tr><th>Indicador</th><th>Mensual</th><th>Trimestral</th><th>Anual</th></tr></thead>
         <tbody>
-          <tr><td>Unidades vendidas</td><td class="mono right">${d.prodMensual}</td><td class="mono right">${d.prodMensual * 3}</td><td class="mono right">${d.prodMensual * 12}</td></tr>
+          <tr><td>${d.unidadPlural.charAt(0).toUpperCase() + d.unidadPlural.slice(1)} vendidos</td><td class="mono right">${d.prodMensual}</td><td class="mono right">${d.prodMensual * 3}</td><td class="mono right">${d.prodMensual * 12}</td></tr>
           <tr><td>Ingresos brutos</td><td class="green-t right">${col0(d.ingresosMensuales)}</td><td class="green-t right">${col0(d.ingresosMensuales * 3)}</td><td class="green-t right">${col0(d.ingresosMensuales * 12)}</td></tr>
           <tr><td>Costos variables</td><td class="mono right">${col0(d.costosVariablesMes)}</td><td class="mono right">${col0(d.costosVariablesMes * 3)}</td><td class="mono right">${col0(d.costosVariablesMes * 12)}</td></tr>
           <tr><td>Costos fijos</td><td class="mono right">${col0(d.totalFijos)}</td><td class="mono right">${col0(d.totalFijos * 3)}</td><td class="mono right">${col0(d.totalFijos * 12)}</td></tr>
@@ -2090,6 +2098,35 @@ function renderSensibilidad() {
 }
 
 // ── RECOMENDACIONES ───────────────────────────────────────────────────────────
+function generateRecommendations(d) {
+  const recoms = [];
+  if (d.utilidadMes < 0) {
+    recoms.push({ type:'danger', icon:'⚠️', title:'Tu negocio está en pérdida', text:`Necesitás vender al menos ${Math.ceil(d.peUnidades)} ${d.unidadPlural} al mes para no perder dinero. Actualmente vendés ${d.prodMensual} y faltan ${d.diffUnits} ${d.unidadPlural}/mes.` });
+  } else if (d.margenSeguridad < 15) {
+    recoms.push({ type:'warning', icon:'⚠️', title:'Margen de seguridad muy bajo', text:`Tu margen de seguridad es solo del ${d.margenSeguridad.toFixed(1)}%. Una pequeña caída en ventas podría llevarte a pérdidas. Lo recomendable es tener al menos 25-30%.` });
+  } else {
+    recoms.push({ type:'success', icon:'✅', title:'Negocio rentable con buen margen', text:`Tenés un margen de seguridad del ${d.margenSeguridad.toFixed(1)}%, lo que significa que podés enfrentar caídas en ventas sin entrar en pérdida. Tu utilidad mensual estimada es de ${col0(d.utilidadMes)}.` });
+  }
+  if (d.margenPct < 30) {
+    recoms.push({ type:'warning', icon:'📉', title:'Margen de contribución bajo', text:`Tu margen de contribución es del ${d.margenPct.toFixed(1)}%, por debajo del 30% recomendado.` });
+  } else if (d.margenPct >= 50) {
+    recoms.push({ type:'success', icon:'💪', title:'Excelente margen de contribución', text:`Tu margen de contribución del ${d.margenPct.toFixed(1)}% es muy bueno.` });
+  }
+  if (d.ings.length > 0) {
+    const topIng = [...d.ings].sort((a,b)=>b.cost-a.cost)[0];
+    const topPct = d.costoInsumos > 0 ? (topIng.cost/d.costoInsumos)*100 : 0;
+    if (topPct > 40) recoms.push({ type:'info', icon:'🔍', title:'Insumo dominante en costos', text:`${topIng.name} representa el ${topPct.toFixed(1)}% de tus insumos. Reducir su costo tendría el mayor impacto positivo.` });
+  }
+  if (d.fixed.length > 0) {
+    const topFix = [...d.fixed].sort((a,b)=>b.value-a.value)[0];
+    const topFixPct = d.totalFijos > 0 ? (topFix.value/d.totalFijos)*100 : 0;
+    if (topFixPct > 40) recoms.push({ type:'info', icon:'🏢', title:'Gasto fijo dominante', text:`${topFix.name} representa el ${topFixPct.toFixed(1)}% de tus gastos fijos.` });
+  }
+  if (d.roi > 30 && d.utilidadMes > 0) recoms.push({ type:'success', icon:'📈', title:'ROI excelente', text:`Un ROI mensual del ${d.roi.toFixed(1)}% es muy bueno.` });
+  if (d.impuesto > 0) recoms.push({ type:'info', icon:'🧾', title:'Impacto fiscal', text:`Precio con ${d.impuesto}% de impuesto: ${col(d.precioConIVA)}. Recordá separar ese porcentaje.` });
+  return recoms;
+}
+
 function renderRecomendaciones() {
   const d = window._D;
   const recoms = [];
@@ -2387,7 +2424,7 @@ function drawChart() {
         c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.stroke();
 
         c.font = '500 10px JetBrains Mono, monospace';
-        const t1 = `PE: ${Math.ceil(d.peUnidades)} uds`;
+        const t1 = `PE: ${Math.ceil(d.peUnidades)} ${d.unidadPlural}`;
         const t2 = col0(d.peColones);
         const bw = Math.max(c.measureText(t1).width, c.measureText(t2).width) + 16;
         const bh = 38;
@@ -2435,6 +2472,199 @@ function drawChart() {
 // ============================================================================
 // EXPORT PDF — Comprehensive Executive Report
 // ============================================================================
+// ============================================================================
+// EXPORT EXCEL
+// ============================================================================
+async function exportarExcel() {
+  const d = window._D;
+  if (!d) { showToast('⚠️ Primero presioná Analizar Negocio'); return; }
+  showToast('⏳ Generando Excel...');
+
+  const wb = new ExcelJS.Workbook();
+  wb.creator = 'Calculadora del Emprendedor';
+  const U = d.unidad, Up = d.unidadPlural;
+  const cr = v => Math.round(v * 100) / 100;
+
+  const PURPLE='FF7C3AED',PURPLE_L='FFEDE9FE',GREEN='FF16A34A',RED='FFDC2626',GRAY='FF6B7280',BLACK='FF1F2937',WHITE='FFFFFFFF';
+  const hdrFont={name:'Arial',bold:true,color:{argb:WHITE},size:11};
+  const hdrFill={type:'pattern',pattern:'solid',fgColor:{argb:PURPLE}};
+  const subFont={name:'Arial',bold:true,color:{argb:PURPLE},size:10};
+  const subFill={type:'pattern',pattern:'solid',fgColor:{argb:PURPLE_L}};
+  const nFont={name:'Arial',size:10,color:{argb:BLACK}};
+  const bFont={name:'Arial',size:10,bold:true,color:{argb:BLACK}};
+  const gFont={name:'Arial',size:10,bold:true,color:{argb:GREEN}};
+  const rFont={name:'Arial',size:10,bold:true,color:{argb:RED}};
+  const tFont={name:'Arial',size:14,bold:true,color:{argb:PURPLE}};
+  const thinB={bottom:{style:'thin',color:{argb:'FFD1D5DB'}}};
+  const thickB={top:{style:'medium',color:{argb:PURPLE}},bottom:{style:'medium',color:{argb:PURPLE}}};
+  const colFmt='₡#,##0.00';
+  const pctFmt='0.0%';
+  const rA={horizontal:'right',vertical:'middle'};
+  const lA={horizontal:'left',vertical:'middle'};
+
+  function styleH(row){row.eachCell(c=>{c.font=hdrFont;c.fill=hdrFill;c.alignment={horizontal:'center',vertical:'middle'};});}
+  function styleS(row){row.eachCell(c=>{c.font=subFont;c.fill=subFill;c.border=thickB;});}
+  function styleD(row,o={}){row.eachCell((c,ci)=>{c.font=o.bold?bFont:nFont;c.border=o.thick?thickB:thinB;c.alignment=ci>1?rA:lA;if(o.fill)c.fill=o.fill;});}
+
+  // ═══ HOJA 1: RESUMEN EJECUTIVO ═══
+  const ws1=wb.addWorksheet('Resumen Ejecutivo',{properties:{tabColor:{argb:PURPLE}}});
+  ws1.columns=[{width:40},{width:20},{width:18},{width:18}];
+  ws1.mergeCells('A1:D1');
+  ws1.getCell('A1').value=`📦 ${d.product} — Reporte Financiero`;
+  ws1.getCell('A1').font=tFont;
+  ws1.mergeCells('A2:D2');
+  ws1.getCell('A2').value=`${new Date().toLocaleDateString('es-CR')} · Lote: ${d.unidades} ${Up} · Margen: ${d.margen}% · Producción: ${d.porDia} ${Up}/día × ${d.diasMes} días`;
+  ws1.getCell('A2').font={name:'Arial',size:9,color:{argb:GRAY}};
+
+  let r=4;
+  ws1.getCell(`A${r}`).value='INDICADORES CLAVE';
+  ws1.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r++;
+  [[`Costo variable / ${U}`,cr(d.costoVariableTotal),colFmt],[`Costo fijo / ${U}`,cr(d.costoFijoPorUd),colFmt],[`Costo total / ${U}`,cr(d.costoTotalUnitario),colFmt],['Precio de venta',cr(d.precioVenta),colFmt],['Precio con IVA',cr(d.precioConIVA),colFmt],[`Ganancia por ${U}`,cr(d.gananciaUnit),colFmt],['Margen de contribución',cr(d.margenContrib),colFmt],['Margen contribución %',cr(d.margenPct)/100,pctFmt],[`PE ${Up}/mes`,cr(d.peUnidades),'#,##0.00'],['PE colones/mes',cr(d.peColones),colFmt],[`PE ${Up}/día`,cr(d.peDiario),'#,##0.00'],[`Producción mensual (${Up})`,d.prodMensual,'#,##0'],['Utilidad mensual',cr(d.utilidadMes),colFmt],['ROI mensual',cr(d.roi)/100,pctFmt],['Margen de seguridad',cr(d.margenSeguridad)/100,pctFmt]].forEach(([label,val,fmt])=>{
+    const row=ws1.getRow(r);row.values=[label,val];row.getCell(2).numFmt=fmt;
+    const isU=label.includes('Utilidad');const isT=label.includes('total')||label.includes('Precio');
+    styleD(row,{bold:isT||isU});if(isU)row.getCell(2).font=val>=0?gFont:rFont;r++;
+  });
+
+  r++;
+  ws1.getCell(`A${r}`).value='ESTADO DE RESULTADOS MENSUAL';
+  ws1.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r++;
+  [[`Ingresos por ventas (${d.prodMensual} ${Up} × ₡${col0R(d.precioVenta)})`,cr(d.ingresosMensuales),false],[`(–) Costos variables (₡${col0R(d.costoVariableTotal)}/${U})`,cr(d.costosVariablesMes),false],['Margen de contribución total',cr(d.ingresosMensuales-d.costosVariablesMes),false],['(–) Gastos fijos mensuales',cr(d.totalFijos),false],['UTILIDAD NETA MENSUAL',cr(d.utilidadMes),true]].forEach(([label,val,isT])=>{
+    const row=ws1.getRow(r);row.values=[label,val];row.getCell(2).numFmt=colFmt;
+    styleD(row,{bold:isT,thick:isT});
+    if(isT){row.getCell(2).font=val>=0?gFont:rFont;row.getCell(1).font=bFont;row.getCell(1).fill=subFill;row.getCell(2).fill=subFill;}
+    r++;
+  });
+
+  // ═══ HOJA 2: ESTRUCTURA DE COSTOS ═══
+  const ws2=wb.addWorksheet('Estructura de Costos',{properties:{tabColor:{argb:'FFEA580C'}}});
+  ws2.columns=[{width:35},{width:16},{width:14},{width:12},{width:8}];
+  r=1;
+  ws2.getCell(`A${r}`).value=`📦 ${d.labels.insumos}`;
+  ws2.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r++;
+  let hRow=ws2.getRow(r);hRow.values=[d.labels.insumos.split('/')[0].trim(),'Costo total ₡',`Costo/${U} ₡`,'% del total','Unidad'];styleH(hRow);r++;
+
+  d.ings.forEach(i=>{
+    const cpu=i.cost/d.unidades,pct=d.costoInsumos>0?i.cost/d.costoInsumos:0;
+    const ul=i.unit&&i.unit!=='uds'?`${i.name} (${i.qty} ${i.unit})`:i.name;
+    const row=ws2.getRow(r);row.values=[ul,cr(i.cost),cr(cpu),pct,i.unit||'uds'];
+    row.getCell(2).numFmt=colFmt;row.getCell(3).numFmt=colFmt;row.getCell(4).numFmt=pctFmt;
+    styleD(row);r++;
+  });
+  let sRow=ws2.getRow(r);sRow.values=[`SUBTOTAL ${d.labels.insumos.toUpperCase()}`,cr(d.costoInsumos),cr(d.costoInsumosPorUd),1,''];
+  sRow.getCell(2).numFmt=colFmt;sRow.getCell(3).numFmt=colFmt;sRow.getCell(4).numFmt=pctFmt;styleS(sRow);r+=2;
+
+  ws2.getCell(`A${r}`).value=`📦 ${d.labels.variables} ${d.labels.variablesInfo}`;
+  ws2.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};r++;
+  hRow=ws2.getRow(r);hRow.values=['Concepto',`₡/${U}`,'% del total'];styleH(hRow);r++;
+  d.vars_.forEach(v=>{
+    const pct=d.costoVariableExtra>0?v.value/d.costoVariableExtra:0;
+    const row=ws2.getRow(r);row.values=[v.name,cr(v.value),pct];
+    row.getCell(2).numFmt=colFmt;row.getCell(3).numFmt=pctFmt;styleD(row);r++;
+  });
+  sRow=ws2.getRow(r);sRow.values=['SUBTOTAL VARIABLES EXTRA',cr(d.costoVariableExtra),1];
+  sRow.getCell(2).numFmt=colFmt;sRow.getCell(3).numFmt=pctFmt;styleS(sRow);r+=2;
+
+  ws2.getCell(`A${r}`).value=`💸 Estructura de Precio por ${U}`;
+  ws2.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};r++;
+  [[`${d.labels.insumos} por ${U}`,cr(d.costoInsumosPorUd),false],[`${d.labels.variables} por ${U}`,cr(d.costoVariableExtra),false],[`COSTO VARIABLE / ${U.toUpperCase()}`,cr(d.costoVariableTotal),true],[`Costo fijo / ${U} (₡${col0R(d.totalFijos)} ÷ ${d.prodMensual} ${Up})`,cr(d.costoFijoPorUd),false],[`COSTO TOTAL / ${U.toUpperCase()}`,cr(d.costoTotalUnitario),true],[`(+) Margen de ganancia (${d.margen}%)`,cr(d.costoTotalUnitario*d.margen/100),false],['PRECIO DE VENTA',cr(d.precioVenta),true],[`(+) Impuesto (${d.impuesto}%)`,cr(d.precioVenta*d.impuesto/100),false],['PRECIO FINAL AL CLIENTE',cr(d.precioConIVA),true]].forEach(([label,val,isT])=>{
+    const row=ws2.getRow(r);row.values=[label,val];row.getCell(2).numFmt=colFmt;
+    if(isT){styleS(row);}else{styleD(row);}
+    if(label==='PRECIO DE VENTA'){row.getCell(1).font=gFont;row.getCell(2).font=gFont;}
+    r++;
+  });
+  r++;
+  ws2.getCell(`A${r}`).value='🏢 Gastos Fijos Mensuales';
+  ws2.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};r++;
+  hRow=ws2.getRow(r);hRow.values=['Concepto','Monto mensual ₡','% del total'];styleH(hRow);r++;
+  d.fixed.forEach(f=>{
+    const pct=d.totalFijos>0?f.value/d.totalFijos:0;
+    const row=ws2.getRow(r);row.values=[f.name,cr(f.value),pct];
+    row.getCell(2).numFmt='₡#,##0';row.getCell(3).numFmt=pctFmt;styleD(row);r++;
+  });
+  sRow=ws2.getRow(r);sRow.values=['TOTAL GASTOS FIJOS',cr(d.totalFijos),1];
+  sRow.getCell(2).numFmt='₡#,##0';sRow.getCell(3).numFmt=pctFmt;styleS(sRow);
+
+  // ═══ HOJA 3: PUNTO DE EQUILIBRIO ═══
+  const ws3=wb.addWorksheet('Punto de Equilibrio',{properties:{tabColor:{argb:'FF16A34A'}}});
+  ws3.columns=[{width:42},{width:22},{width:20}];
+  ws3.getCell('A1').value='🧮 ANÁLISIS DEL PUNTO DE EQUILIBRIO';
+  ws3.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r=3;
+  [[`Margen de contribución/${U}`,cr(d.margenContrib),colFmt],['Margen contribución %',cr(d.margenPct)/100,pctFmt],[`PE ${Up}/mes`,cr(d.peUnidades),'#,##0.00'],['PE colones/mes',cr(d.peColones),colFmt],[`PE ${Up}/día`,cr(d.peDiario),'#,##0.00'],['Margen de seguridad',cr(d.margenSeguridad)/100,pctFmt]].forEach(([label,val,fmt])=>{
+    const row=ws3.getRow(r);row.values=[label,val];row.getCell(2).numFmt=fmt;styleD(row,{bold:true});r++;
+  });
+  r++;
+  ws3.getCell(`A${r}`).value='FÓRMULA PASO A PASO';
+  ws3.getCell(`A${r}`).font={name:'Arial',size:11,bold:true,color:{argb:PURPLE}};r++;
+  [['1. Margen de contribución',`₡${col0R(d.precioVenta)} − ₡${col0R(d.costoVariableTotal)} = ₡${col0R(d.margenContrib)}`],[`2. PE en ${Up}`,`₡${col0R(d.totalFijos)} ÷ ₡${col0R(d.margenContrib)} = ${d.peUnidades.toFixed(2)} ≈ ${Math.ceil(d.peUnidades)}`],['3. PE en colones',`${d.peUnidades.toFixed(2)} × ₡${col0R(d.precioVenta)} = ₡${col0R(d.peColones)}`],[`4. PE diario (${d.diasMes} días)`,`${d.peUnidades.toFixed(2)} ÷ ${d.diasMes} = ${Math.ceil(d.peDiario)} ${Up}/día`],['5. Margen de seguridad',`(${d.prodMensual} − ${Math.ceil(d.peUnidades)}) ÷ ${d.prodMensual} × 100 = ${d.margenSeguridad.toFixed(1)}%`]].forEach(([l,f])=>{
+    const row=ws3.getRow(r);row.values=[l,f];styleD(row);r++;
+  });
+
+  // ═══ HOJA 4: ESCENARIOS ═══
+  const ws4=wb.addWorksheet('Escenarios',{properties:{tabColor:{argb:'FFEA580C'}}});
+  ws4.columns=[{width:25},{width:20},{width:20},{width:20}];
+  ws4.getCell('A1').value='🎯 ANÁLISIS DE ESCENARIOS';
+  ws4.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r=3;hRow=ws4.getRow(r);hRow.values=['Indicador','Pesimista (−30%)','Realista','Optimista (+30%)'];styleH(hRow);r++;
+  const sc=m=>{const u=Math.round(d.prodMensual*m),ig=u*d.precioVenta,cv=u*d.costoVariableTotal,ut=ig-cv-d.totalFijos,ro=(cv+d.totalFijos)>0?ut/(cv+d.totalFijos):0;return{u,ig,cv,ut,ro,df:u-Math.ceil(d.peUnidades)};};
+  [[`${Up}/mes`,s=>s.u,'#,##0'],['Ingresos ₡',s=>cr(s.ig),colFmt],['Costos variables ₡',s=>cr(s.cv),colFmt],['Costos fijos ₡',()=>cr(d.totalFijos),colFmt],['Utilidad ₡',s=>cr(s.ut),colFmt],['ROI',s=>s.ro,pctFmt],[`vs PE (${Up})`,s=>s.df,'+#,##0;-#,##0;0']].forEach(([label,getter,fmt])=>{
+    const row=ws4.getRow(r);const vals=[label];[0.7,1.0,1.3].forEach(m=>vals.push(getter(sc(m))));
+    row.values=vals;for(let c=2;c<=4;c++){row.getCell(c).numFmt=fmt;row.getCell(c).alignment=rA;}
+    const isU=label.includes('Utilidad');styleD(row,{bold:isU});
+    if(isU)for(let c=2;c<=4;c++){const v=row.getCell(c).value;row.getCell(c).font=v>=0?gFont:rFont;}
+    r++;
+  });
+  r++;
+  ws4.getCell(`A${r}`).value='📅 PROYECCIÓN ANUAL';
+  ws4.getCell(`A${r}`).font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};r++;
+  hRow=ws4.getRow(r);hRow.values=['Indicador','Mensual','Trimestral','Anual'];styleH(hRow);r++;
+  [[`${Up} vendidos`,d.prodMensual,'#,##0'],['Ingresos brutos ₡',cr(d.ingresosMensuales),colFmt],['(–) Costos variables ₡',cr(d.costosVariablesMes),colFmt],['(–) Costos fijos ₡',cr(d.totalFijos),colFmt],['UTILIDAD NETA ₡',cr(d.utilidadMes),colFmt]].forEach(([label,val,fmt])=>{
+    const row=ws4.getRow(r);row.values=[label,val,val*3,val*12];
+    for(let c=2;c<=4;c++){row.getCell(c).numFmt=fmt;row.getCell(c).alignment=rA;}
+    const isU=label.includes('UTILIDAD');styleD(row,{bold:isU,thick:isU});
+    if(isU){for(let c=2;c<=4;c++)row.getCell(c).font=val>=0?gFont:rFont;row.getCell(1).font=bFont;row.getCell(1).fill=subFill;}
+    r++;
+  });
+
+  // ═══ HOJA 5: SENSIBILIDAD ═══
+  const ws5=wb.addWorksheet('Sensibilidad',{properties:{tabColor:{argb:'FFDC2626'}}});
+  ws5.columns=[{width:38},{width:20}];
+  ws5.getCell('A1').value='📊 ANÁLISIS DE SENSIBILIDAD';
+  ws5.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  ws5.getCell('A2').value='Impacto en la utilidad mensual al variar cada factor';
+  ws5.getCell('A2').font={name:'Arial',size:9,color:{argb:GRAY}};
+  r=4;
+  [['📦 Cambios en el costo variable',['Costo −20%',cr(d.prodMensual*d.costoVariableTotal*0.2)],['Costo −10%',cr(d.prodMensual*d.costoVariableTotal*0.1)],['Costo +10%',cr(-d.prodMensual*d.costoVariableTotal*0.1)],['Costo +20%',cr(-d.prodMensual*d.costoVariableTotal*0.2)]],['🏷 Cambios en el precio',['Precio +20%',cr(d.prodMensual*d.precioVenta*0.2)],['Precio +10%',cr(d.prodMensual*d.precioVenta*0.1)],['Precio −10%',cr(-d.prodMensual*d.precioVenta*0.1)],['Precio −20%',cr(-d.prodMensual*d.precioVenta*0.2)]],['🏢 Cambios en gastos fijos',['Fijos −20%',cr(d.totalFijos*0.2)],['Fijos −10%',cr(d.totalFijos*0.1)],['Fijos +10%',cr(-d.totalFijos*0.1)],['Fijos +20%',cr(-d.totalFijos*0.2)]],['📊 Cambios en volumen',['Ventas +30%',cr(d.prodMensual*0.3*d.margenContrib)],['Ventas +10%',cr(d.prodMensual*0.1*d.margenContrib)],['Ventas −10%',cr(-d.prodMensual*0.1*d.margenContrib)],['Ventas −30%',cr(-d.prodMensual*0.3*d.margenContrib)]]].forEach(sec=>{
+    ws5.getCell(`A${r}`).value=sec[0];ws5.getCell(`A${r}`).font={name:'Arial',size:11,bold:true,color:{argb:PURPLE}};r++;
+    for(let i=1;i<sec.length;i++){const[l,v]=sec[i];const row=ws5.getRow(r);row.values=[l,v];row.getCell(2).numFmt='₡#,##0';row.getCell(2).font=v>=0?gFont:rFont;row.getCell(2).alignment=rA;styleD(row);row.getCell(2).font=v>=0?gFont:rFont;r++;}
+    r++;
+  });
+
+  // ═══ HOJA 6: RECOMENDACIONES ═══
+  const ws6=wb.addWorksheet('Recomendaciones',{properties:{tabColor:{argb:'FF8B5CF6'}}});
+  ws6.columns=[{width:90}];
+  ws6.getCell('A1').value='💡 RECOMENDACIONES ESTRATÉGICAS';
+  ws6.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+  r=3;
+  generateRecommendations(d).forEach(rec=>{
+    ws6.getCell(`A${r}`).value=`${rec.icon} ${rec.title}`;ws6.getCell(`A${r}`).font=bFont;r++;
+    ws6.getCell(`A${r}`).value=rec.text;ws6.getCell(`A${r}`).font=nFont;ws6.getRow(r).height=30;ws6.getCell(`A${r}`).alignment={wrapText:true,vertical:'top'};r+=2;
+  });
+
+  // ── Download ──
+  const buffer=await wb.xlsx.writeBuffer();
+  const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  const filename=`${d.product.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g,'')}_Reporte.xlsx`;
+  saveAs(blob,filename);
+  showToast('📊 Excel exportado: '+filename);
+}
+
+// Helper for Excel export (no ₡ symbol, just number formatting)
+function col0R(v) { return Number(v).toLocaleString('es-CR', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
+
 function exportarPDF() {
   const d = window._D;
   if (!d) { showToast('⚠️ Primero presioná Analizar Negocio'); return; }
@@ -2496,13 +2726,13 @@ function buildAndPrintPDF() {
     <div class="pr-scenario ${cls}">
       <div class="pr-scenario-label">${label}</div>
       <div class="pr-scenario-title">${title}</div>
-      <div class="pr-scenario-row"><span class="lbl">Unidades/mes</span><span class="val">${data.uds}</span></div>
+      <div class="pr-scenario-row"><span class="lbl">${d.unidadPlural.charAt(0).toUpperCase() + d.unidadPlural.slice(1)}/mes</span><span class="val">${data.uds}</span></div>
       <div class="pr-scenario-row"><span class="lbl">Ingresos</span><span class="val">${col0(data.ingresos)}</span></div>
       <div class="pr-scenario-row"><span class="lbl">Costos var.</span><span class="val">${col0(data.cv)}</span></div>
       <div class="pr-scenario-row"><span class="lbl">Costos fijos</span><span class="val">${col0(d.totalFijos)}</span></div>
       <div class="pr-scenario-row"><span class="lbl"><strong>Utilidad</strong></span><span class="val" style="color:${data.utilidad >= 0 ? '#5aaa83' : '#c07070'}"><strong>${data.utilidad >= 0 ? '+' : ''}${col0(data.utilidad)}</strong></span></div>
       <div class="pr-scenario-row"><span class="lbl">ROI</span><span class="val" style="color:${data.roi >= 0 ? '#5aaa83' : '#c07070'}">${data.roi.toFixed(1)}%</span></div>
-      <div class="pr-scenario-row"><span class="lbl">vs PE</span><span class="val" style="color:${data.diffPE >= 0 ? '#5aaa83' : '#c07070'}">${data.diffPE >= 0 ? '+' : ''}${data.diffPE} uds</span></div>
+      <div class="pr-scenario-row"><span class="lbl">vs PE</span><span class="val" style="color:${data.diffPE >= 0 ? '#5aaa83' : '#c07070'}">${data.diffPE >= 0 ? '+' : ''}${data.diffPE} ${d.unidadPlural}</span></div>
     </div>
   `;
 
@@ -2591,8 +2821,8 @@ function buildAndPrintPDF() {
       </div>
       <div class="pr-meta">
         ${fecha} · ${hora}<br>
-        Lote: ${d.unidades} uds · Margen: ${d.margen}%<br>
-        Producción: ${d.porDia} uds/día × ${d.diasMes} días
+        Lote: ${d.unidades} ${d.unidadPlural} · Margen: ${d.margen}%<br>
+        Producción: ${d.porDia} ${d.unidadPlural}/día × ${d.diasMes} días
       </div>
     </div>
 
@@ -2626,7 +2856,7 @@ function buildAndPrintPDF() {
     <div class="pr-section-title">Estado de Resultados Mensual</div>
     <table class="pr-table">
       <tbody>
-        <tr><td>Ingresos por ventas (${d.prodMensual} uds × ${col(d.precioVenta)})</td><td class="right green-col">+ ${col0(d.ingresosMensuales)}</td></tr>
+        <tr><td>Ingresos por ventas (${d.prodMensual} ${d.unidadPlural} × ${col(d.precioVenta)})</td><td class="right green-col">+ ${col0(d.ingresosMensuales)}</td></tr>
         <tr><td>(–) Costos variables (${col(d.costoVariableTotal)}/ud)</td><td class="right">− ${col0(d.costosVariablesMes)}</td></tr>
         <tr class="total-row"><td><strong>Margen de contribución total</strong></td><td class="right accent-col">${col0(d.margenContrib * d.prodMensual)}</td></tr>
         <tr><td>(–) Gastos fijos mensuales</td><td class="right">− ${col0(d.totalFijos)}</td></tr>
@@ -2638,19 +2868,19 @@ function buildAndPrintPDF() {
     <div class="pr-page-break"></div>
     <div class="pr-section-title big">Sección 2 · Estructura de Costos Detallada</div>
 
-    <div class="pr-section-title">📦 Insumos / Materia Prima</div>
+    <div class="pr-section-title">📦 ${d.labels.insumos}</div>
     <table class="pr-table">
-      <thead><tr><th>Insumo</th><th>Costo total</th><th>Costo/ud</th><th>% del total</th></tr></thead>
+      <thead><tr><th>${d.labels.insumos.split('/')[0].trim()}</th><th>Costo total</th><th>Costo/${d.unidad}</th><th>% del total</th></tr></thead>
       <tbody>
         ${ingsRows}
-        <tr class="total-row"><td><strong>SUBTOTAL INSUMOS</strong></td><td class="right">${col(d.costoInsumos)}</td><td class="right accent-col"><strong>${col(d.costoInsumosPorUd)}</strong></td><td class="right">100%</td></tr>
+        <tr class="total-row"><td><strong>SUBTOTAL ${d.labels.insumos.toUpperCase()}</strong></td><td class="right">${col(d.costoInsumos)}</td><td class="right accent-col"><strong>${col(d.costoInsumosPorUd)}</strong></td><td class="right">100%</td></tr>
       </tbody>
     </table>
 
     ${d.vars_.length ? `
-    <div class="pr-section-title">📦 Otros Costos Variables (por unidad)</div>
+    <div class="pr-section-title">📦 ${d.labels.variables} ${d.labels.variablesInfo}</div>
     <table class="pr-table">
-      <thead><tr><th>Concepto</th><th>₡/ud</th><th>% del total</th></tr></thead>
+      <thead><tr><th>Concepto</th><th>₡/${d.unidad}</th><th>% del total</th></tr></thead>
       <tbody>
         ${varsRows}
         <tr class="total-row"><td><strong>SUBTOTAL VARIABLES EXTRA</strong></td><td class="right accent-col"><strong>${col(d.costoVariableExtra)}</strong></td><td class="right">100%</td></tr>
@@ -2658,14 +2888,14 @@ function buildAndPrintPDF() {
     </table>
     ` : ''}
 
-    <div class="pr-section-title">💸 Resumen del Costo Variable Total</div>
+    <div class="pr-section-title">💸 Estructura de Precio por ${d.unidad}</div>
     <table class="pr-table">
       <tbody>
-        <tr><td>Insumos por unidad</td><td class="right">${col(d.costoInsumosPorUd)}</td></tr>
-        <tr><td>Otros costos variables por unidad</td><td class="right">${col(d.costoVariableExtra)}</td></tr>
-        <tr class="total-row"><td><strong>COSTO VARIABLE TOTAL / UNIDAD</strong></td><td class="right accent-col"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
-        <tr><td>Costo fijo / unidad (${col0(d.totalFijos)} ÷ ${d.prodMensual} uds)</td><td class="right">${col(d.costoFijoPorUd)}</td></tr>
-        <tr class="total-row"><td><strong>COSTO TOTAL / UNIDAD</strong></td><td class="right accent-col"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
+        <tr><td>${d.labels.insumos} por ${d.unidad}</td><td class="right">${col(d.costoInsumosPorUd)}</td></tr>
+        <tr><td>${d.labels.variables} por ${d.unidad}</td><td class="right">${col(d.costoVariableExtra)}</td></tr>
+        <tr class="total-row"><td><strong>COSTO VARIABLE TOTAL / ${d.unidad.toUpperCase()}</strong></td><td class="right accent-col"><strong>${col(d.costoVariableTotal)}</strong></td></tr>
+        <tr><td>Costo fijo / ${d.unidad} (${col0(d.totalFijos)} ÷ ${d.prodMensual} ${d.unidadPlural})</td><td class="right">${col(d.costoFijoPorUd)}</td></tr>
+        <tr class="total-row"><td><strong>COSTO TOTAL / ${d.unidad.toUpperCase()}</strong></td><td class="right accent-col"><strong>${col(d.costoTotalUnitario)}</strong></td></tr>
         <tr><td>(+) Margen de ganancia (${d.margen}%)</td><td class="right">+ ${col(d.costoTotalUnitario * d.margen / 100)}</td></tr>
         <tr class="total-row"><td><strong style="color:#5aaa83">PRECIO DE VENTA SUGERIDO</strong></td><td class="right green-col"><strong>${col(d.precioVenta)}</strong></td></tr>
         <tr><td>(+) Impuesto al consumo (${d.impuesto}%)</td><td class="right">+ ${col(d.precioVenta * d.impuesto / 100)}</td></tr>
@@ -2722,7 +2952,7 @@ function buildAndPrintPDF() {
     <table class="pr-table">
       <thead><tr><th>Indicador</th><th>Mensual</th><th>Trimestral</th><th>Anual</th></tr></thead>
       <tbody>
-        <tr><td>Unidades vendidas</td><td class="right">${d.prodMensual.toLocaleString('es-CR')}</td><td class="right">${(d.prodMensual * 3).toLocaleString('es-CR')}</td><td class="right">${(d.prodMensual * 12).toLocaleString('es-CR')}</td></tr>
+        <tr><td>${d.unidadPlural.charAt(0).toUpperCase() + d.unidadPlural.slice(1)} vendidos</td><td class="right">${d.prodMensual.toLocaleString('es-CR')}</td><td class="right">${(d.prodMensual * 3).toLocaleString('es-CR')}</td><td class="right">${(d.prodMensual * 12).toLocaleString('es-CR')}</td></tr>
         <tr><td>Ingresos brutos</td><td class="right green-col">${col0(d.ingresosMensuales)}</td><td class="right green-col">${col0(d.ingresosMensuales * 3)}</td><td class="right green-col">${col0(d.ingresosMensuales * 12)}</td></tr>
         <tr><td>(–) Costos variables</td><td class="right">${col0(d.costosVariablesMes)}</td><td class="right">${col0(d.costosVariablesMes * 3)}</td><td class="right">${col0(d.costosVariablesMes * 12)}</td></tr>
         <tr><td>(–) Costos fijos</td><td class="right">${col0(d.totalFijos)}</td><td class="right">${col0(d.totalFijos * 3)}</td><td class="right">${col0(d.totalFijos * 12)}</td></tr>
