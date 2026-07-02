@@ -4,35 +4,36 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Calculadora del Emprendedor — Análisis Financiero Integral</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 <style>
 :root {
-  --bg: #F7F0F8;
+  --bg: #F8F7F2;
   --surface: #FFFFFF;
-  --surface2: #F0EAF5;
-  --surface3: #FAF6FC;
-  --border: #E2D4EC;
-  --border2: #D0BCDF;
-  --text: #2D1F3D;
-  --text2: #5A4A6A;
-  --muted: #9B87AE;
-  --accent: #C084D8;
-  --accent2: #A78BFA;
-  --green: #7EC8A4;
-  --green-d: #5aaa83;
-  --red: #F4A7A7;
-  --red-d: #c07070;
-  --blue: #93C5E8;
-  --blue-d: #5a8fb8;
-  --yellow: #F9D98F;
-  --yellow-d: #a07820;
-  --peach: #F4B8A0;
-  --peach-d: #b07050;
-  --mint: #A8DCC9;
-  --lavender: #C5B8F0;
+  --surface2: #F0EFE6;
+  --surface3: #FBFAF4;
+  --border: #E4E1D2;
+  --border2: #D2CEB9;
+  --text: #24382F;
+  --text2: #566A5F;
+  --muted: #93A094;
+  --accent: #2F7D5D;
+  --accent2: #B9974C;
+  --gold: #B9974C;
+  --green: #8FC7AB;
+  --green-d: #2F7D5D;
+  --red: #E3AFA7;
+  --red-d: #B96A5E;
+  --blue: #A5C6CF;
+  --blue-d: #4E7E8C;
+  --yellow: #EAD9A6;
+  --yellow-d: #97772E;
+  --peach: #EBC4A8;
+  --peach-d: #A9714B;
+  --mint: #BCDCC9;
+  --lavender: #C9D3C4;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -40,8 +41,8 @@
 body {
   background: var(--bg);
   background-image:
-    radial-gradient(ellipse at 10% 10%, rgba(192,132,216,0.10) 0%, transparent 50%),
-    radial-gradient(ellipse at 90% 80%, rgba(147,197,232,0.10) 0%, transparent 50%);
+    radial-gradient(ellipse at 12% 8%, rgba(47,125,93,0.06) 0%, transparent 55%),
+    radial-gradient(ellipse at 88% 85%, rgba(185,151,76,0.07) 0%, transparent 55%);
   color: var(--text);
   font-family: 'Instrument Sans', sans-serif;
   min-height: 100vh;
@@ -50,8 +51,9 @@ body {
 
 /* HEADER */
 .header {
-  background: white;
-  border-bottom: 2px solid var(--border);
+  background: linear-gradient(180deg, #FFFFFF 0%, #FCFBF6 100%);
+  border-bottom: 1px solid var(--gold);
+  box-shadow: 0 3px 0 -2px var(--accent), 0 6px 18px rgba(36,56,47,0.05);
   padding: 24px 36px 22px;
   display: flex;
   align-items: flex-end;
@@ -61,13 +63,13 @@ body {
 }
 
 .header-left h1 {
-  font-family: 'Syne', sans-serif;
-  font-size: clamp(1.5rem, 3vw, 2.2rem);
-  font-weight: 800;
-  letter-spacing: -1px;
-  line-height: 1;
+  font-family: 'Fraunces', serif;
+  font-size: clamp(1.5rem, 3vw, 2.15rem);
+  font-weight: 600;
+  letter-spacing: -0.5px;
+  line-height: 1.05;
 }
-.header-left h1 span { color: var(--accent); }
+.header-left h1 span { color: var(--accent); font-style: italic; }
 
 .header-left p {
   margin-top: 6px;
@@ -96,7 +98,7 @@ body {
   border: 2px solid var(--border2);
   border-radius: 10px;
   padding: 9px 14px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.95rem;
   font-weight: 700;
   width: 240px;
@@ -139,6 +141,7 @@ body {
   .scenarios-grid { grid-template-columns: 1fr; gap: 10px; }
   .sens-grid { grid-template-columns: 1fr; }
   .item-row.ing { grid-template-columns: 1.1fr 0.75fr 0.7fr 0.65fr 24px; }
+  .mp-charts-grid { grid-template-columns: 1fr !important; }
   .col-headers.ing { grid-template-columns: 1.1fr 0.75fr 0.7fr 0.65fr 24px; }
   .item-row input { font-size: 0.74rem; padding: 8px 6px; }
   .item-row select { font-size: 0.68rem; padding: 8px 3px; padding-right: 16px; }
@@ -322,7 +325,7 @@ body {
 .add-btn:hover {
   border-color: var(--accent);
   color: var(--accent);
-  background: rgba(192,132,216,0.06);
+  background: rgba(47,125,93,0.06);
 }
 
 /* PARAMS */
@@ -358,21 +361,21 @@ body {
 .calc-btn {
   width: 100%;
   padding: 14px;
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(180deg, #388C68 0%, #2F7D5D 100%);
   color: white;
   border: none;
   border-radius: 10px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.92rem;
   font-weight: 800;
   letter-spacing: 1px;
   text-transform: uppercase;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 16px rgba(192,132,216,0.3);
+  box-shadow: 0 4px 16px rgba(47,125,93,0.28);
   margin-top: 6px;
 }
-.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(192,132,216,0.4); }
+.calc-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(47,125,93,0.36); }
 
 .saveload-row {
   display: grid;
@@ -386,7 +389,7 @@ body {
   gap: 6px;
   padding: 9px 10px;
   border-radius: 10px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.74rem;
   font-weight: 700;
   cursor: pointer;
@@ -422,7 +425,7 @@ body {
 }
 .tab {
   padding: 10px 18px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--muted);
@@ -491,7 +494,7 @@ body {
   margin-bottom: 6px;
 }
 .kpi-value {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 1.2rem;
   font-weight: 800;
   color: var(--text);
@@ -510,11 +513,12 @@ body {
 /* CARDS */
 .card {
   background: var(--surface);
-  border: 1.5px solid var(--border);
-  border-radius: 14px;
+  border: 1px solid var(--border);
+  border-top: 2px solid var(--gold);
+  border-radius: 12px;
   padding: 20px;
   margin-bottom: 20px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+  box-shadow: 0 2px 10px rgba(36,56,47,0.04);
 }
 
 .card-header {
@@ -526,7 +530,7 @@ body {
   gap: 8px;
 }
 .card-title {
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 1rem;
   font-weight: 700;
   color: var(--text);
@@ -641,7 +645,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   justify-content: center;
 }
 .recom-body { flex: 1; }
-.recom-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.92rem; color: var(--text); margin-bottom: 4px; }
+.recom-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.92rem; color: var(--text); margin-bottom: 4px; }
 .recom-text { font-size: 0.84rem; color: var(--text2); line-height: 1.5; }
 .recom-text strong { color: var(--text); }
 
@@ -686,7 +690,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
 .scenario.realista  .scenario-label { color: var(--blue-d); }
 .scenario.optimista .scenario-label { color: var(--green-d); }
 
-.scenario-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; color: var(--text); }
+.scenario-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 1.1rem; margin-bottom: 12px; color: var(--text); }
 .scenario-row { display: flex; justify-content: space-between; align-items: center; padding: 7px 0; border-bottom: 1px dashed var(--border); font-size: 0.82rem; }
 .scenario-row:last-child { border-bottom: none; }
 .scenario-row .lbl { color: var(--text2); }
@@ -729,7 +733,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   border-radius: 6px;
   padding: 10px 14px;
 }
-.gloss-term { font-family: 'Syne', sans-serif; font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 3px; }
+.gloss-term { font-family: 'Fraunces', serif; font-weight: 700; color: var(--text); font-size: 0.88rem; margin-bottom: 3px; }
 .gloss-def { font-size: 0.82rem; color: var(--text2); line-height: 1.5; }
 
 /* TOP ACTIONS */
@@ -737,7 +741,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
 
 /* BUSINESS TYPE SELECTOR */
 .biz-selector {
-  background: linear-gradient(135deg, rgba(192,132,216,0.08), rgba(167,139,250,0.06));
+  background: linear-gradient(135deg, rgba(47,125,93,0.07), rgba(185,151,76,0.06));
   border: 2px solid var(--border2);
   border-radius: 12px;
   padding: 14px;
@@ -770,12 +774,12 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   transition: all 0.15s;
   font-family: 'Instrument Sans', sans-serif;
 }
-.biz-type:hover { border-color: var(--accent2); background: rgba(192,132,216,0.04); }
+.biz-type:hover { border-color: var(--accent2); background: rgba(47,125,93,0.04); }
 .biz-type.active {
-  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  background: linear-gradient(180deg, #388C68 0%, #2F7D5D 100%);
   border-color: var(--accent);
   color: white;
-  box-shadow: 0 4px 12px rgba(192,132,216,0.25);
+  box-shadow: 0 4px 12px rgba(47,125,93,0.24);
 }
 .biz-type-icon { font-size: 1.3rem; }
 .biz-type-label { font-size: 0.7rem; font-weight: 700; letter-spacing: 0.2px; }
@@ -790,7 +794,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   color: var(--accent);
   border: 2px solid var(--accent);
   border-radius: 10px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
@@ -822,7 +826,7 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   box-shadow: 0 20px 60px rgba(45,31,61,0.2);
   border: 2px solid var(--border);
 }
-.modal-title { font-family: 'Syne', sans-serif; font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
+.modal-title { font-family: 'Fraunces', serif; font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
 .modal-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 0.68rem; color: var(--muted); margin-bottom: 18px; }
 .modal input[type="text"] {
   width: 100%;
@@ -840,14 +844,14 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
 .modal-btn {
   padding: 9px 18px;
   border-radius: 8px;
-  font-family: 'Syne', sans-serif;
+  font-family: 'Fraunces', serif;
   font-size: 0.78rem;
   font-weight: 700;
   cursor: pointer;
   border: 2px solid transparent;
   transition: all 0.15s;
 }
-.modal-btn.confirm { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: white; }
+.modal-btn.confirm { background: linear-gradient(180deg, #388C68 0%, #2F7D5D 100%); color: white; }
 .modal-btn.confirm:hover { opacity: 0.9; }
 .modal-btn.cancel { background: var(--surface2); color: var(--muted); border-color: var(--border); }
 .modal-btn.cancel:hover { color: var(--text); border-color: var(--muted); }
@@ -861,9 +865,9 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
   transition: all 0.2s;
   background: var(--surface3);
 }
-.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(192,132,216,0.06); }
+.drop-zone:hover, .drop-zone.drag-over { border-color: var(--accent); background: rgba(47,125,93,0.06); }
 .drop-icon { font-size: 2.2rem; margin-bottom: 8px; }
-.drop-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 3px; }
+.drop-text { font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.88rem; margin-bottom: 3px; }
 .drop-sub { font-family: 'JetBrains Mono', monospace; font-size: 0.66rem; color: var(--muted); }
 
 .toast {
@@ -892,56 +896,56 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
 }
 
 #print-report { display: none; }
-.pr-header { border-bottom: 3px solid #C084D8; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
-.pr-header h1 { font-family: 'Syne', sans-serif; font-size: 20px; font-weight: 800; }
-.pr-header h1 span { color: #C084D8; }
-.pr-meta { font-size: 9px; color: #9B87AE; text-align: right; font-family: 'JetBrains Mono', monospace; line-height: 1.6; }
-.pr-product { font-size: 14px; font-weight: 700; color: #C084D8; margin-top: 3px; font-family: 'Syne', sans-serif; }
-.pr-section-title { font-family: 'Syne', sans-serif; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #C084D8; margin: 14px 0 7px; padding-bottom: 3px; border-bottom: 1px solid #E2D4EC; }
-.pr-section-title.big { font-size: 13px; color: #2D1F3D; border-bottom: 2px solid #C084D8; margin-top: 18px; }
+.pr-header { border-bottom: 3px solid #2F7D5D; padding-bottom: 12px; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: flex-end; }
+.pr-header h1 { font-family: 'Fraunces', serif; font-size: 20px; font-weight: 800; }
+.pr-header h1 span { color: #2F7D5D; }
+.pr-meta { font-size: 9px; color: #93A094; text-align: right; font-family: 'JetBrains Mono', monospace; line-height: 1.6; }
+.pr-product { font-size: 14px; font-weight: 700; color: #2F7D5D; margin-top: 3px; font-family: 'Fraunces', serif; }
+.pr-section-title { font-family: 'Fraunces', serif; font-size: 10px; font-weight: 800; letter-spacing: 1.2px; text-transform: uppercase; color: #2F7D5D; margin: 14px 0 7px; padding-bottom: 3px; border-bottom: 1px solid #E4E1D2; }
+.pr-section-title.big { font-size: 13px; color: #24382F; border-bottom: 2px solid #2F7D5D; margin-top: 18px; }
 .pr-page-break { page-break-before: always; }
 .pr-avoid-break { page-break-inside: avoid; }
 
 .pr-cover {
   text-align: center;
   padding: 60px 20px;
-  border: 3px solid #C084D8;
+  border: 3px solid #2F7D5D;
   border-radius: 12px;
-  background: linear-gradient(135deg, #F7F0F8 0%, #FFFFFF 100%);
+  background: linear-gradient(135deg, #F8F7F2 0%, #FFFFFF 100%);
   margin-bottom: 20px;
 }
-.pr-cover-title { font-family: 'Syne', sans-serif; font-size: 26px; font-weight: 800; color: #2D1F3D; margin-bottom: 8px; }
-.pr-cover-title span { color: #C084D8; }
-.pr-cover-product { font-family: 'Syne', sans-serif; font-size: 18px; color: #C084D8; margin: 14px 0; font-weight: 700; }
-.pr-cover-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #9B87AE; letter-spacing: 2px; text-transform: uppercase; }
-.pr-cover-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #5A4A6A; margin-top: 18px; }
-.pr-cover-toc { text-align: left; max-width: 360px; margin: 24px auto 0; padding: 16px; background: white; border-radius: 8px; border: 1px solid #E2D4EC; }
-.pr-cover-toc h4 { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #9B87AE; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
-.pr-cover-toc ol { padding-left: 18px; font-size: 10px; line-height: 1.8; color: #2D1F3D; font-family: 'Instrument Sans', sans-serif; }
+.pr-cover-title { font-family: 'Fraunces', serif; font-size: 26px; font-weight: 800; color: #24382F; margin-bottom: 8px; }
+.pr-cover-title span { color: #2F7D5D; }
+.pr-cover-product { font-family: 'Fraunces', serif; font-size: 18px; color: #2F7D5D; margin: 14px 0; font-weight: 700; }
+.pr-cover-subtitle { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: #93A094; letter-spacing: 2px; text-transform: uppercase; }
+.pr-cover-date { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: #566A5F; margin-top: 18px; }
+.pr-cover-toc { text-align: left; max-width: 360px; margin: 24px auto 0; padding: 16px; background: white; border-radius: 8px; border: 1px solid #E4E1D2; }
+.pr-cover-toc h4 { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: #93A094; letter-spacing: 1.5px; text-transform: uppercase; margin-bottom: 8px; }
+.pr-cover-toc ol { padding-left: 18px; font-size: 10px; line-height: 1.8; color: #24382F; font-family: 'Instrument Sans', sans-serif; }
 
 .pr-kpi-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-bottom: 12px; }
-.pr-kpi { background: #F7F0F8; border: 1.5px solid #E2D4EC; border-radius: 7px; padding: 8px 10px; border-top: 3px solid #C084D8; }
+.pr-kpi { background: #F8F7F2; border: 1.5px solid #E4E1D2; border-radius: 7px; padding: 8px 10px; border-top: 3px solid #2F7D5D; }
 .pr-kpi.green  { border-top-color: #7EC8A4; }
 .pr-kpi.blue   { border-top-color: #93C5E8; }
 .pr-kpi.peach  { border-top-color: #F4A7B9; }
 .pr-kpi.yellow { border-top-color: #F9D98F; }
-.pr-kpi.lav    { border-top-color: #C5B8F0; }
-.pr-kpi-label { font-size: 7px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
-.pr-kpi-value { font-size: 12px; font-weight: 800; font-family: 'Syne', sans-serif; }
-.pr-kpi-sub { font-size: 7px; color: #9B87AE; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
+.pr-kpi.lav    { border-top-color: #C9D3C4; }
+.pr-kpi-label { font-size: 7px; color: #93A094; font-family: 'JetBrains Mono', monospace; letter-spacing: 0.8px; text-transform: uppercase; margin-bottom: 3px; }
+.pr-kpi-value { font-size: 12px; font-weight: 800; font-family: 'Fraunces', serif; }
+.pr-kpi-sub { font-size: 7px; color: #93A094; margin-top: 1px; font-family: 'JetBrains Mono', monospace; }
 
 .pr-table { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 9px; }
-.pr-table th { background: #F0EAF5; padding: 6px 8px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.8px; text-transform: uppercase; color: #9B87AE; border-bottom: 1.5px solid #E2D4EC; }
-.pr-table td { padding: 6px 8px; border-bottom: 1px solid #E2D4EC; }
+.pr-table th { background: #F0EFE6; padding: 6px 8px; text-align: left; font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.8px; text-transform: uppercase; color: #93A094; border-bottom: 1.5px solid #E4E1D2; }
+.pr-table td { padding: 6px 8px; border-bottom: 1px solid #E4E1D2; }
 .pr-table .right { text-align: right; font-family: 'JetBrains Mono', monospace; }
-.pr-table .accent-col { color: #C084D8; font-weight: 600; }
+.pr-table .accent-col { color: #2F7D5D; font-weight: 600; }
 .pr-table .green-col { color: #5aaa83; font-weight: 600; }
 .pr-table .red-col { color: #c07070; font-weight: 600; }
-.pr-table .total-row td { background: #F0EAF5; font-weight: 700; }
-.pr-chart-img { width: 100%; border-radius: 6px; border: 1.5px solid #E2D4EC; margin-bottom: 12px; max-height: 280px; object-fit: contain; }
+.pr-table .total-row td { background: #F0EFE6; font-weight: 700; }
+.pr-chart-img { width: 100%; border-radius: 6px; border: 1.5px solid #E4E1D2; margin-bottom: 12px; max-height: 280px; object-fit: contain; }
 .pr-recom { display: flex; gap: 10px; padding: 10px 12px; border-radius: 8px; border: 1.5px solid; margin-bottom: 6px; font-size: 9px; page-break-inside: avoid; }
 .pr-recom-icon { font-size: 1rem; flex-shrink: 0; }
-.pr-recom strong { font-family: 'Syne', sans-serif; }
+.pr-recom strong { font-family: 'Fraunces', serif; }
 .pr-recom.success { background: rgba(126,200,164,0.1); border-color: rgba(126,200,164,0.5); }
 .pr-recom.warning { background: rgba(249,217,143,0.1); border-color: rgba(249,217,143,0.6); }
 .pr-recom.danger  { background: rgba(244,167,167,0.1); border-color: rgba(244,167,167,0.5); }
@@ -958,45 +962,45 @@ td.total.accent { color: var(--accent); font-weight: 700; font-size: 0.88rem; }
 .pr-scenario.pesimista .pr-scenario-label { color: #c07070; }
 .pr-scenario.realista  .pr-scenario-label { color: #5a8fb8; }
 .pr-scenario.optimista .pr-scenario-label { color: #5aaa83; }
-.pr-scenario-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px; margin-bottom: 6px; }
-.pr-scenario-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #E2D4EC; font-size: 8.5px; }
+.pr-scenario-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 11px; margin-bottom: 6px; }
+.pr-scenario-row { display: flex; justify-content: space-between; padding: 3px 0; border-bottom: 1px dashed #E4E1D2; font-size: 8.5px; }
 .pr-scenario-row:last-child { border-bottom: none; }
-.pr-scenario-row .lbl { color: #5A4A6A; }
+.pr-scenario-row .lbl { color: #566A5F; }
 .pr-scenario-row .val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 
-.pr-sens-card { background: #FAF6FC; border: 1px solid #E2D4EC; border-radius: 6px; padding: 8px; page-break-inside: avoid; }
-.pr-sens-title { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.8px; text-transform: uppercase; color: #9B87AE; margin-bottom: 5px; }
+.pr-sens-card { background: #FBFAF4; border: 1px solid #E4E1D2; border-radius: 6px; padding: 8px; page-break-inside: avoid; }
+.pr-sens-title { font-family: 'JetBrains Mono', monospace; font-size: 7px; letter-spacing: 0.8px; text-transform: uppercase; color: #93A094; margin-bottom: 5px; }
 .pr-sens-row { display: flex; justify-content: space-between; padding: 3px 5px; border-radius: 4px; font-size: 8px; margin-bottom: 2px; }
 .pr-sens-row.pos { background: rgba(126,200,164,0.1); }
 .pr-sens-row.neg { background: rgba(244,167,167,0.1); }
-.pr-sens-row .lbl { font-family: 'JetBrains Mono', monospace; color: #5A4A6A; }
+.pr-sens-row .lbl { font-family: 'JetBrains Mono', monospace; color: #566A5F; }
 .pr-sens-row .val { font-family: 'JetBrains Mono', monospace; font-weight: 600; }
 .pr-sens-row.pos .val { color: #5aaa83; }
 .pr-sens-row.neg .val { color: #c07070; }
 
-.pr-bar-wrap { background: #F7F0F8; border: 1.5px solid #E2D4EC; border-radius: 8px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
-.pr-bar-label { font-size: 7.5px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 6px; }
-.pr-bar-track { background: white; border-radius: 100px; height: 12px; overflow: hidden; border: 1px solid #E2D4EC; }
+.pr-bar-wrap { background: #F8F7F2; border: 1.5px solid #E4E1D2; border-radius: 8px; padding: 10px; margin-bottom: 10px; page-break-inside: avoid; }
+.pr-bar-label { font-size: 7.5px; color: #93A094; font-family: 'JetBrains Mono', monospace; letter-spacing: 1.2px; text-transform: uppercase; margin-bottom: 6px; }
+.pr-bar-track { background: white; border-radius: 100px; height: 12px; overflow: hidden; border: 1px solid #E4E1D2; }
 .pr-bar-fill { height: 100%; border-radius: 100px; display: flex; align-items: center; justify-content: flex-end; padding-right: 6px; font-size: 7px; font-family: 'JetBrains Mono', monospace; color: white; font-weight: 600; }
-.pr-bar-note { font-size: 8.5px; color: #5A4A6A; margin-top: 5px; }
+.pr-bar-note { font-size: 8.5px; color: #566A5F; margin-top: 5px; }
 
-.pr-gloss-item { background: #FAF6FC; border-left: 3px solid #C084D8; border-radius: 4px; padding: 7px 10px; margin-bottom: 5px; page-break-inside: avoid; }
-.pr-gloss-term { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 9px; color: #2D1F3D; margin-bottom: 2px; }
-.pr-gloss-def { font-size: 8px; color: #5A4A6A; line-height: 1.5; }
+.pr-gloss-item { background: #FBFAF4; border-left: 3px solid #2F7D5D; border-radius: 4px; padding: 7px 10px; margin-bottom: 5px; page-break-inside: avoid; }
+.pr-gloss-term { font-family: 'Fraunces', serif; font-weight: 700; font-size: 9px; color: #24382F; margin-bottom: 2px; }
+.pr-gloss-def { font-size: 8px; color: #566A5F; line-height: 1.5; }
 
 .pr-summary-box {
-  background: linear-gradient(135deg, #F7F0F8, #FFFFFF);
-  border: 2px solid #C084D8;
+  background: linear-gradient(135deg, #F8F7F2, #FFFFFF);
+  border: 2px solid #2F7D5D;
   border-radius: 10px;
   padding: 14px 18px;
   margin-bottom: 14px;
   page-break-inside: avoid;
 }
-.pr-summary-box-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 11px; color: #C084D8; margin-bottom: 6px; letter-spacing: 0.5px; }
-.pr-summary-box-text { font-size: 9px; color: #2D1F3D; line-height: 1.6; }
-.pr-summary-box-text strong { font-family: 'Syne', sans-serif; color: #C084D8; }
+.pr-summary-box-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 11px; color: #2F7D5D; margin-bottom: 6px; letter-spacing: 0.5px; }
+.pr-summary-box-text { font-size: 9px; color: #24382F; line-height: 1.6; }
+.pr-summary-box-text strong { font-family: 'Fraunces', serif; color: #2F7D5D; }
 
-.pr-footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #E2D4EC; display: flex; justify-content: space-between; font-size: 7.5px; color: #9B87AE; font-family: 'JetBrains Mono', monospace; }
+.pr-footer { margin-top: 16px; padding-top: 8px; border-top: 1px solid #E4E1D2; display: flex; justify-content: space-between; font-size: 7.5px; color: #93A094; font-family: 'JetBrains Mono', monospace; }
 
 </style>
 </head>
@@ -1634,11 +1638,11 @@ function renderResults() {
 
   res.innerHTML = `
     <div class="top-actions">
-      <button class="action-btn" onclick="exportarPDF()">
+      <button class="action-btn" onclick="exportarPDF()" aria-label="Exportar reporte en PDF">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
         Exportar PDF
       </button>
-      <button class="action-btn" onclick="exportarExcel()" style="background:var(--green-d);color:white;">
+      <button class="action-btn" onclick="exportarExcel()" aria-label="Exportar reporte en Excel" style="background:var(--green-d);color:white;">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
         Exportar Excel
       </button>
@@ -1651,6 +1655,7 @@ function renderResults() {
       <button class="tab" onclick="switchTab(this, 'escenarios')">🎯 Escenarios</button>
       <button class="tab" onclick="switchTab(this, 'sensibilidad')">📈 Sensibilidad</button>
       <button class="tab" onclick="switchTab(this, 'recomendaciones')">💡 Recomendaciones</button>
+      <button class="tab" onclick="switchTab(this, 'multiproducto')">🧩 Multi-Producto</button>
       <button class="tab" onclick="switchTab(this, 'glosario')">📚 Glosario</button>
     </div>
 
@@ -1660,6 +1665,7 @@ function renderResults() {
     <div class="tab-content" id="tab-escenarios">${renderEscenarios()}</div>
     <div class="tab-content" id="tab-sensibilidad">${renderSensibilidad()}</div>
     <div class="tab-content" id="tab-recomendaciones">${renderRecomendaciones()}</div>
+    <div class="tab-content" id="tab-multiproducto">${renderMultiProducto()}</div>
     <div class="tab-content" id="tab-glosario">${renderGlosario()}</div>
   `;
 
@@ -1672,6 +1678,7 @@ function switchTab(btn, id) {
   btn.classList.add('active');
   document.getElementById('tab-' + id).classList.add('active');
   if (id === 'equilibrio') setTimeout(drawChart, 50);
+  if (id === 'multiproducto') setTimeout(mpRebuildRows, 50);
 }
 
 // ── RESUMEN ───────────────────────────────────────────────────────────────────
@@ -1898,7 +1905,7 @@ function renderEquilibrio() {
         <div class="leg-item"><div class="leg-dot" style="background:#7EC8A4"></div>Ingresos</div>
         <div class="leg-item"><div class="leg-dot" style="background:#F4A7A7"></div>Costos totales</div>
         <div class="leg-item"><div class="leg-dot" style="background:#F9D98F"></div>Costos fijos</div>
-        <div class="leg-item"><div class="leg-dot" style="background:#C084D8"></div>Punto de equilibrio</div>
+        <div class="leg-item"><div class="leg-dot" style="background:#2F7D5D"></div>Punto de equilibrio</div>
       </div>
       <canvas id="eq-chart" height="280"></canvas>
       <div class="tags">
@@ -2303,6 +2310,447 @@ function renderRecomendaciones() {
 }
 
 // ── GLOSARIO ──────────────────────────────────────────────────────────────────
+// ── MULTI-PRODUCTO ─────────────────────────────────────────────────────────
+// Persistent state (survives recalcs; saved to localStorage/JSON)
+window._MPstate = window._MPstate || { products: [] };
+
+function renderMultiProducto() {
+  const d = window._D;
+  return `
+    <div class="card" style="margin-bottom:16px;">
+      <div class="card-header">
+        <div>
+          <div class="card-title">🧩 Punto de Equilibrio Multi-Producto</div>
+          <div class="card-subtitle">Calculá el PE combinado cuando vendés varios productos o servicios</div>
+        </div>
+      </div>
+
+      <div style="padding:16px;background:var(--surface2);border-radius:10px;margin-bottom:16px;line-height:1.7;font-size:0.88rem;">
+        <strong style="color:var(--accent);">¿Qué es y para qué sirve?</strong><br>
+        Cuando un negocio vende <strong>más de un producto o servicio</strong>, cada uno tiene un costo y precio diferente. El PE Multi-Producto calcula
+        <strong>cuántas unidades totales</strong> necesitás vender (combinando todos tus productos) para cubrir los costos fijos del negocio.
+        <br><br>
+        <strong style="color:var(--accent);">¿Cómo se usa?</strong><br>
+        <span style="display:inline-block;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;text-align:center;font-size:0.75rem;line-height:20px;margin-right:4px;">1</span>
+        El producto que acabás de analizar ya aparece en la tabla como primera línea.<br>
+        <span style="display:inline-block;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;text-align:center;font-size:0.75rem;line-height:20px;margin-right:4px;">2</span>
+        Agregá más productos manualmente o <strong>cargá archivos JSON</strong> guardados previamente desde esta calculadora.<br>
+        <span style="display:inline-block;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;text-align:center;font-size:0.75rem;line-height:20px;margin-right:4px;">3</span>
+        Ajustá el <strong>Mix de Ventas %</strong> (participación de cada producto en el total). Debe sumar 100%.<br>
+        <span style="display:inline-block;background:var(--accent);color:white;border-radius:50%;width:20px;height:20px;text-align:center;font-size:0.75rem;line-height:20px;margin-right:4px;">4</span>
+        Opcionalmente ingresá las <strong>ventas estimadas/mes</strong> de cada producto para ver utilidad proyectada y margen de seguridad.
+        <br><br>
+        <strong style="color:var(--accent);">🏢 Costos fijos compartidos:</strong> Se usan los de la calculadora principal
+        (<strong>${col0(d.totalFijos)}/mes</strong>). Si tus líneas comparten local, equipo y personal, este valor es correcto.
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <button class="action-btn" onclick="document.getElementById('mp-json-input').click()" style="background:var(--accent);color:white;" aria-label="Cargar archivos JSON de productos">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Cargar JSON de producto
+        </button>
+        <button class="action-btn" onclick="mpAddRow()" aria-label="Agregar producto manualmente">＋ Agregar manualmente</button>
+        <button class="action-btn" onclick="mpLoadExample()" aria-label="Cargar ejemplo guiado">🎓 Cargar ejemplo (soda)</button>
+        <button class="action-btn" onclick="mpClear()" aria-label="Limpiar productos" style="color:var(--red,#dc2626);">🗑 Limpiar</button>
+        <input type="file" id="mp-json-input" accept=".json" multiple style="display:none;" onchange="mpLoadJSONs(event)" aria-hidden="true" />
+      </div>
+
+      <div style="overflow-x:auto;">
+        <table id="mp-table" style="width:100%" aria-label="Tabla de productos para punto de equilibrio multi-producto">
+          <thead>
+            <tr>
+              <th>Producto / Servicio</th>
+              <th>Costo Var. ₡</th>
+              <th>Precio ₡</th>
+              <th>MC ₡</th>
+              <th>Mix %</th>
+              <th title="Ventas estimadas por mes (opcional)">Ventas/mes</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody id="mp-body"></tbody>
+        </table>
+      </div>
+
+      <div id="mp-results" style="margin-top:20px;"></div>
+    </div>
+  `;
+}
+
+let mpRowId = 0;
+const MP_INPUT_STYLE = 'width:100%;text-align:right;background:var(--surface2);border:1.5px solid var(--border);border-radius:6px;padding:6px 8px;font-size:0.85rem;';
+
+function mpRebuildRows() {
+  const tbody = document.getElementById('mp-body');
+  if (!tbody) return;
+  const d = window._D;
+  if (!d) return;
+  tbody.innerHTML = '';
+
+  const st = window._MPstate;
+  if (!st.products.length || st.products[0].source !== 'current') {
+    st.products.unshift({ name: d.product || 'Producto actual', cv: d.costoVariableTotal, pv: d.precioVenta, mix: 100, ventas: d.prodMensual, source: 'current' });
+  } else {
+    st.products[0].name = d.product || st.products[0].name;
+    st.products[0].cv = d.costoVariableTotal;
+    st.products[0].pv = d.precioVenta;
+    if (!st.products[0].ventas) st.products[0].ventas = d.prodMensual;
+  }
+
+  st.products.forEach((p, idx) => {
+    const id = ++mpRowId;
+    const tr = document.createElement('tr');
+    tr.className = 'mp-row' + (p.source === 'current' ? ' mp-current' : '');
+    tr.id = 'mp-' + id;
+    const delCell = p.source === 'current'
+      ? `<span style="font-size:0.7rem;color:var(--gray,#6b7280);">actual</span>`
+      : `<button class="del-btn" aria-label="Eliminar producto" onclick="mpDelRow(${idx})">×</button>`;
+    tr.innerHTML = `
+      <td><input type="text" value="${(p.name||'').replace(/"/g,'&quot;')}" placeholder="Nombre" class="mp-name" aria-label="Nombre del producto" style="${MP_INPUT_STYLE}text-align:left;" onchange="mpSync()" /></td>
+      <td><input type="number" value="${p.cv != null && p.cv !== 0 ? (+p.cv).toFixed(2) : (p.source==='current' ? (+p.cv).toFixed(2) : '')}" placeholder="₡" class="mp-cv" min="0" step="0.01" aria-label="Costo variable" style="${MP_INPUT_STYLE}" onchange="mpSync()" /></td>
+      <td><input type="number" value="${p.pv != null && p.pv !== 0 ? (+p.pv).toFixed(2) : (p.source==='current' ? (+p.pv).toFixed(2) : '')}" placeholder="₡" class="mp-pv" min="0" step="0.01" aria-label="Precio de venta" style="${MP_INPUT_STYLE}" onchange="mpSync()" /></td>
+      <td class="mp-mc" style="text-align:right;font-weight:600;"></td>
+      <td><input type="number" value="${p.mix != null ? p.mix : 0}" min="0" max="100" step="0.1" class="mp-mix" aria-label="Porcentaje del mix de ventas" style="width:70px;${MP_INPUT_STYLE}" onchange="mpSync()" /></td>
+      <td><input type="number" value="${p.ventas ? p.ventas : ''}" min="0" step="1" placeholder="opc." class="mp-ventas" aria-label="Ventas estimadas por mes" style="width:75px;${MP_INPUT_STYLE}" onchange="mpSync()" /></td>
+      <td>${delCell}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  mpRecalc();
+}
+
+function mpSync() {
+  const rows = [...document.querySelectorAll('.mp-row')];
+  window._MPstate.products = rows.map(r => {
+    let cv = Math.max(0, parseFloat(r.querySelector('.mp-cv').value) || 0);
+    let pv = Math.max(0, parseFloat(r.querySelector('.mp-pv').value) || 0);
+    let mix = Math.min(100, Math.max(0, parseFloat(r.querySelector('.mp-mix').value) || 0));
+    let ventas = Math.max(0, parseFloat(r.querySelector('.mp-ventas').value) || 0);
+    r.querySelector('.mp-mix').value = mix;
+    return {
+      name: r.querySelector('.mp-name').value || 'Sin nombre',
+      cv, pv, mix, ventas,
+      source: r.classList.contains('mp-current') ? 'current' : 'extra',
+    };
+  });
+  mpRecalc();
+  if (typeof autoSave === 'function') autoSave();
+}
+
+function mpDelRow(idx) {
+  window._MPstate.products.splice(idx, 1);
+  mpRebuildRows();
+  if (typeof autoSave === 'function') autoSave();
+}
+
+function mpClear() {
+  window._MPstate.products = [];
+  mpRebuildRows();
+  if (typeof autoSave === 'function') autoSave();
+  showToast('🗑 Multi-producto reiniciado');
+}
+
+function mpAddRow(name, cv, pv, mix, ventas) {
+  window._MPstate.products.push({ name: name || '', cv: cv || 0, pv: pv || 0, mix: mix || 0, ventas: ventas || 0, source: 'extra' });
+  mpRebuildRows();
+}
+
+function mpLoadExample() {
+  const d = window._D;
+  window._MPstate.products = [
+    { name: d.product || 'Producto actual', cv: d.costoVariableTotal, pv: d.precioVenta, mix: 40, ventas: Math.round(d.prodMensual * 0.4), source: 'current' },
+    { name: 'Casado con pollo', cv: 1200, pv: 3500, mix: 35, ventas: Math.round(d.prodMensual * 0.35) || 20, source: 'extra' },
+    { name: 'Refresco natural', cv: 250, pv: 900, mix: 25, ventas: Math.round(d.prodMensual * 0.25) || 15, source: 'extra' },
+  ];
+  mpRebuildRows();
+  showToast('🎓 Ejemplo cargado: ajustá los valores y observá cómo cambia el PE');
+}
+
+function mpLoadJSONs(event) {
+  const files = event.target.files;
+  if (!files.length) return;
+  [...files].forEach(file => {
+    const reader = new FileReader();
+    reader.onload = e => {
+      try {
+        const state = JSON.parse(e.target.result);
+        if (!state.ingredients && !state.product) throw new Error('Inválido');
+        const unidades = parseInt(state.p_unidades) || 1;
+        const margen = parseInt(state.p_margen) || 0;
+        const porDia = parseInt(state.p_dia) || 1;
+        const diasMes = parseInt(state.p_dias_mes) || 20;
+        const costoInsumos = (state.ingredients || []).reduce((s, i) => s + (i.cost || 0), 0);
+        const costoVarTotal = costoInsumos / unidades + (state.variables || []).reduce((s, v) => s + (v.value || 0), 0);
+        const prodMensual = porDia * diasMes;
+        const totalFijos = (state.fixed || []).reduce((s, f) => s + (f.value || 0), 0);
+        const costoTotalUd = costoVarTotal + (prodMensual > 0 ? totalFijos / prodMensual : 0);
+        const precioVenta = costoTotalUd * (1 + margen / 100);
+        const productName = state.product || state._nombre || file.name.replace('.json', '');
+        window._MPstate.products.push({ name: productName, cv: +costoVarTotal.toFixed(2), pv: +precioVenta.toFixed(2), mix: 0, ventas: prodMensual, source: 'extra' });
+        mpRebuildRows();
+        showToast(`📂 Cargado: ${productName}`);
+      } catch (err) {
+        showToast('❌ Archivo inválido: ' + file.name);
+      }
+    };
+    reader.readAsText(file);
+  });
+  event.target.value = '';
+}
+
+let _mpChart = null;
+
+function mpRecalc() {
+  const d = window._D;
+  if (!d) return;
+  const rows = [...document.querySelectorAll('.mp-row')];
+  if (!rows.length) return;
+
+  rows.forEach(r => {
+    const cv = parseFloat(r.querySelector('.mp-cv').value) || 0;
+    const pv = parseFloat(r.querySelector('.mp-pv').value) || 0;
+    const mc = pv - cv;
+    const mcCell = r.querySelector('.mp-mc');
+    mcCell.textContent = col(mc);
+    mcCell.style.color = mc >= 0 ? 'var(--green-d)' : 'var(--red,#dc2626)';
+    mcCell.title = mc < 0 && pv > 0 ? '⚠️ El precio es menor que el costo variable: perdés dinero en cada venta.' : '';
+    r.querySelector('.mp-pv').style.borderColor = mc < 0 && pv > 0 ? 'var(--red,#dc2626)' : '';
+  });
+
+  const products = rows.map(r => {
+    const cv = parseFloat(r.querySelector('.mp-cv').value) || 0;
+    const pv = parseFloat(r.querySelector('.mp-pv').value) || 0;
+    return {
+      name: r.querySelector('.mp-name').value || 'Sin nombre',
+      cv, pv, mc: pv - cv,
+      mix: parseFloat(r.querySelector('.mp-mix').value) || 0,
+      ventas: parseFloat(r.querySelector('.mp-ventas').value) || 0,
+    };
+  });
+
+  const totalMix = products.reduce((s, p) => s + p.mix, 0);
+  const mixValid = Math.abs(totalMix - 100) < 0.5;
+  const mcPonderado = products.reduce((s, p) => s + (p.mc * (p.mix / 100)), 0);
+  const peMulti = mcPonderado > 0 ? d.totalFijos / mcPonderado : 0;
+  const peByProduct = products.map(p => ({
+    ...p,
+    peUnits: mcPonderado > 0 ? peMulti * (p.mix / 100) : 0,
+    peColones: mcPonderado > 0 ? peMulti * (p.mix / 100) * p.pv : 0,
+  }));
+  const peColones = peByProduct.reduce((s, p) => s + p.peColones, 0);
+
+  const ventasTotal = products.reduce((s, p) => s + p.ventas, 0);
+  const hasVentas = ventasTotal > 0;
+  const ingresoProy = products.reduce((s, p) => s + p.ventas * p.pv, 0);
+  const cvProy = products.reduce((s, p) => s + p.ventas * p.cv, 0);
+  const utilidadProy = ingresoProy - cvProy - d.totalFijos;
+  const margenSegMulti = peMulti > 0 && ventasTotal > 0 ? ((ventasTotal - peMulti) / ventasTotal) * 100 : 0;
+
+  window._MP = { products: peByProduct, mcPonderado, peMulti, peColones, totalMix, mixValid, totalFijos: d.totalFijos, hasVentas, ventasTotal, ingresoProy, cvProy, utilidadProy, margenSegMulti };
+
+  const res = document.getElementById('mp-results');
+  if (!res) return;
+
+  if (products.length < 2) {
+    res.innerHTML = `
+      <div style="background:var(--surface2);border-radius:10px;padding:20px;text-align:center;color:var(--gray,#6b7280);">
+        <div style="font-size:1.5rem;margin-bottom:8px;">🧩</div>
+        Agregá al menos un producto adicional (con JSON, manualmente o con el ejemplo) para calcular el PE combinado.
+      </div>`;
+    return;
+  }
+  if (!mixValid) {
+    res.innerHTML = `
+      <div style="background:#fef2f2;border:1.5px solid #dc2626;border-radius:10px;padding:16px;text-align:center;" role="alert">
+        <strong style="color:#dc2626;">⚠️ La suma del Mix de Ventas debe ser 100%</strong><br>
+        <span style="color:#dc2626;">Actualmente suma: ${totalMix.toFixed(1)}%</span>
+      </div>`;
+    return;
+  }
+  if (mcPonderado <= 0) {
+    res.innerHTML = `
+      <div style="background:#fef2f2;border:1.5px solid #dc2626;border-radius:10px;padding:16px;text-align:center;" role="alert">
+        <strong style="color:#dc2626;">⚠️ El margen de contribución ponderado es negativo o cero</strong><br>
+        <span style="color:#dc2626;">Los precios deben ser mayores que los costos variables.</span>
+      </div>`;
+    return;
+  }
+
+  const tableRows = peByProduct.map(p => `
+    <tr>
+      <td>${p.name}</td>
+      <td class="mono right">${col(p.cv)}</td>
+      <td class="mono right">${col(p.pv)}</td>
+      <td class="right" style="font-weight:600;color:${p.mc >= 0 ? 'var(--green-d)' : 'var(--red,#dc2626)'}">${col(p.mc)}</td>
+      <td class="mono right">${p.mix.toFixed(1)}%</td>
+      <td class="mono right" style="font-weight:600;">${Math.ceil(p.peUnits)}</td>
+      <td class="mono right">${col(p.peColones)}</td>
+    </tr>`).join('');
+
+  const ingresoPonderado = products.reduce((s, p) => s + (p.pv * (p.mix / 100)), 0);
+  const cvPonderado = products.reduce((s, p) => s + (p.cv * (p.mix / 100)), 0);
+
+  // Auto interpretation
+  const bestMC = [...products].sort((a, b) => b.mc - a.mc)[0];
+  const worstMC = [...products].sort((a, b) => a.mc - b.mc)[0];
+  let interp = `<strong style="color:var(--accent);">💡 Interpretación automática:</strong><br>`;
+  interp += `• <strong>${bestMC.name}</strong> tiene el margen de contribución más alto (${col(bestMC.mc)}). Aumentar su participación en el mix reduce el PE total.<br>`;
+  if (worstMC.mc < 0) {
+    interp += `• ⚠️ <strong>${worstMC.name}</strong> tiene MC negativo (${col(worstMC.mc)}): perdés dinero con cada venta. Subí su precio o replanteá el producto.<br>`;
+  } else if (worstMC !== bestMC) {
+    interp += `• <strong>${worstMC.name}</strong> aporta el menor margen (${col(worstMC.mc)}). Evaluá si complementa las ventas de otros productos o si conviene ajustar su precio.<br>`;
+  }
+  if (products.length >= 2 && bestMC.mix < 90) {
+    const others = products.length - 1;
+    const shifted = products.map(p => ({
+      ...p,
+      mix: p === bestMC ? Math.min(100, p.mix + 10) : Math.max(0, p.mix - 10 / others),
+    }));
+    const shiftSum = shifted.reduce((s, p) => s + p.mix, 0);
+    if (shiftSum > 0) {
+      const mcShift = shifted.reduce((s, p) => s + p.mc * (p.mix / shiftSum), 0);
+      const peShift = mcShift > 0 ? d.totalFijos / mcShift : 0;
+      if (peShift > 0 && peShift < peMulti) {
+        interp += `• Si el mix de <strong>${bestMC.name}</strong> subiera 10 puntos porcentuales, el PE bajaría de ${Math.ceil(peMulti)} a aprox. <strong>${Math.ceil(peShift)} unidades</strong>.`;
+      }
+    }
+  }
+
+  let proyHTML = '';
+  if (hasVentas) {
+    const segColor = margenSegMulti >= 25 ? 'var(--green-d)' : margenSegMulti >= 0 ? '#EA580C' : 'var(--red,#dc2626)';
+    proyHTML = `
+      <div style="margin-top:16px;">
+        <div class="card-title" style="font-size:0.95rem;margin-bottom:10px;">📈 Proyección con tus ventas estimadas (${ventasTotal.toFixed(0)} uds/mes)</div>
+        <div class="kpi-grid">
+          <div class="kpi blue">
+            <div class="kpi-label">Ingresos proyectados</div>
+            <div class="kpi-value blue">${col0(ingresoProy)}</div>
+            <div class="kpi-sub">mensuales</div>
+          </div>
+          <div class="kpi yellow">
+            <div class="kpi-label">Costos variables</div>
+            <div class="kpi-value accent">${col0(cvProy)}</div>
+            <div class="kpi-sub">mensuales</div>
+          </div>
+          <div class="kpi green">
+            <div class="kpi-label">Utilidad proyectada</div>
+            <div class="kpi-value" style="color:${utilidadProy >= 0 ? 'var(--green-d)' : 'var(--red,#dc2626)'}">${col0(utilidadProy)}</div>
+            <div class="kpi-sub">${utilidadProy >= 0 ? '✓ Ganancia' : '✗ Pérdida'}</div>
+          </div>
+          <div class="kpi orange">
+            <div class="kpi-label">Margen de seguridad</div>
+            <div class="kpi-value" style="color:${segColor}">${margenSegMulti.toFixed(1)}%</div>
+            <div class="kpi-sub">${ventasTotal >= peMulti ? 'colchón sobre el PE' : `faltan ${Math.ceil(peMulti - ventasTotal)} uds para el PE`}</div>
+          </div>
+        </div>
+      </div>`;
+  } else {
+    proyHTML = `<div style="margin-top:12px;padding:10px 14px;background:var(--surface2);border-radius:8px;font-size:0.82rem;color:var(--gray,#6b7280);">
+      💡 Ingresá las <strong>ventas estimadas/mes</strong> de cada producto para ver la utilidad proyectada y el margen de seguridad del negocio combinado.
+    </div>`;
+  }
+
+  res.innerHTML = `
+    <div class="kpi-grid" style="margin-bottom:16px;">
+      <div class="kpi yellow">
+        <div class="kpi-label">MC Ponderado</div>
+        <div class="kpi-value accent">${col(mcPonderado)}</div>
+        <div class="kpi-sub">por unidad promedio</div>
+      </div>
+      <div class="kpi blue">
+        <div class="kpi-label">PE Total</div>
+        <div class="kpi-value blue">${Math.ceil(peMulti)}</div>
+        <div class="kpi-sub">unidades/mes</div>
+      </div>
+      <div class="kpi green">
+        <div class="kpi-label">PE Ingresos</div>
+        <div class="kpi-value green">${col0(peColones)}</div>
+        <div class="kpi-sub">ingreso mínimo total</div>
+      </div>
+      <div class="kpi orange">
+        <div class="kpi-label">Costos Fijos</div>
+        <div class="kpi-value orange">${col0(d.totalFijos)}</div>
+        <div class="kpi-sub">mensuales</div>
+      </div>
+    </div>
+
+    <div class="table-scroll has-many">
+      <table>
+        <thead>
+          <tr><th>Producto</th><th>Costo Var. ₡</th><th>Precio ₡</th><th>MC ₡</th><th>Mix %</th><th>PE (uds)</th><th>PE (₡)</th></tr>
+        </thead>
+        <tbody>
+          ${tableRows}
+          <tr style="background:var(--surface2);font-weight:700;">
+            <td><strong>TOTAL / PROMEDIO</strong></td>
+            <td class="mono right">${col(cvPonderado)}</td>
+            <td class="mono right">${col(ingresoPonderado)}</td>
+            <td class="accent right"><strong>${col(mcPonderado)}</strong></td>
+            <td class="right"><strong>${totalMix.toFixed(0)}%</strong></td>
+            <td class="right"><strong>${Math.ceil(peMulti)}</strong></td>
+            <td class="right"><strong>${col0(peColones)}</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div style="max-width:400px;margin:16px auto 0;width:100%;">
+      <canvas id="mp-chart" aria-label="Gráfico de participación del mix de ventas" role="img"></canvas>
+    </div>
+
+    ${proyHTML}
+
+    <div style="margin-top:16px;padding:14px;background:var(--surface2);border-radius:10px;font-size:0.85rem;line-height:1.7;">
+      ${interp}
+    </div>
+
+    <div style="margin-top:12px;padding:14px;background:var(--surface2);border-radius:10px;">
+      <strong style="color:var(--accent);">🧮 Fórmula del PE Multi-Producto:</strong>
+      <div style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:0.78rem;line-height:1.8;">
+        <strong>1. MC ponderado</strong> = Σ (MC<sub>i</sub> × Mix<sub>i</sub>) = ${products.map(p => `(${col(p.mc)} × ${(p.mix/100).toFixed(2)})`).join(' + ')} = <strong style="color:var(--accent)">${col(mcPonderado)}</strong><br>
+        <strong>2. PE total</strong> = ${col0(d.totalFijos)} ÷ ${col(mcPonderado)} = <strong style="color:var(--accent)">${peMulti.toFixed(2)} ≈ ${Math.ceil(peMulti)} unidades</strong><br>
+        <strong>3. PE por producto</strong> = PE total × Mix<sub>i</sub>
+      </div>
+    </div>
+  `;
+
+  setTimeout(() => {
+    const canvas = document.getElementById('mp-chart');
+    if (!canvas || typeof Chart === 'undefined') return;
+    if (_mpChart) { _mpChart.destroy(); _mpChart = null; }
+    const palette = ['#2F7D5D','#B9974C','#4E7E8C','#A9714B','#8FC7AB','#97772E','#B96A5E','#5E8C7A'];
+    _mpChart = new Chart(canvas.getContext('2d'), {
+      type: 'doughnut',
+      data: {
+        labels: peByProduct.map(p => p.name),
+        datasets: [{
+          data: peByProduct.map(p => p.mix),
+          backgroundColor: peByProduct.map((_, i) => palette[i % palette.length]),
+          borderWidth: 2,
+          borderColor: '#fff',
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          title: { display: true, text: 'Participación en el Mix de Ventas' },
+          legend: { position: 'bottom' },
+          tooltip: {
+            callbacks: {
+              label: ctx => {
+                const p = peByProduct[ctx.dataIndex];
+                return `${p.name}: ${p.mix.toFixed(1)}% · MC ${col(p.mc)} · PE ${Math.ceil(p.peUnits)} uds`;
+              }
+            }
+          }
+        }
+      }
+    });
+  }, 60);
+}
+
+
 function renderGlosario() {
   const terms = [
     { t: 'Costo Variable', d: 'Costos que cambian directamente con la cantidad producida o vendida. Ejemplos: materia prima, empaque, comisiones de venta. Si no vendés nada, no incurrís en estos costos.' },
@@ -2366,8 +2814,8 @@ function drawChart() {
       plugins: {
         legend: { display: false },
         tooltip: {
-          backgroundColor: '#fff', borderColor: '#E2D4EC', borderWidth: 1.5,
-          titleColor: '#9B87AE', bodyColor: '#2D1F3D',
+          backgroundColor: '#fff', borderColor: '#E4E1D2', borderWidth: 1.5,
+          titleColor: '#93A094', bodyColor: '#24382F',
           titleFont: { family: 'JetBrains Mono', size: 10 },
           bodyFont: { family: 'JetBrains Mono', size: 10 },
           callbacks: {
@@ -2378,15 +2826,15 @@ function drawChart() {
       },
       scales: {
         x: {
-          title: { display: true, text: 'Unidades / mes', font: { family: 'JetBrains Mono', size: 10 }, color: '#9B87AE' },
+          title: { display: true, text: 'Unidades / mes', font: { family: 'JetBrains Mono', size: 10 }, color: '#93A094' },
           grid: { color: 'rgba(162,130,190,0.1)' },
-          ticks: { font: { family: 'JetBrains Mono', size: 9 }, color: '#9B87AE' }
+          ticks: { font: { family: 'JetBrains Mono', size: 9 }, color: '#93A094' }
         },
         y: {
-          title: { display: true, text: 'Colones (₡)', font: { family: 'JetBrains Mono', size: 10 }, color: '#9B87AE' },
+          title: { display: true, text: 'Colones (₡)', font: { family: 'JetBrains Mono', size: 10 }, color: '#93A094' },
           grid: { color: 'rgba(162,130,190,0.1)' },
           ticks: {
-            font: { family: 'JetBrains Mono', size: 9 }, color: '#9B87AE',
+            font: { family: 'JetBrains Mono', size: 9 }, color: '#93A094',
             callback: v => '₡' + (v >= 1000000 ? (v/1000000).toFixed(1)+'M' : v >= 1000 ? (v/1000).toFixed(0)+'K' : v)
           }
         }
@@ -2420,7 +2868,7 @@ function drawChart() {
         c.setLineDash([]);
 
         c.beginPath(); c.arc(xPE, yPE, 7, 0, Math.PI * 2);
-        c.fillStyle = '#C084D8'; c.fill();
+        c.fillStyle = '#2F7D5D'; c.fill();
         c.strokeStyle = '#fff'; c.lineWidth = 2.5; c.stroke();
 
         c.font = '500 10px JetBrains Mono, monospace';
@@ -2431,16 +2879,16 @@ function drawChart() {
         const bx = (xPE + 10 + bw > right) ? xPE - bw - 10 : xPE + 10;
         const by = yPE - bh / 2;
         c.fillStyle = '#fff';
-        c.strokeStyle = '#C084D8';
+        c.strokeStyle = '#2F7D5D';
         c.lineWidth = 1.5;
         c.shadowColor = 'rgba(192,132,216,0.2)';
         c.shadowBlur = 8;
         c.beginPath(); c.roundRect(bx, by, bw, bh, 6); c.fill(); c.stroke();
         c.shadowBlur = 0;
-        c.fillStyle = '#9B87AE';
+        c.fillStyle = '#93A094';
         c.font = '400 9px JetBrains Mono, monospace';
         c.fillText(t1, bx + 8, by + 14);
-        c.fillStyle = '#C084D8';
+        c.fillStyle = '#2F7D5D';
         c.font = '600 10px JetBrains Mono, monospace';
         c.fillText(t2, bx + 8, by + 28);
 
@@ -2478,6 +2926,24 @@ function drawChart() {
 async function exportarExcel() {
   const d = window._D;
   if (!d) { showToast('⚠️ Primero presioná Analizar Negocio'); return; }
+  if (typeof ExcelJS === 'undefined' || typeof saveAs === 'undefined') {
+    showToast('❌ No se pudo cargar la librería de Excel. Verificá tu conexión a internet y recargá la página.');
+    return;
+  }
+  try {
+    await _exportarExcelInner(d);
+  } catch (err) {
+    console.error('Error exportando Excel:', err);
+    showToast('❌ Error al generar el Excel: ' + (err.message || 'desconocido'));
+  }
+}
+
+async function _exportarExcelInner(d) {
+  if (typeof ExcelJS === 'undefined' || typeof saveAs === 'undefined') {
+    showToast('❌ No se pudo cargar la librería de Excel. Verificá tu conexión a internet y recargá la página.');
+    return;
+  }
+  try {
   showToast('⏳ Generando Excel...');
 
   const wb = new ExcelJS.Workbook();
@@ -2485,7 +2951,7 @@ async function exportarExcel() {
   const U = d.unidad, Up = d.unidadPlural;
   const cr = v => Math.round(v * 100) / 100;
 
-  const PURPLE='FF7C3AED',PURPLE_L='FFEDE9FE',GREEN='FF16A34A',RED='FFDC2626',GRAY='FF6B7280',BLACK='FF1F2937',WHITE='FFFFFFFF';
+  const PURPLE='FF2F7D5D',PURPLE_L='FFEDEAD9',GREEN='FF2F7D5D',RED='FFB96A5E',GRAY='FF7A8A7E',BLACK='FF24382F',WHITE='FFFFFFFF';
   const hdrFont={name:'Arial',bold:true,color:{argb:WHITE},size:11};
   const hdrFill={type:'pattern',pattern:'solid',fgColor:{argb:PURPLE}};
   const subFont={name:'Arial',bold:true,color:{argb:PURPLE},size:10};
@@ -2538,7 +3004,7 @@ async function exportarExcel() {
   });
 
   // ═══ HOJA 2: ESTRUCTURA DE COSTOS ═══
-  const ws2=wb.addWorksheet('Estructura de Costos',{properties:{tabColor:{argb:'FFEA580C'}}});
+  const ws2=wb.addWorksheet('Estructura de Costos',{properties:{tabColor:{argb:'FFA9714B'}}});
   ws2.columns=[{width:35},{width:16},{width:14},{width:12},{width:8}];
   r=1;
   ws2.getCell(`A${r}`).value=`📦 ${d.labels.insumos}`;
@@ -2588,7 +3054,7 @@ async function exportarExcel() {
   sRow.getCell(2).numFmt='₡#,##0';sRow.getCell(3).numFmt=pctFmt;styleS(sRow);
 
   // ═══ HOJA 3: PUNTO DE EQUILIBRIO ═══
-  const ws3=wb.addWorksheet('Punto de Equilibrio',{properties:{tabColor:{argb:'FF16A34A'}}});
+  const ws3=wb.addWorksheet('Punto de Equilibrio',{properties:{tabColor:{argb:'FF2F7D5D'}}});
   ws3.columns=[{width:42},{width:22},{width:20}];
   ws3.getCell('A1').value='🧮 ANÁLISIS DEL PUNTO DE EQUILIBRIO';
   ws3.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
@@ -2604,7 +3070,7 @@ async function exportarExcel() {
   });
 
   // ═══ HOJA 4: ESCENARIOS ═══
-  const ws4=wb.addWorksheet('Escenarios',{properties:{tabColor:{argb:'FFEA580C'}}});
+  const ws4=wb.addWorksheet('Escenarios',{properties:{tabColor:{argb:'FFA9714B'}}});
   ws4.columns=[{width:25},{width:20},{width:20},{width:20}];
   ws4.getCell('A1').value='🎯 ANÁLISIS DE ESCENARIOS';
   ws4.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
@@ -2630,7 +3096,7 @@ async function exportarExcel() {
   });
 
   // ═══ HOJA 5: SENSIBILIDAD ═══
-  const ws5=wb.addWorksheet('Sensibilidad',{properties:{tabColor:{argb:'FFDC2626'}}});
+  const ws5=wb.addWorksheet('Sensibilidad',{properties:{tabColor:{argb:'FFB96A5E'}}});
   ws5.columns=[{width:38},{width:20}];
   ws5.getCell('A1').value='📊 ANÁLISIS DE SENSIBILIDAD';
   ws5.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
@@ -2644,7 +3110,7 @@ async function exportarExcel() {
   });
 
   // ═══ HOJA 6: RECOMENDACIONES ═══
-  const ws6=wb.addWorksheet('Recomendaciones',{properties:{tabColor:{argb:'FF8B5CF6'}}});
+  const ws6=wb.addWorksheet('Recomendaciones',{properties:{tabColor:{argb:'FFB9974C'}}});
   ws6.columns=[{width:90}];
   ws6.getCell('A1').value='💡 RECOMENDACIONES ESTRATÉGICAS';
   ws6.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
@@ -2654,12 +3120,94 @@ async function exportarExcel() {
     ws6.getCell(`A${r}`).value=rec.text;ws6.getCell(`A${r}`).font=nFont;ws6.getRow(r).height=30;ws6.getCell(`A${r}`).alignment={wrapText:true,vertical:'top'};r+=2;
   });
 
+  // ═══ HOJA 7: MULTI-PRODUCTO (solo si hay datos) ═══
+  const mp = window._MP;
+  if (mp && mp.products && mp.products.length >= 2 && mp.mixValid) {
+    const ws7=wb.addWorksheet('PE Multi-Producto',{properties:{tabColor:{argb:'FFB9974C'}}});
+    ws7.columns=[{width:25},{width:16},{width:16},{width:16},{width:10},{width:12},{width:16}];
+    ws7.getCell('A1').value='🧩 PUNTO DE EQUILIBRIO MULTI-PRODUCTO';
+    ws7.getCell('A1').font={name:'Arial',size:12,bold:true,color:{argb:PURPLE}};
+    ws7.getCell('A2').value=`Costos fijos mensuales: ₡${col0R(mp.totalFijos)}`;
+    ws7.getCell('A2').font={name:'Arial',size:9,color:{argb:GRAY}};
+
+    r=4;
+    // KPIs
+    [['MC Ponderado',cr(mp.mcPonderado),colFmt],['PE Total (unidades)',Math.ceil(mp.peMulti),'#,##0'],['PE Ingresos (₡)',cr(mp.peColones),colFmt],['Costos Fijos mensuales',cr(mp.totalFijos),colFmt]].forEach(([l,v,f])=>{
+      const row=ws7.getRow(r);row.values=[l,v];row.getCell(2).numFmt=f;styleD(row,{bold:true});r++;
+    });
+
+    r++;
+    hRow=ws7.getRow(r);hRow.values=['Producto','Costo Var. ₡','Precio ₡','MC ₡','Mix %','PE (uds)','PE (₡)'];styleH(hRow);r++;
+
+    mp.products.forEach(p=>{
+      const row=ws7.getRow(r);
+      row.values=[p.name,cr(p.cv),cr(p.pv),cr(p.mc),p.mix/100,Math.ceil(p.peUnits),cr(p.peColones)];
+      row.getCell(2).numFmt=colFmt;row.getCell(3).numFmt=colFmt;row.getCell(4).numFmt=colFmt;
+      row.getCell(5).numFmt=pctFmt;row.getCell(6).numFmt='#,##0';row.getCell(7).numFmt=colFmt;
+      styleD(row);
+      row.getCell(4).font=p.mc>=0?gFont:rFont;
+      r++;
+    });
+
+    // Total row
+    sRow=ws7.getRow(r);
+    const cvP=mp.products.reduce((s,p)=>s+p.cv*(p.mix/100),0);
+    const pvP=mp.products.reduce((s,p)=>s+p.pv*(p.mix/100),0);
+    sRow.values=['TOTAL / PROMEDIO',cr(cvP),cr(pvP),cr(mp.mcPonderado),1,Math.ceil(mp.peMulti),cr(mp.peColones)];
+    sRow.getCell(2).numFmt=colFmt;sRow.getCell(3).numFmt=colFmt;sRow.getCell(4).numFmt=colFmt;
+    sRow.getCell(5).numFmt=pctFmt;sRow.getCell(6).numFmt='#,##0';sRow.getCell(7).numFmt=colFmt;
+    styleSub(sRow);
+
+    r+=2;
+    // Proyección con ventas estimadas
+    if (mp.hasVentas) {
+      ws7.getCell(`A${r}`).value='PROYECCIÓN CON VENTAS ESTIMADAS';ws7.getCell(`A${r}`).font=subFont;r++;
+      [['Ventas estimadas totales (uds/mes)',mp.ventasTotal,'#,##0'],['Ingresos estimados',cr(mp.ingresoProy),colFmt],['(–) Costos variables',cr(mp.cvProy),colFmt],['(–) Costos fijos',cr(mp.totalFijos),colFmt],['UTILIDAD PROYECTADA',cr(mp.utilidadProy),colFmt],['Margen de seguridad',cr(mp.margenSegMulti)/100,pctFmt]].forEach(([l,v,f])=>{
+        const row=ws7.getRow(r);row.values=[l,v];row.getCell(2).numFmt=f;
+        const isU=l.includes('UTILIDAD');styleD(row,{bold:isU,thick:isU});
+        if(isU)row.getCell(2).font=v>=0?gFont:rFont;
+        r++;
+      });
+      r++;
+    }
+    ws7.getCell(`A${r}`).value='FÓRMULA:';ws7.getCell(`A${r}`).font=subFont;r++;
+    ws7.getCell(`A${r}`).value=`MC ponderado = ${mp.products.map(p=>`(₡${col0R(p.mc)} × ${(p.mix/100).toFixed(2)})`).join(' + ')} = ₡${col0R(mp.mcPonderado)}`;
+    ws7.getCell(`A${r}`).font=nFont;r++;
+    ws7.getCell(`A${r}`).value=`PE total = ₡${col0R(mp.totalFijos)} ÷ ₡${col0R(mp.mcPonderado)} = ${mp.peMulti.toFixed(2)} ≈ ${Math.ceil(mp.peMulti)} unidades`;
+    ws7.getCell(`A${r}`).font=nFont;r++;
+    mp.products.forEach(p=>{
+      ws7.getCell(`A${r}`).value=`PE ${p.name}: ${Math.ceil(mp.peMulti)} × ${(p.mix/100).toFixed(2)} = ${Math.ceil(p.peUnits)} uds (₡${col0R(p.peColones)})`;
+      ws7.getCell(`A${r}`).font=nFont;r++;
+    });
+  }
+
+  // ── Insertar gráfico del PE como imagen (si existe) ──
+  try {
+    if (!window._chart && typeof drawChart === 'function') {
+      drawChart();
+      await new Promise(res => setTimeout(res, 300));
+    }
+    const chartCanvas = document.getElementById('eq-chart');
+    if (chartCanvas && window._chart) {
+      const imgData = chartCanvas.toDataURL('image/png');
+      const imgId = wb.addImage({ base64: imgData, extension: 'png' });
+      const ws3ref = wb.getWorksheet('Punto de Equilibrio');
+      if (ws3ref) {
+        ws3ref.addImage(imgId, { tl: { col: 0, row: 22 }, ext: { width: 560, height: 300 } });
+      }
+    }
+  } catch(imgErr) { /* chart image optional */ }
+
   // ── Download ──
   const buffer=await wb.xlsx.writeBuffer();
   const blob=new Blob([buffer],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
   const filename=`${d.product.replace(/[^a-zA-Z0-9áéíóúñÁÉÍÓÚÑ ]/g,'')}_Reporte.xlsx`;
   saveAs(blob,filename);
   showToast('📊 Excel exportado: '+filename);
+  } catch(err) {
+    console.error('Error exportando Excel:', err);
+    showToast('❌ Error al generar el Excel: ' + (err.message || 'error desconocido'));
+  }
 }
 
 // Helper for Excel export (no ₡ symbol, just number formatting)
@@ -2816,7 +3364,7 @@ function buildAndPrintPDF() {
     <div class="pr-page-break"></div>
     <div class="pr-header">
       <div>
-        <div style="font-size:8px;color:#9B87AE;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Sección 1 · Resumen Ejecutivo</div>
+        <div style="font-size:8px;color:#93A094;font-family:'JetBrains Mono',monospace;letter-spacing:1px;text-transform:uppercase;margin-bottom:3px">Sección 1 · Resumen Ejecutivo</div>
         <h1>${d.product}</h1>
       </div>
       <div class="pr-meta">
@@ -2924,7 +3472,7 @@ function buildAndPrintPDF() {
     </div>
 
     <div class="pr-section-title">📈 Gráfico del Punto de Equilibrio</div>
-    ${chartImg ? `<img src="${chartImg}" class="pr-chart-img">` : '<p style="font-size:9px;color:#9B87AE;text-align:center;padding:20px">Gráfico no disponible</p>'}
+    ${chartImg ? `<img src="${chartImg}" class="pr-chart-img">` : '<p style="font-size:9px;color:#93A094;text-align:center;padding:20px">Gráfico no disponible</p>'}
 
     <div class="pr-section-title">🧮 Fórmula y Cálculo Paso a Paso</div>
     <table class="pr-table">
@@ -2964,7 +3512,7 @@ function buildAndPrintPDF() {
     <div class="pr-page-break"></div>
     <div class="pr-section-title big">Sección 5 · Análisis de Sensibilidad</div>
 
-    <p style="font-size:9px;color:#5A4A6A;margin-bottom:10px;line-height:1.5">
+    <p style="font-size:9px;color:#566A5F;margin-bottom:10px;line-height:1.5">
       Esta sección muestra cómo cambia la <strong>utilidad mensual</strong> cuando varían las variables clave del negocio. Los valores positivos (verdes) indican ganancia adicional; los negativos (rojos) indican pérdida. Las variables con mayor impacto son las más críticas para monitorear.
     </p>
 
@@ -3003,17 +3551,51 @@ function buildAndPrintPDF() {
     <div class="pr-page-break"></div>
     <div class="pr-section-title big">Sección 6 · Recomendaciones Estratégicas</div>
 
-    <p style="font-size:9px;color:#5A4A6A;margin-bottom:12px;line-height:1.5">
+    <p style="font-size:9px;color:#566A5F;margin-bottom:12px;line-height:1.5">
       Análisis automatizado basado en los datos financieros del negocio. Cada recomendación está priorizada según su impacto potencial.
     </p>
 
     ${recomsHTML}
 
+    ${(() => {
+      const mp = window._MP;
+      if (!mp || !mp.products || mp.products.length < 2 || !mp.mixValid) return '';
+      const rows = mp.products.map(p => `<tr><td>${p.name}</td><td class="right">${col(p.cv)}</td><td class="right">${col(p.pv)}</td><td class="right" style="color:${p.mc>=0?'#5aaa83':'#c07070'}">${col(p.mc)}</td><td class="right">${p.mix.toFixed(1)}%</td><td class="right"><strong>${Math.ceil(p.peUnits)}</strong></td><td class="right">${col(p.peColones)}</td></tr>`).join('');
+      const utilRow = mp.hasVentas ? `
+        <div style="margin-top:10px;padding:10px;background:#FBFAF4;border-radius:8px;font-size:9.5px;line-height:1.6;">
+          <strong>Proyección con ventas estimadas (${mp.ventasTotal.toFixed(0)} uds/mes):</strong>
+          Ingresos ${col0(mp.ingresoProy)} − Costos variables ${col0(mp.cvProy)} − Fijos ${col0(mp.totalFijos)} =
+          <strong style="color:${mp.utilidadProy>=0?'#5aaa83':'#c07070'}">Utilidad ${col0(mp.utilidadProy)}</strong> ·
+          Margen de seguridad: <strong>${mp.margenSegMulti.toFixed(1)}%</strong>
+        </div>` : '';
+      return `
+    <div class="pr-page-break"></div>
+    <div class="pr-section-title big">Sección 6B · Punto de Equilibrio Multi-Producto</div>
+    <p style="font-size:9px;color:#566A5F;margin-bottom:12px;line-height:1.5">
+      Análisis del PE combinado para múltiples productos/servicios que comparten los mismos costos fijos (${col0(mp.totalFijos)}/mes).
+    </p>
+    <div class="pr-kpi-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px;">
+      <div class="pr-kpi yellow"><div class="pr-kpi-label">MC Ponderado</div><div class="pr-kpi-value">${col(mp.mcPonderado)}</div><div class="pr-kpi-sub">por unidad promedio</div></div>
+      <div class="pr-kpi blue"><div class="pr-kpi-label">PE Total</div><div class="pr-kpi-value">${Math.ceil(mp.peMulti)} uds</div><div class="pr-kpi-sub">todas las líneas</div></div>
+      <div class="pr-kpi green"><div class="pr-kpi-label">PE Ingresos</div><div class="pr-kpi-value">${col0(mp.peColones)}</div><div class="pr-kpi-sub">mínimo necesario</div></div>
+    </div>
+    <table class="pr-table">
+      <thead><tr><th>Producto</th><th>Costo Var.</th><th>Precio</th><th>MC</th><th>Mix %</th><th>PE (uds)</th><th>PE (₡)</th></tr></thead>
+      <tbody>${rows}
+        <tr class="total-row"><td><strong>TOTAL</strong></td><td></td><td></td><td class="right accent-col"><strong>${col(mp.mcPonderado)}</strong></td><td class="right"><strong>100%</strong></td><td class="right"><strong>${Math.ceil(mp.peMulti)}</strong></td><td class="right"><strong>${col0(mp.peColones)}</strong></td></tr>
+      </tbody>
+    </table>
+    ${utilRow}
+    <div style="margin-top:10px;font-size:9px;color:#566A5F;line-height:1.6;">
+      <strong>Fórmula:</strong> MC ponderado = Σ(MC×Mix) = ${col(mp.mcPonderado)} · PE = ${col0(mp.totalFijos)} ÷ ${col(mp.mcPonderado)} = ${mp.peMulti.toFixed(2)} ≈ ${Math.ceil(mp.peMulti)} uds
+    </div>`;
+    })()}
+
     <!-- ─── SECTION 7: GLOSSARY ─── -->
     <div class="pr-page-break"></div>
     <div class="pr-section-title big">Sección 7 · Glosario de Términos Financieros</div>
 
-    <p style="font-size:9px;color:#5A4A6A;margin-bottom:12px;line-height:1.5">
+    <p style="font-size:9px;color:#566A5F;margin-bottom:12px;line-height:1.5">
       Definiciones de los conceptos clave utilizados en este reporte.
     </p>
 
@@ -3061,6 +3643,7 @@ function getFormState() {
     ingredients:  getIngredients(),
     variables:    getVariables(),
     fixed:        getFixedCosts(),
+    multiproducto: (window._MPstate && window._MPstate.products.filter(p => p.source !== 'current').length) ? window._MPstate.products.filter(p => p.source !== 'current') : undefined,
   };
 }
 
@@ -3104,6 +3687,13 @@ function loadFormState(state) {
   (state.ingredients || []).forEach(i => addIngredient(i.name, i.cost, i.qty, i.unit || 'uds'));
   (state.variables || []).forEach(v => addVariable(v.name, v.value));
   (state.fixed || []).forEach(f => addFixed(f.name, f.value));
+
+  // Restore multi-product state (current product row is regenerated on calc)
+  const mpSaved = state.multiproducto || state.multiProducto;
+  if (Array.isArray(mpSaved)) {
+    window._MPstate.products = window._MPstate.products.filter(p => p.source === 'current');
+    mpSaved.forEach(p => window._MPstate.products.push({ name: p.name||'', cv: +p.cv||0, pv: +p.pv||0, mix: +p.mix||0, ventas: +p.ventas||0, source: 'extra' }));
+  }
 }
 
 function abrirGuardar() {
@@ -3171,6 +3761,14 @@ function showToast(msg) {
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModales(); });
+
+// Global validation: prevent negative numbers in any number input (G)
+document.addEventListener('input', e => {
+  if (e.target.type === 'number' && e.target.value !== '' && parseFloat(e.target.value) < 0) {
+    e.target.value = 0;
+    showToast('⚠️ No se permiten valores negativos');
+  }
+});
 
 // ============================================================================
 // LOCALSTORAGE AUTO-SAVE
