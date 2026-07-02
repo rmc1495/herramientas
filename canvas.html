@@ -4,22 +4,22 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Modelo Canvas — Generación de Modelos de Negocio</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700;900&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700;9..144,900&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --cream: #F7F3EE;
-    --ink: #1A1612;
-    --rust: #C4522A;
-    --gold: #D4A853;
-    --sage: #4A7C59;
-    --slate: #3D5A73;
-    --sand: #E8DDD0;
-    --muted: #8C7B6B;
-    --white: #FEFCFA;
-    --rust-soft: rgba(196,82,42,0.12);
-    --shadow-sm: 0 1px 3px rgba(26,22,18,0.06), 0 1px 2px rgba(26,22,18,0.04);
-    --shadow-md: 0 4px 16px rgba(26,22,18,0.08), 0 2px 6px rgba(26,22,18,0.05);
-    --shadow-lg: 0 12px 40px rgba(26,22,18,0.14), 0 4px 12px rgba(26,22,18,0.08);
+    --cream: #F4F6FB;
+    --ink: #23253A;
+    --rust: #E85A4F;
+    --gold: #F2A93B;
+    --sage: #2EA47E;
+    --slate: #4E7DD1;
+    --sand: #E2E6F0;
+    --muted: #7A7F94;
+    --white: #FFFFFF;
+    --rust-soft: rgba(232,90,79,0.12);
+    --shadow-sm: 0 1px 3px rgba(35,37,58,0.06), 0 1px 2px rgba(35,37,58,0.04);
+    --shadow-md: 0 4px 16px rgba(35,37,58,0.09), 0 2px 6px rgba(35,37,58,0.05);
+    --shadow-lg: 0 12px 40px rgba(35,37,58,0.16), 0 4px 12px rgba(35,37,58,0.08);
     --radius: 14px;
     --radius-sm: 10px;
     --ease: cubic-bezier(0.22, 1, 0.36, 1);
@@ -32,9 +32,9 @@
   body {
     font-family: 'DM Sans', sans-serif;
     background:
-      radial-gradient(circle at 12% 8%, rgba(212,168,83,0.10), transparent 42%),
-      radial-gradient(circle at 88% 18%, rgba(196,82,42,0.07), transparent 45%),
-      radial-gradient(circle at 50% 100%, rgba(74,124,89,0.06), transparent 55%),
+      radial-gradient(circle at 12% 8%, rgba(124,58,237,0.08), transparent 42%),
+      radial-gradient(circle at 88% 18%, rgba(232,90,79,0.07), transparent 45%),
+      radial-gradient(circle at 50% 100%, rgba(46,164,126,0.07), transparent 55%),
       var(--cream);
     background-attachment: fixed;
     color: var(--ink);
@@ -44,9 +44,12 @@
 
   /* HEADER */
   header {
-    background: linear-gradient(135deg, #221D17 0%, #1A1612 60%, #2A2118 100%);
-    color: var(--cream);
-    padding: 24px 40px;
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(232,90,79,0.30), transparent 50%),
+      radial-gradient(ellipse at 0% 100%, rgba(46,164,126,0.22), transparent 50%),
+      linear-gradient(135deg, #3B3A82 0%, #4C3A9E 55%, #6437A8 100%);
+    color: #fff;
+    padding: 22px 40px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -62,25 +65,67 @@
     background: linear-gradient(90deg, var(--rust), var(--gold), var(--sage));
   }
 
+  .brand { display: flex; align-items: center; gap: 14px; }
+
+  .brand-mark {
+    width: 42px; height: 42px;
+    border-radius: 11px;
+    background: linear-gradient(135deg, var(--rust), #c9402f);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 4px 14px rgba(232,90,79,0.45), inset 0 1px 0 rgba(255,255,255,0.25);
+    flex-shrink: 0;
+    position: relative;
+  }
+  .brand-mark::before {
+    content: '';
+    position: absolute; inset: 7px;
+    border: 2px solid rgba(255,255,255,0.9);
+    border-radius: 5px;
+  }
+  .brand-mark::after {
+    content: '';
+    position: absolute;
+    width: 9px; height: 9px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 2px;
+  }
+
   header h1 {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.6rem;
+    font-family: 'Fraunces', serif;
+    font-size: 1.55rem;
+    font-weight: 600;
     letter-spacing: -0.02em;
+    line-height: 1.05;
     position: relative;
   }
 
-  header span {
-    font-size: 0.75rem;
+  header h1 small {
+    display: block;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.62rem;
+    font-weight: 600;
     color: var(--gold);
-    font-weight: 500;
     text-transform: uppercase;
-    letter-spacing: 0.12em;
+    letter-spacing: 0.18em;
+    margin-top: 3px;
   }
+
+  header span {
+    font-size: 0.72rem;
+    color: rgba(255,255,255,0.65);
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0.02em;
+    text-align: right;
+    max-width: 230px;
+    line-height: 1.4;
+  }
+  header span b { color: var(--gold); font-weight: 600; }
 
   /* NAV TABS */
   .tabs {
     display: flex;
-    background: linear-gradient(180deg, #1A1612, #211B15);
+    background: linear-gradient(180deg, #2E2D66, #34306E);
     padding: 0 40px;
     gap: 4px;
   }
@@ -122,18 +167,19 @@
   }
 
   .canvas-header h2 {
-    font-family: 'Playfair Display', serif;
-    font-size: 2.2rem;
-    line-height: 1.05;
-    letter-spacing: -0.02em;
+    font-family: 'Fraunces', serif;
+    font-size: 2.4rem;
+    font-weight: 600;
+    line-height: 1.0;
+    letter-spacing: -0.025em;
   }
 
   .canvas-header h2::after {
     content: '';
     display: block;
-    width: 52px;
+    width: 56px;
     height: 4px;
-    margin-top: 12px;
+    margin-top: 14px;
     border-radius: 4px;
     background: linear-gradient(90deg, var(--rust), var(--gold));
   }
@@ -212,11 +258,11 @@
 
   /* CANVAS WRAPPER — contenedor único con borde */
   .canvas-wrapper {
-    background: linear-gradient(160deg, #ECE2D5, #E0D3C2);
+    background: linear-gradient(160deg, #E6E9F5, #DCE1F0);
     padding: 10px;
     border: none;
     border-radius: var(--radius);
-    box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(26,22,18,0.06);
+    box-shadow: var(--shadow-md), inset 0 0 0 1px rgba(35,37,58,0.06);
     display: flex;
     flex-direction: column;
     gap: 8px;
@@ -281,29 +327,31 @@
   }
 
   .block-num {
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.62rem;
+    font-size: 0.64rem;
     font-weight: 700;
     flex-shrink: 0;
-    box-shadow: 0 2px 6px rgba(26,22,18,0.18);
+    box-shadow: 0 2px 6px rgba(26,22,18,0.18), inset 0 1px 0 rgba(255,255,255,0.25);
+    color: #fff;
   }
 
   .block-title {
-    font-family: 'Playfair Display', serif;
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-family: 'Fraunces', serif;
+    font-size: 1.08rem;
+    font-weight: 600;
     margin-bottom: 8px;
-    line-height: 1.2;
+    line-height: 1.15;
     letter-spacing: -0.01em;
+    color: var(--ink);
   }
 
   .block-icon {
-    font-size: 1.5rem;
+    font-size: 1.45rem;
     margin-bottom: 6px;
     filter: drop-shadow(0 2px 4px rgba(26,22,18,0.12));
   }
@@ -319,17 +367,18 @@
     margin-top: 10px;
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 6px;
     flex: 1;
   }
 
   .sticky-note {
-    background: linear-gradient(135deg, #FFF8C0, #FCEFA1);
-    border: 1px solid #E8D96B;
-    padding: 7px 9px;
-    font-size: 0.72rem;
-    border-radius: 4px;
-    line-height: 1.4;
+    background: linear-gradient(135deg, #FFF8C0, #FBEC97);
+    border: 1px solid #EAD96A;
+    border-left: 3px solid var(--accent, #D4A853);
+    padding: 8px 10px;
+    font-size: 0.73rem;
+    border-radius: 5px;
+    line-height: 1.45;
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
@@ -413,15 +462,15 @@
   }
 
   /* Color variants */
-  .kp { --accent: #4A7C59; }
-  .ka { --accent: #3D5A73; }
-  .kr { --accent: #7B5EA7; }
-  .vp { --accent: #C4522A; }
-  .cr { --accent: #C9982F; }
-  .cs { --accent: #2A7D8C; }
-  .ch { --accent: #5C8A3C; }
-  .cost { --accent: #5A5A5A; }
-  .rev { --accent: #8B4513; }
+  .kp { --accent: #2EA47E; }
+  .ka { --accent: #4E7DD1; }
+  .kr { --accent: #8B5CF6; }
+  .vp { --accent: #E85A4F; }
+  .cr { --accent: #F2A93B; }
+  .cs { --accent: #14A3C7; }
+  .ch { --accent: #7CB342; }
+  .cost { --accent: #64748B; }
+  .rev { --accent: #E0851F; }
 
   .canvas-block .block-num {
     background: var(--accent, #888);
@@ -480,7 +529,7 @@
   }
 
   .modal-header h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.4rem;
   }
 
@@ -665,7 +714,7 @@
   }
 
   .learn-card h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.15rem;
     margin-bottom: 8px;
     letter-spacing: -0.01em;
@@ -681,7 +730,7 @@
     position: absolute;
     top: 14px; right: 18px;
     font-size: 2.6rem;
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-weight: 900;
     color: color-mix(in srgb, var(--accent, var(--sand)) 18%, transparent);
     line-height: 1;
@@ -722,11 +771,11 @@
   }
 
   .detail-sidebar .block-icon { font-size: 2.5rem; }
-  .detail-sidebar h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin: 10px 0 8px; }
+  .detail-sidebar h2 { font-family: 'Fraunces', serif; font-size: 1.5rem; margin: 10px 0 8px; }
   .detail-sidebar p { font-size: 0.82rem; line-height: 1.6; color: #aaa; }
 
   .detail-content h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.2rem;
     margin-bottom: 12px;
     padding-bottom: 8px;
@@ -793,7 +842,7 @@
   }
 
   .patterns-intro h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 2rem;
     margin-bottom: 12px;
   }
@@ -827,7 +876,7 @@
   }
 
   .pattern-header h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.15rem;
     margin-bottom: 4px;
     letter-spacing: -0.01em;
@@ -868,7 +917,7 @@
   }
 
   .about-grid h2 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.8rem;
     margin-bottom: 16px;
     grid-column: 1/-1;
@@ -881,7 +930,7 @@
   }
 
   .about-card h3 {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.1rem;
     margin-bottom: 12px;
     padding-bottom: 8px;
@@ -905,7 +954,7 @@
   }
 
   .about-highlight blockquote {
-    font-family: 'Playfair Display', serif;
+    font-family: 'Fraunces', serif;
     font-size: 1.1rem;
     line-height: 1.6;
     font-style: italic;
@@ -935,7 +984,7 @@
 
   /* STUDENT CARD */
   .student-card {
-    background: linear-gradient(135deg, var(--white), #FBF7F1);
+    background: linear-gradient(135deg, var(--white), #F8F9FD);
     border: 1px solid rgba(26,22,18,0.07);
     border-radius: var(--radius);
     padding: 18px 22px;
@@ -1240,8 +1289,11 @@
 <body>
 
 <header>
-  <h1>Modelo Canvas de Negocio</h1>
-  <span>Basado en Osterwalder &amp; Pigneur · Generación de Modelos de Negocio</span>
+  <div class="brand">
+    <div class="brand-mark"></div>
+    <h1>Modelo Canvas de Negocio<small>Herramienta de diseño estratégico</small></h1>
+  </div>
+  <span>Basado en <b>Osterwalder &amp; Pigneur</b> · Generación de Modelos de Negocio</span>
 </header>
 
 <div class="tabs">
@@ -1298,12 +1350,12 @@
         <div class="student-field field-color">
           <label>Color de acento</label>
           <div class="color-picker">
-            <button class="swatch" data-color="#C4522A" style="background:#C4522A" onclick="setAccent('#C4522A')" title="Óxido"></button>
-            <button class="swatch" data-color="#4A7C59" style="background:#4A7C59" onclick="setAccent('#4A7C59')" title="Verde"></button>
-            <button class="swatch" data-color="#3D5A73" style="background:#3D5A73" onclick="setAccent('#3D5A73')" title="Azul"></button>
-            <button class="swatch" data-color="#7B5EA7" style="background:#7B5EA7" onclick="setAccent('#7B5EA7')" title="Morado"></button>
-            <button class="swatch" data-color="#C9982F" style="background:#C9982F" onclick="setAccent('#C9982F')" title="Dorado"></button>
-            <button class="swatch" data-color="#B23A6B" style="background:#B23A6B" onclick="setAccent('#B23A6B')" title="Magenta"></button>
+            <button class="swatch" data-color="#E85A4F" style="background:#E85A4F" onclick="setAccent('#E85A4F')" title="Coral"></button>
+            <button class="swatch" data-color="#2EA47E" style="background:#2EA47E" onclick="setAccent('#2EA47E')" title="Esmeralda"></button>
+            <button class="swatch" data-color="#4E7DD1" style="background:#4E7DD1" onclick="setAccent('#4E7DD1')" title="Azul"></button>
+            <button class="swatch" data-color="#8B5CF6" style="background:#8B5CF6" onclick="setAccent('#8B5CF6')" title="Violeta"></button>
+            <button class="swatch" data-color="#F2A93B" style="background:#F2A93B" onclick="setAccent('#F2A93B')" title="Ámbar"></button>
+            <button class="swatch" data-color="#E24B8B" style="background:#E24B8B" onclick="setAccent('#E24B8B')" title="Magenta"></button>
             <label class="swatch swatch-custom" title="Color personalizado">
               <input type="color" id="accentCustom" onchange="setAccent(this.value)">
               <span>🎨</span>
@@ -1427,7 +1479,7 @@
 <!-- ===== LEARN SECTION ===== -->
 <div id="learn" class="section">
   <div id="learnList" class="learn-list">
-    <h2 style="font-family:'Playfair Display',serif;font-size:2rem;margin-bottom:8px;">Los 9 Bloques del Canvas</h2>
+    <h2 style="font-family:'Fraunces',serif;font-size:2rem;margin-bottom:8px;">Los 9 Bloques del Canvas</h2>
     <p style="color:var(--muted);font-size:0.9rem;margin-bottom:0;">Haz clic en cada bloque para explorar su definición, preguntas clave y ejemplos del libro.</p>
     <div class="learn-grid" id="learnGrid"></div>
   </div>
@@ -1513,7 +1565,7 @@ const blocks = {
   vp: {
     title: 'Propuesta de Valor',
     icon: '💎',
-    accent: '#C4522A',
+    accent: '#E85A4F',
     desc: 'El conjunto de productos y servicios que crean valor para un segmento de mercado específico. Es el corazón del Canvas.',
     detail: `<p>La propuesta de valor describe el paquete de productos y servicios que crean valor para un segmento de clientes específico. Es la razón por la que los clientes eligen una empresa en lugar de otra.</p>
     <p>El valor puede ser cuantitativo (precio, velocidad) o cualitativo (diseño, experiencia). Los elementos generadores de valor incluyen: novedad, rendimiento, personalización, trabajo hecho, diseño, marca/estatus, precio, reducción de costes, reducción de riesgos, accesibilidad y comodidad/utilidad.</p>`,
@@ -1588,7 +1640,7 @@ const patterns = [
   {
     title: 'Modelo de Larga Cola',
     subtitle: 'Long Tail',
-    accent: '#C4522A',
+    accent: '#E85A4F',
     desc: 'Vender menos de más productos en vez de más de menos. Centrarse en ofrecer un gran surtido de productos de nicho, donde cada uno vende relativamente poco.',
     examples: ['Lulu.com', 'Netflix', 'YouTube', 'eBay', 'Amazon']
   },
@@ -1751,7 +1803,7 @@ function showToast(msg, type = 'ok') {
 // ===== SAVE / LOAD PROGRESS =====
 // ===== LOGO =====
 let logoData = null;  // dataURL del logo
-let accentColor = '#C4522A';  // color de acento por defecto (óxido)
+let accentColor = '#E85A4F';  // color de acento por defecto (óxido)
 
 function setAccent(color) {
   accentColor = color;
@@ -1911,7 +1963,7 @@ function loadProgress(event) {
       logoData = data.logo || null;
       renderLogo();
       // Restore accent
-      setAccent(data.accent || '#C4522A');
+      setAccent(data.accent || '#E85A4F');
       saveStudents();
       const fecha = data.savedAt ? new Date(data.savedAt).toLocaleDateString('es-CR') : '';
       showToast('✅ Progreso cargado' + (fecha ? ' · Guardado el ' + fecha : ''));
@@ -2045,8 +2097,8 @@ function loadStudents() {
     if (s.est2)    document.getElementById('est-2').value = s.est2;
     if (s.est3)    document.getElementById('est-3').value = s.est3;
     if (s.logo)    { logoData = s.logo; renderLogo(); }
-    setAccent(s.accent || '#C4522A');
-  } catch(e) { setAccent('#C4522A'); }
+    setAccent(s.accent || '#E85A4F');
+  } catch(e) { setAccent('#E85A4F'); }
 }
 
 // ===== Cargar jsPDF bajo demanda =====
@@ -2071,21 +2123,21 @@ function buildCanvasDoc(jsPDF) {
     document.getElementById('est-3').value.trim()
   ].filter(Boolean);
 
-  // ── Paleta refinada ───────────────────────────────────────────────────────
-  const INK    = [36, 30, 24];
-  const INK2   = [58, 50, 42];
-  const CREAM  = [251, 247, 240];
+  // ── Paleta clara (apta para impresión) ────────────────────────────────────
+  const INK    = [35, 37, 58];
+  const INK2   = [58, 62, 84];
+  const CREAM  = [255, 255, 255];       // fondo blanco: ahorra tinta
   const PAPER  = [255, 255, 255];
-  const RUST   = [196, 82, 42];
-  const GOLD   = [212, 168, 83];
-  const MUTED  = [154, 139, 122];
-  const LINE   = [234, 224, 211];
+  const RUST   = [232, 90, 79];
+  const GOLD   = [225, 145, 30];
+  const MUTED  = [122, 127, 148];
+  const LINE   = [226, 230, 240];
   const ACCENT = hexToRgb(accentColor);   // color de acento del equipo
 
   const blockColors = {
-    kp: [74,124,89],  ka: [61,90,115],  kr: [123,94,167],
-    vp: [196,82,42],  cr: [201,152,47], cs: [42,125,140],
-    ch: [92,138,60],  cost: [90,80,72], rev: [156,90,40]
+    kp: [46,164,126],  ka: [78,125,209],  kr: [139,92,246],
+    vp: [232,90,79],   cr: [235,150,30],  cs: [20,163,199],
+    ch: [124,179,66],  cost: [100,116,139], rev: [224,133,31]
   };
 
   // mezcla con blanco: pct 0 = blanco, 1 = color puro
@@ -2183,22 +2235,27 @@ function buildCanvasDoc(jsPDF) {
   doc.setFillColor(...CREAM);
   doc.rect(0, 0, W, TOTAL_H, 'F');
 
-  // ── HEADER ──────────────────────────────────────────────────────────────
-  doc.setFillColor(...INK);
-  doc.rect(0, 0, W, HDR, 'F');
-  // franja de acento (degradado simulado del acento hacia dorado)
+  // ── HEADER (claro, apto para impresión) ──────────────────────────────────
+  // franja superior fina de acento
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, 0, W, 2.5, 'F');
+  // fondo blanco del header con línea inferior
+  doc.setFillColor(...PAPER);
+  doc.rect(0, 2.5, W, HDR - 2.5, 'F');
+  // franja de acento inferior (degradado simulado del acento hacia dorado)
   const seg = W/3;
-  doc.setFillColor(...ACCENT);          doc.rect(0,      HDR, seg, 2.5, 'F');
-  doc.setFillColor(...tint(ACCENT,0.7));doc.rect(seg,    HDR, seg, 2.5, 'F');
-  doc.setFillColor(...GOLD);            doc.rect(2*seg,  HDR, seg, 2.5, 'F');
+  doc.setFillColor(...ACCENT);          doc.rect(0,      HDR, seg, 2, 'F');
+  doc.setFillColor(...tint(ACCENT,0.55));doc.rect(seg,   HDR, seg, 2, 'F');
+  doc.setFillColor(...GOLD);            doc.rect(2*seg,  HDR, seg, 2, 'F');
 
-  // Logo (placa blanca redondeada a la izquierda)
+  // Logo (placa con borde suave a la izquierda)
   let titleX = PAD;
   if (logoData) {
     const LS = 34;            // tamaño placa logo
-    const ly = (HDR - LS) / 2;
+    const ly = 2.5 + (HDR - 2.5 - LS) / 2;
     doc.setFillColor(...PAPER);
-    doc.roundedRect(PAD, ly, LS, LS, 4, 4, 'F');
+    doc.setDrawColor(...LINE); doc.setLineWidth(0.5);
+    doc.roundedRect(PAD, ly, LS, LS, 4, 4, 'FD');
     try {
       // detectar dimensiones para encajar manteniendo proporción
       const props = doc.getImageProperties(logoData);
@@ -2211,34 +2268,34 @@ function buildCanvasDoc(jsPDF) {
     titleX = PAD + LS + 10;
   }
 
-  // Título
-  doc.setTextColor(...PAPER);
+  // Título (texto oscuro sobre fondo claro)
+  doc.setTextColor(...INK);
   doc.setFont('times','bold'); doc.setFontSize(19);
   doc.text('Lienzo del Modelo de Negocio', titleX, 22);
-  doc.setTextColor(...tint(ACCENT, 0.82));
+  doc.setTextColor(...ACCENT);
   doc.setFont('helvetica','bold'); doc.setFontSize(7);
   doc.text('BUSINESS MODEL CANVAS', titleX, 31);
-  doc.setTextColor(...tint(PAPER, 0.55));
+  doc.setTextColor(...MUTED);
   doc.setFont('helvetica','italic'); doc.setFontSize(6.5);
   doc.text('Osterwalder & Pigneur  ·  Generacion de Modelos de Negocio', titleX, 39);
 
   // separador vertical
-  doc.setDrawColor(...tint(INK, 0.4)); doc.setLineWidth(0.4);
-  doc.line(W*0.54, 10, W*0.54, HDR-8);
+  doc.setDrawColor(...LINE); doc.setLineWidth(0.5);
+  doc.line(W*0.54, 10, W*0.54, HDR-6);
 
   // Emprendimiento + eslogan
   const ex = W*0.57;
   const empMaxW = W*0.21;
-  doc.setTextColor(...GOLD); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...ACCENT); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
   doc.text('EMPRENDIMIENTO', ex, 15);
-  doc.setTextColor(...PAPER); doc.setFont('times','bold'); doc.setFontSize(15);
+  doc.setTextColor(...INK); doc.setFont('times','bold'); doc.setFontSize(15);
   let empDisp = empNombre;
   while (doc.getTextWidth(pdfText(empDisp)) > empMaxW && empDisp.length > 3) empDisp = empDisp.slice(0,-1);
   const empOut = doc.getTextWidth(pdfText(empNombre)) <= empMaxW ? pdfText(empNombre) : pdfText(empDisp.trim()) + '…';
   doc.text(empOut, ex, 28);
-  // eslogan en itálica dorada suave
+  // eslogan en itálica con acento suave
   if (eslogan) {
-    doc.setTextColor(...tint(GOLD, 0.85)); doc.setFont('times','italic'); doc.setFontSize(8.5);
+    doc.setTextColor(...tint(ACCENT, 0.75)); doc.setFont('times','italic'); doc.setFontSize(8.5);
     let slDisp = eslogan;
     while (doc.getTextWidth(pdfText('“'+slDisp+'”')) > empMaxW + 8 && slDisp.length > 3) slDisp = slDisp.slice(0,-1);
     const slOut = doc.getTextWidth(pdfText('"'+eslogan+'"')) <= empMaxW + 8 ? eslogan : slDisp.trim()+'…';
@@ -2247,9 +2304,9 @@ function buildCanvasDoc(jsPDF) {
 
   // Equipo
   const tx = W*0.80;
-  doc.setTextColor(...GOLD); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
+  doc.setTextColor(...ACCENT); doc.setFont('helvetica','bold'); doc.setFontSize(6.5);
   doc.text('EQUIPO', tx, 15);
-  doc.setTextColor(...PAPER); doc.setFont('helvetica','normal'); doc.setFontSize(8);
+  doc.setTextColor(...INK2); doc.setFont('helvetica','normal'); doc.setFontSize(8);
   let yy = 23;
   estudiantes.slice(0,3).forEach(e => {
     let ed = e;
@@ -2346,10 +2403,12 @@ function buildCanvasDoc(jsPDF) {
   drawBlock(PAD, BOT_Y, HALF_W, BOT_H, 8, 'Estructura de Costos', 'Finanzas', 'cost');
   drawBlock(PAD+HALF_W+GAP, BOT_Y, HALF_W, BOT_H, 9, 'Fuentes de Ingresos', 'Ingresos', 'rev');
 
-  // ── FOOTER ──────────────────────────────────────────────────────────────
-  doc.setFillColor(...INK);
-  doc.rect(0, TOTAL_H - FOOT, W, FOOT, 'F');
-  doc.setTextColor(...tint(PAPER, 0.5));
+  // ── FOOTER (claro) ──────────────────────────────────────────────────────
+  doc.setDrawColor(...LINE); doc.setLineWidth(0.5);
+  doc.line(PAD, TOTAL_H - FOOT + 2, W - PAD, TOTAL_H - FOOT + 2);
+  doc.setFillColor(...ACCENT);
+  doc.rect(0, TOTAL_H - 2, W, 2, 'F');
+  doc.setTextColor(...MUTED);
   doc.setFont('helvetica','normal'); doc.setFontSize(6.5);
   doc.text('Basado en Osterwalder & Pigneur (2010)  ·  Generacion de Modelos de Negocio  ·  Deusto',
            W/2, TOTAL_H - 6, { align:'center' });
@@ -2381,7 +2440,7 @@ async function exportPNG() {
     // esperar a que la imagen del logo cargue si existe
     const img = node.querySelector('img.cap-logo');
     if (img && !img.complete) await new Promise(r => { img.onload = r; img.onerror = r; });
-    const canvas = await window.html2canvas(node, { scale: 2.5, backgroundColor: '#FBF7F0', useCORS: true });
+    const canvas = await window.html2canvas(node, { scale: 2.5, backgroundColor: '#FFFFFF', useCORS: true });
     const a = document.createElement('a');
     a.download = slug + '.png';
     a.href = canvas.toDataURL('image/png');
@@ -2409,15 +2468,15 @@ function buildCanvasHTMLForCapture() {
   const s = getStudentData();
   const estudiantes = [s.est1, s.est2, s.est3].filter(Boolean);
   const blockMeta = {
-    kp:{n:1,t:'Socios Clave',s:'Alianzas clave',c:'#4A7C59'},
-    ka:{n:2,t:'Actividades Clave',s:'Actividades',c:'#3D5A73'},
-    kr:{n:6,t:'Recursos Clave',s:'Recursos',c:'#7B5EA7'},
-    vp:{n:3,t:'Propuesta de Valor',s:'El corazon',c:'#C4522A'},
-    cr:{n:4,t:'Relación con los Clientes',s:'Relaciones',c:'#C9982F'},
-    ch:{n:7,t:'Canales',s:'Distribucion',c:'#5C8A3C'},
-    cs:{n:5,t:'Segmentos de Clientes',s:'Mercado',c:'#2A7D8C'},
-    cost:{n:8,t:'Estructura de Costos',s:'Finanzas',c:'#5A5048'},
-    rev:{n:9,t:'Fuentes de Ingresos',s:'Ingresos',c:'#9C5A28'},
+    kp:{n:1,t:'Socios Clave',s:'Alianzas clave',c:'#2EA47E'},
+    ka:{n:2,t:'Actividades Clave',s:'Actividades',c:'#4E7DD1'},
+    kr:{n:6,t:'Recursos Clave',s:'Recursos',c:'#8B5CF6'},
+    vp:{n:3,t:'Propuesta de Valor',s:'El corazón',c:'#E85A4F'},
+    cr:{n:4,t:'Relación con los Clientes',s:'Relaciones',c:'#EB9620'},
+    ch:{n:7,t:'Canales',s:'Distribución',c:'#7CB342'},
+    cs:{n:5,t:'Segmentos de Clientes',s:'Mercado',c:'#14A3C7'},
+    cost:{n:8,t:'Estructura de Costos',s:'Finanzas',c:'#64748B'},
+    rev:{n:9,t:'Fuentes de Ingresos',s:'Ingresos',c:'#E0851F'},
   };
   const esc = t => (t||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   const tintCss = (hex, pct) => {
@@ -2430,86 +2489,92 @@ function buildCanvasHTMLForCapture() {
     const meta = blockMeta[id];
     const items = notes[id] || [];
     const notesHTML = items.map(n => `
-      <div style="background:${tintCss(meta.c,0.10)};border-left:3px solid ${meta.c};
-        border-radius:5px;padding:8px 10px;margin-bottom:7px;font-size:13px;line-height:1.5;color:#3A322A;">
-        ${esc(n)}
-      </div>`).join('');
+      <div style="background:${tintCss(meta.c,0.09)};border-left:3px solid ${meta.c};
+        border-radius:6px;padding:9px 11px;margin-bottom:8px;font-size:13px;line-height:1.55;color:#3A3E54;
+        box-shadow:0 1px 2px rgba(0,0,0,0.03);">${esc(n)}</div>`).join('');
     return `
-      <div style="background:#fff;border:1px solid #EAE0D3;border-radius:8px;overflow:hidden;
-        box-shadow:0 1px 4px rgba(0,0,0,0.05);${extraStyle}">
-        <div style="height:6px;background:${meta.c};"></div>
-        <div style="padding:12px 14px;">
-          <div style="display:flex;align-items:center;gap:9px;margin-bottom:4px;">
-            <div style="width:24px;height:24px;border-radius:50%;background:${meta.c};color:#fff;
-              font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;">${meta.n}</div>
-            <div>
-              <div style="font-size:9px;font-weight:700;letter-spacing:0.08em;color:${meta.c};text-transform:uppercase;">${esc(meta.s)}</div>
-              <div style="font-family:'Playfair Display',serif;font-size:16px;font-weight:700;color:#241E18;">${esc(meta.t)}</div>
+      <div style="background:#fff;border:1px solid #E6E9F2;border-radius:11px;overflow:hidden;
+        box-shadow:0 2px 8px rgba(36,30,24,0.06);${extraStyle}">
+        <div style="height:5px;background:${meta.c};"></div>
+        <div style="padding:14px 15px 15px;">
+          <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:6px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:${meta.c};color:#fff;
+              font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+              box-shadow:0 2px 5px rgba(36,30,24,0.2);">${meta.n}</div>
+            <div style="padding-top:1px;">
+              <div style="font-size:9px;font-weight:700;letter-spacing:0.12em;color:${meta.c};text-transform:uppercase;line-height:1.2;">${esc(meta.s)}</div>
+              <div style="font-family:'Fraunces',serif;font-size:17px;font-weight:600;color:#23253A;line-height:1.1;margin-top:2px;letter-spacing:-0.01em;">${esc(meta.t)}</div>
             </div>
           </div>
-          <div style="border-top:1px solid #EAE0D3;margin:6px 0 10px;"></div>
-          ${notesHTML || '<div style="font-size:12px;color:#bbb;font-style:italic;">—</div>'}
+          <div style="border-top:1px solid #EAEDF4;margin:8px 0 11px;"></div>
+          ${notesHTML || '<div style="font-size:12px;color:#B8BDCC;font-style:italic;">Sin anotaciones aún</div>'}
         </div>
       </div>`;
   }
 
   const accent = accentColor;
   const wrap = document.createElement('div');
-  wrap.style.cssText = 'position:fixed;left:-99999px;top:0;width:1180px;background:#FBF7F0;padding:0;font-family:\'DM Sans\',sans-serif;';
+  wrap.style.cssText = "position:fixed;left:-99999px;top:0;width:1240px;background:#FFFFFF;font-family:'DM Sans',sans-serif;";
 
   const logoHTML = logoData
-    ? `<div style="width:70px;height:70px;background:#fff;border-radius:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;">
-         <img class="cap-logo" src="${logoData}" style="max-width:90%;max-height:90%;object-fit:contain;">
-       </div>` : '';
+    ? `<div style="width:74px;height:74px;background:#fff;border:1px solid #E2E6F0;border-radius:13px;display:flex;align-items:center;justify-content:center;overflow:hidden;flex-shrink:0;box-shadow:0 2px 8px rgba(35,37,58,0.08);">
+         <img class="cap-logo" src="${logoData}" style="max-width:88%;max-height:88%;object-fit:contain;">
+       </div>`
+    : `<div style="width:48px;height:48px;border-radius:12px;background:linear-gradient(135deg,${accent},${tintCss(accent,0.7)});display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 3px 10px rgba(35,37,58,0.18);">
+         <div style="width:22px;height:22px;border:2.5px solid #fff;border-radius:5px;"></div>
+       </div>`;
 
   const eslHTML = s.eslogan
-    ? `<div style="font-family:'Playfair Display',serif;font-style:italic;font-size:14px;color:${tintCss(accent,0.85)};margin-top:4px;">"${esc(s.eslogan)}"</div>` : '';
+    ? `<div style="font-family:'Fraunces',serif;font-style:italic;font-size:14px;color:${tintCss(accent,0.78)};margin-top:5px;">“${esc(s.eslogan)}”</div>` : '';
 
   wrap.innerHTML = `
-    <!-- HEADER -->
-    <div style="background:#241E18;padding:22px 28px;display:flex;align-items:center;gap:18px;">
+    <!-- franja acento superior -->
+    <div style="height:6px;background:${accent};"></div>
+    <!-- HEADER (claro, apto para impresión) -->
+    <div style="background:#FFFFFF;padding:22px 30px;display:flex;align-items:center;gap:20px;">
       ${logoHTML}
       <div style="flex:1;">
-        <div style="font-family:'Playfair Display',serif;font-size:28px;font-weight:900;color:#fff;line-height:1;">Lienzo del Modelo de Negocio</div>
-        <div style="font-size:11px;font-weight:700;letter-spacing:0.12em;color:${tintCss(accent,0.82)};margin-top:7px;">BUSINESS MODEL CANVAS</div>
-        <div style="font-size:10px;font-style:italic;color:rgba(255,255,255,0.55);margin-top:3px;">Osterwalder &amp; Pigneur · Generación de Modelos de Negocio</div>
+        <div style="font-family:'Fraunces',serif;font-size:29px;font-weight:600;color:#23253A;line-height:1;letter-spacing:-0.02em;">Lienzo del Modelo de Negocio</div>
+        <div style="font-size:11px;font-weight:700;letter-spacing:0.16em;color:${accent};margin-top:8px;">BUSINESS MODEL CANVAS</div>
+        <div style="font-size:10px;font-style:italic;color:#7A7F94;margin-top:3px;">Osterwalder &amp; Pigneur · Generación de Modelos de Negocio</div>
       </div>
-      <div style="border-left:1px solid rgba(255,255,255,0.18);padding-left:20px;min-width:180px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:${tintCss(accent,0.82)};">EMPRENDIMIENTO</div>
-        <div style="font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#fff;margin-top:2px;">${esc(s.nombre||'—')}</div>
+      <div style="border-left:1px solid #E2E6F0;padding-left:22px;min-width:190px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;color:${accent};">EMPRENDIMIENTO</div>
+        <div style="font-family:'Fraunces',serif;font-size:21px;font-weight:600;color:#23253A;margin-top:3px;line-height:1.05;">${esc(s.nombre||'—')}</div>
         ${eslHTML}
       </div>
-      <div style="min-width:160px;">
-        <div style="font-size:10px;font-weight:700;letter-spacing:0.1em;color:${tintCss(accent,0.82)};">EQUIPO</div>
-        ${estudiantes.map(e=>`<div style="font-size:12px;color:#fff;margin-top:5px;">· ${esc(e)}</div>`).join('') || '<div style="font-size:12px;color:rgba(255,255,255,0.5);margin-top:5px;">—</div>'}
+      <div style="min-width:165px;">
+        <div style="font-size:9px;font-weight:700;letter-spacing:0.14em;color:${accent};margin-bottom:6px;">EQUIPO</div>
+        ${estudiantes.map(e=>`<div style="font-size:12.5px;color:#3A3E54;margin-top:4px;display:flex;gap:6px;"><span style="color:${accent};">·</span>${esc(e)}</div>`).join('') || '<div style="font-size:12px;color:#A9AEC0;">—</div>'}
       </div>
     </div>
     <!-- franja acento -->
-    <div style="display:flex;height:5px;">
+    <div style="display:flex;height:4px;">
       <div style="flex:1;background:${accent};"></div>
-      <div style="flex:1;background:${tintCss(accent,0.7)};"></div>
-      <div style="flex:1;background:#D4A853;"></div>
+      <div style="flex:1;background:${tintCss(accent,0.55)};"></div>
+      <div style="flex:1;background:#F2A93B;"></div>
     </div>
 
     <!-- GRID -->
-    <div style="padding:18px 20px;">
-      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:start;">
+    <div style="padding:20px 22px;background:#FFFFFF;">
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:11px;align-items:start;">
         ${blockHTML('kp')}
-        <div style="display:flex;flex-direction:column;gap:10px;">${blockHTML('ka')}${blockHTML('kr')}</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">${blockHTML('ka')}${blockHTML('kr')}</div>
         ${blockHTML('vp')}
-        <div style="display:flex;flex-direction:column;gap:10px;">${blockHTML('cr')}${blockHTML('ch')}</div>
+        <div style="display:flex;flex-direction:column;gap:11px;">${blockHTML('cr')}${blockHTML('ch')}</div>
         ${blockHTML('cs')}
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:11px;margin-top:11px;">
         ${blockHTML('cost')}
         ${blockHTML('rev')}
       </div>
     </div>
 
-    <!-- FOOTER -->
-    <div style="background:#241E18;padding:10px;text-align:center;">
-      <span style="font-size:10px;color:rgba(255,255,255,0.5);">Basado en Osterwalder &amp; Pigneur (2010) · Generación de Modelos de Negocio · Deusto</span>
+    <!-- FOOTER (claro) -->
+    <div style="background:#FFFFFF;border-top:1px solid #E2E6F0;padding:10px;text-align:center;">
+      <span style="font-size:10px;color:#7A7F94;letter-spacing:0.02em;">Basado en Osterwalder &amp; Pigneur (2010) · Generación de Modelos de Negocio · Deusto</span>
     </div>
+    <div style="height:5px;background:${accent};"></div>
   `;
   return wrap;
 }
