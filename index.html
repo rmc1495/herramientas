@@ -4,355 +4,424 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Herramientas para Emprendimiento e Innovación</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0e0e11;
-    --surface: #16161c;
-    --border: #2a2a35;
-    --accent1: #d4f54a;
-    --accent2: #5b4eff;
-    --accent3: #ff6b35;
-    --accent4: #00d4aa;
-    --accent5: #ff3e8a;
-    --text: #f0f0f5;
-    --muted: #7a7a90;
+    --paper: #fbfcfe;
+    --grid-line: #e4ecf7;
+    --ink: #21293c;
+    --ink-soft: #5b6478;
+    --muted: #8a92a6;
+    --card: #ffffff;
+    --card-border: #dfe4ee;
+    --marker: #ffe94a;
+
+    /* colores de categoría */
+    --c-amarillo: #f5b301;
+    --c-naranja: #f2632c;
+    --c-rosa: #e64980;
+    --c-violeta: #7048e8;
+    --c-azul: #1971c2;
+    --c-verde: #2f9e44;
+    --c-teal: #0ca678;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html { scroll-behavior: smooth; }
+
   body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif;
     min-height: 100vh;
     overflow-x: hidden;
   }
 
-  /* Background grain */
-  body::before {
-    content: '';
-    position: fixed;
-    inset: 0;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.035'/%3E%3C/svg%3E");
-    pointer-events: none;
-    z-index: 0;
-    opacity: 0.6;
-  }
-
-  /* Header */
+  /* ============ HEADER ============ */
   header {
-    position: relative;
-    z-index: 10;
-    padding: 3rem 2rem 0;
-    max-width: 1200px;
+    max-width: 1180px;
     margin: 0 auto;
+    padding: 3.5rem 2rem 0;
   }
 
   .eyebrow {
-    font-family: 'Syne', sans-serif;
+    font-family: 'Space Mono', monospace;
     font-size: 0.7rem;
-    font-weight: 600;
-    letter-spacing: 0.25em;
+    letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: var(--muted);
-    margin-bottom: 1rem;
-    display: flex;
+    color: var(--ink-soft);
+    display: inline-flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.6rem;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 0.4rem 1rem;
+    box-shadow: 3px 3px 0 var(--ink);
+    margin-bottom: 1.6rem;
   }
 
-  .eyebrow::before {
-    content: '';
-    width: 2rem;
-    height: 1px;
-    background: var(--muted);
+  .eyebrow .dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--c-teal);
     display: inline-block;
   }
 
   h1 {
-    font-family: 'Syne', sans-serif;
-    font-size: clamp(2.4rem, 6vw, 5rem);
+    font-family: 'Bricolage Grotesque', sans-serif;
     font-weight: 800;
-    line-height: 1.05;
-    letter-spacing: -0.03em;
+    font-size: clamp(2.3rem, 5.6vw, 4.4rem);
+    line-height: 1.06;
+    letter-spacing: -0.025em;
+    max-width: 800px;
   }
 
-  h1 .highlight {
-    color: var(--accent1);
+  h1 .marker {
     position: relative;
     display: inline-block;
+    white-space: nowrap;
+  }
+
+  h1 .marker::before {
+    content: '';
+    position: absolute;
+    left: -0.15em;
+    right: -0.15em;
+    top: 0.18em;
+    bottom: 0.02em;
+    background: var(--marker);
+    z-index: -1;
+    border-radius: 0.2em 0.5em 0.3em 0.6em;
+    transform: rotate(-0.8deg);
   }
 
   .subtitle {
-    margin-top: 1.2rem;
-    font-size: 1rem;
-    color: var(--muted);
-    font-weight: 300;
-    max-width: 480px;
-    line-height: 1.65;
+    margin-top: 1.3rem;
+    font-size: 1.02rem;
+    color: var(--ink-soft);
+    max-width: 520px;
+    line-height: 1.7;
   }
 
-  .header-meta {
+  .subtitle strong { color: var(--ink); font-weight: 600; }
+
+  /* ============ SEARCH ============ */
+  .search-wrap {
+    max-width: 1180px;
+    margin: 2.4rem auto 0;
+    padding: 0 2rem;
     display: flex;
     align-items: center;
-    gap: 1.5rem;
-    margin-top: 2rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--border);
+    gap: 1rem;
+    flex-wrap: wrap;
   }
 
-  .badge {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.65rem;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    padding: 0.3rem 0.8rem;
-    border-radius: 100px;
-    border: 1px solid;
-  }
-
-  .badge-green { color: var(--accent1); border-color: var(--accent1); }
-  .badge-blue { color: #a8a0ff; border-color: var(--accent2); }
-
-  /* Search */
-  .search-wrap {
+  .search-box {
     position: relative;
-    z-index: 10;
-    max-width: 1200px;
-    margin: 2.5rem auto 0;
-    padding: 0 2rem;
+    flex: 1;
+    min-width: 260px;
+    max-width: 480px;
   }
 
   .search-input {
     width: 100%;
-    background: var(--surface);
-    border: 1px solid var(--border);
+    background: #fff;
+    border: 1.5px solid var(--ink);
     border-radius: 12px;
-    padding: 0.9rem 1.2rem 0.9rem 3rem;
-    color: var(--text);
-    font-family: 'DM Sans', sans-serif;
+    padding: 0.85rem 1.1rem 0.85rem 2.9rem;
+    font-family: 'Instrument Sans', sans-serif;
     font-size: 0.95rem;
+    color: var(--ink);
     outline: none;
-    transition: border-color 0.2s;
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: box-shadow 0.15s, transform 0.15s;
   }
 
   .search-input::placeholder { color: var(--muted); }
-  .search-input:focus { border-color: var(--accent1); }
+
+  .search-input:focus {
+    box-shadow: 5px 5px 0 var(--c-violeta);
+    transform: translate(-1px, -1px);
+  }
 
   .search-icon {
     position: absolute;
-    left: calc(2rem + 1rem);
+    left: 1rem;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--muted);
     pointer-events: none;
+    color: var(--ink-soft);
+    display: flex;
   }
 
-  /* Grid */
+  .tool-count {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+  }
+
+  .tool-count b { color: var(--ink); }
+
+  /* ============ GRID ============ */
   .grid-wrap {
-    position: relative;
-    z-index: 10;
-    max-width: 1200px;
-    margin: 2.5rem auto 4rem;
+    max-width: 1180px;
+    margin: 2.8rem auto 4.5rem;
     padding: 0 2rem;
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 1.2rem;
+    gap: 2rem 1.5rem;
   }
 
-  /* Cards */
+  /* ============ CARDS (fichas) ============ */
   .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 1.6rem;
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 2rem 1.5rem 1.3rem;
     text-decoration: none;
     color: inherit;
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.9rem;
     position: relative;
-    overflow: hidden;
-    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
-    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(33, 41, 60, 0.05);
+    transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    animation: fadeUp 0.45s ease both;
   }
 
-  .card::before {
-    content: '';
+  .card:nth-child(odd)  { transform: rotate(-0.7deg); }
+  .card:nth-child(even) { transform: rotate(0.6deg); }
+
+  .card:hover, .card:focus-visible {
+    transform: rotate(0deg) translateY(-5px);
+    border-color: var(--card-accent);
+    box-shadow: 0 14px 30px -8px color-mix(in srgb, var(--card-accent) 35%, transparent);
+    z-index: 2;
+  }
+
+  .card:focus-visible {
+    outline: 3px solid var(--card-accent);
+    outline-offset: 3px;
+  }
+
+  /* cinta adhesiva */
+  .tape {
     position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at 50% 0%, var(--card-accent, transparent) 0%, transparent 70%);
-    opacity: 0;
-    transition: opacity 0.3s;
+    top: -13px;
+    left: 50%;
+    width: 96px;
+    height: 26px;
+    transform: translateX(-50%) rotate(-2.5deg);
+    background:
+      repeating-linear-gradient(45deg,
+        rgba(255,255,255,0.22) 0 6px,
+        transparent 6px 12px),
+      var(--card-accent);
+    opacity: 0.88;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(33,41,60,0.12);
   }
 
-  .card:hover {
-    border-color: var(--card-accent, var(--border));
-    transform: translateY(-3px);
-    box-shadow: 0 12px 40px -10px color-mix(in srgb, var(--card-accent, #000) 30%, transparent);
-  }
-
-  .card:hover::before { opacity: 0.08; }
+  .card:nth-child(3n) .tape { transform: translateX(-50%) rotate(2deg); }
 
   .card-top {
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
+    gap: 0.8rem;
   }
 
   .card-icon {
-    width: 48px;
-    height: 48px;
+    width: 50px;
+    height: 50px;
     border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.4rem;
-    flex-shrink: 0;
-    background: color-mix(in srgb, var(--card-accent, #fff) 12%, transparent);
-    border: 1px solid color-mix(in srgb, var(--card-accent, #fff) 20%, transparent);
+    font-size: 1.5rem;
+    background: color-mix(in srgb, var(--card-accent) 12%, #fff);
+    border: 1.5px solid color-mix(in srgb, var(--card-accent) 35%, transparent);
   }
 
   .card-arrow {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    border: 1px solid var(--border);
+    border: 1.5px solid var(--ink);
     display: flex;
     align-items: center;
     justify-content: center;
-    color: var(--muted);
-    font-size: 0.85rem;
-    transition: background 0.2s, color 0.2s, border-color 0.2s;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: #fff;
+    transition: background 0.2s, color 0.2s, transform 0.2s;
     flex-shrink: 0;
   }
 
   .card:hover .card-arrow {
-    background: var(--card-accent);
-    color: #000;
-    border-color: var(--card-accent);
+    background: var(--ink);
+    color: #fff;
+    transform: rotate(-45deg);
   }
 
   .card-body { flex: 1; }
 
   .card-tag {
-    font-family: 'Syne', sans-serif;
-    font-size: 0.6rem;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
     font-weight: 700;
-    letter-spacing: 0.18em;
+    letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--card-accent);
-    margin-bottom: 0.35rem;
+    margin-bottom: 0.4rem;
   }
 
   .card-title {
-    font-family: 'Syne', sans-serif;
-    font-size: 1.05rem;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.18rem;
     font-weight: 700;
-    line-height: 1.3;
-    color: var(--text);
+    line-height: 1.25;
+    letter-spacing: -0.01em;
   }
 
   .card-desc {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.6;
-    margin-top: 0.4rem;
+    font-size: 0.86rem;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin-top: 0.45rem;
   }
 
   .card-footer {
     display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding-top: 0.8rem;
-    border-top: 1px solid var(--border);
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    padding-top: 0.85rem;
+    border-top: 1.5px dashed var(--card-border);
   }
 
   .card-pill {
-    font-size: 0.65rem;
-    font-weight: 500;
-    letter-spacing: 0.05em;
-    padding: 0.2rem 0.6rem;
-    border-radius: 100px;
-    background: color-mix(in srgb, var(--card-accent) 10%, transparent);
-    color: color-mix(in srgb, var(--card-accent) 80%, #fff);
+    font-family: 'Space Mono', monospace;
+    font-size: 0.62rem;
+    letter-spacing: 0.04em;
+    padding: 0.22rem 0.65rem;
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--card-accent) 10%, #fff);
+    color: color-mix(in srgb, var(--card-accent) 75%, var(--ink));
+    border: 1px solid color-mix(in srgb, var(--card-accent) 25%, transparent);
   }
 
-  /* hidden cards */
   .card.hidden { display: none; }
 
-  /* No results */
   .no-results {
-    grid-column: 1/-1;
+    grid-column: 1 / -1;
     text-align: center;
-    padding: 4rem 0;
-    color: var(--muted);
+    padding: 4rem 1rem;
+    color: var(--ink-soft);
     font-size: 0.95rem;
     display: none;
   }
 
-  /* Footer */
+  .no-results .big {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--ink);
+    display: block;
+    margin-bottom: 0.5rem;
+  }
+
+  /* ============ FOOTER ============ */
   footer {
-    position: relative;
-    z-index: 10;
-    text-align: center;
-    padding: 2rem;
-    color: var(--muted);
-    font-size: 0.75rem;
-    border-top: 1px solid var(--border);
-    max-width: 1200px;
+    max-width: 1180px;
     margin: 0 auto;
+    padding: 1.8rem 2rem 2.5rem;
+    border-top: 1.5px dashed var(--card-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    font-size: 0.8rem;
+    color: var(--ink-soft);
   }
 
-  /* Responsive tweaks */
-  @media (max-width: 640px) {
-    header { padding: 2rem 1.2rem 0; }
-    .search-wrap { padding: 0 1.2rem; }
-    .search-icon { left: calc(1.2rem + 1rem); }
-    .grid-wrap { padding: 0 1.2rem; grid-template-columns: 1fr; }
-    h1 { font-size: 2.2rem; }
+  footer .credit strong { color: var(--ink); font-weight: 600; }
+
+  footer .mono {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
 
-  /* Staggered load animation */
-  .card {
-    animation: fadeUp 0.4s ease both;
-  }
-  .card:nth-child(1) { animation-delay: 0.05s; }
-  .card:nth-child(2) { animation-delay: 0.1s; }
-  .card:nth-child(3) { animation-delay: 0.15s; }
-  .card:nth-child(4) { animation-delay: 0.2s; }
-  .card:nth-child(5) { animation-delay: 0.25s; }
-  .card:nth-child(6) { animation-delay: 0.3s; }
-  .card:nth-child(7) { animation-delay: 0.35s; }
-  .card:nth-child(8) { animation-delay: 0.4s; }
-  .card:nth-child(9) { animation-delay: 0.45s; }
-  .card:nth-child(10) { animation-delay: 0.5s; }
-
+  /* ============ ANIMACIONES ============ */
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(20px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity: 0; translate: 0 18px; }
+    to   { opacity: 1; translate: 0 0; }
+  }
+
+  .card:nth-child(1)  { animation-delay: 0.04s; }
+  .card:nth-child(2)  { animation-delay: 0.08s; }
+  .card:nth-child(3)  { animation-delay: 0.12s; }
+  .card:nth-child(4)  { animation-delay: 0.16s; }
+  .card:nth-child(5)  { animation-delay: 0.20s; }
+  .card:nth-child(6)  { animation-delay: 0.24s; }
+  .card:nth-child(7)  { animation-delay: 0.28s; }
+  .card:nth-child(8)  { animation-delay: 0.32s; }
+  .card:nth-child(9)  { animation-delay: 0.36s; }
+  .card:nth-child(10) { animation-delay: 0.40s; }
+  .card:nth-child(11) { animation-delay: 0.44s; }
+  .card:nth-child(12) { animation-delay: 0.48s; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .card { animation: none; }
+    .card, .card:hover { transition: none; transform: none; }
+    html { scroll-behavior: auto; }
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 640px) {
+    header { padding: 2.2rem 1.2rem 0; }
+    .search-wrap { padding: 0 1.2rem; }
+    .grid-wrap { padding: 0 1.2rem; grid-template-columns: 1fr; gap: 1.8rem; }
+    footer { padding: 1.5rem 1.2rem 2rem; justify-content: center; text-align: center; }
+    .card:nth-child(odd), .card:nth-child(even) { transform: rotate(0deg); }
   }
 </style>
 </head>
 <body>
 
 <header>
-  <p class="eyebrow">Herramientas de negocio</p>
-  <h1>Herramientas para<br><span class="highlight">Emprendimiento</span><br>e Innovación</h1>
-  <p class="subtitle">Todas tus herramientas de innovación, estrategia y análisis en un solo lugar.</p>
-  <div class="header-meta">
-    <span class="badge badge-blue">Interactivas</span>
-  </div>
+  <p class="eyebrow"><span class="dot"></span>Caja de herramientas · PEI</p>
+  <h1>Herramientas para <span class="marker">Emprendimiento</span> e Innovación</h1>
+  <p class="subtitle">Innovación, estrategia, finanzas y análisis en un solo lugar. <strong>Elija una ficha y manos a la obra.</strong></p>
 </header>
 
-
+<div class="search-wrap">
+  <div class="search-box">
+    <span class="search-icon">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
+    </span>
+    <input type="text" class="search-input" id="searchInput" placeholder="Buscar herramienta… (ej. costos, canvas, FODA)" aria-label="Buscar herramienta">
+  </div>
+  <p class="tool-count" id="toolCount"><b>12</b> herramientas</p>
+</div>
 
 <div class="grid-wrap" id="grid">
 
   <!-- 1. Calculadora Costos -->
-  <a class="card" href="calculadoracostos.html" target="_blank" style="--card-accent:#d4f54a" data-tags="calculadora costos precio finanzas dinero">
+  <a class="card" href="calculadoracostos.html" target="_blank" style="--card-accent:var(--c-verde)" data-tags="calculadora costos precio finanzas dinero margenes">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">💰</div>
       <div class="card-arrow">→</div>
@@ -369,7 +438,8 @@
   </a>
 
   <!-- 2. Modelo Canvas -->
-  <a class="card" href="canvas.html" target="_blank" style="--card-accent:#5b4eff" data-tags="canvas modelo negocio propuesta valor emprendimiento">
+  <a class="card" href="canvas.html" target="_blank" style="--card-accent:var(--c-violeta)" data-tags="canvas modelo negocio propuesta valor emprendimiento bmc">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🗂️</div>
       <div class="card-arrow">→</div>
@@ -386,7 +456,8 @@
   </a>
 
   <!-- 3. CarreTica -->
-  <a class="card" href="carretica.html" target="_blank" style="--card-accent:#ff6b35" data-tags="carretica costos precio emprendimiento costa rica">
+  <a class="card" href="carretica.html" target="_blank" style="--card-accent:var(--c-naranja)" data-tags="carretica costos precio emprendimiento costa rica">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🛒</div>
       <div class="card-arrow">→</div>
@@ -403,7 +474,8 @@
   </a>
 
   <!-- 4. Design Thinking -->
-  <a class="card" href="desingthinking.html" target="_blank" style="--card-accent:#00d4aa" data-tags="design thinking innovacion empatia prototipo ideacion">
+  <a class="card" href="desingthinking.html" target="_blank" style="--card-accent:var(--c-teal)" data-tags="design thinking innovacion empatia prototipo ideacion">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🎨</div>
       <div class="card-arrow">→</div>
@@ -421,7 +493,8 @@
   </a>
 
   <!-- 5. Negociación Quiz -->
-  <a class="card" href="negociacion.html" target="_blank" style="--card-accent:#ff3e8a" data-tags="negociacion quiz grupos habilidades comunicacion">
+  <a class="card" href="negociacion.html" target="_blank" style="--card-accent:var(--c-rosa)" data-tags="negociacion quiz grupos habilidades comunicacion">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🤝</div>
       <div class="card-arrow">→</div>
@@ -438,14 +511,15 @@
   </a>
 
   <!-- 6. PESTEL / FODA -->
-  <a class="card" href="pestel_foda.html" target="_blank" style="--card-accent:#a78bfa" data-tags="pestel foda analisis estrategico fortalezas debilidades oportunidades amenazas">
+  <a class="card" href="pestel_foda.html" target="_blank" style="--card-accent:var(--c-azul)" data-tags="pestel foda analisis estrategico fortalezas debilidades oportunidades amenazas">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">📊</div>
       <div class="card-arrow">→</div>
     </div>
     <div class="card-body">
       <p class="card-tag">Análisis</p>
-      <h2 class="card-title">PESTEL & FODA</h2>
+      <h2 class="card-title">PESTEL &amp; FODA</h2>
       <p class="card-desc">Herramientas de análisis estratégico interno y externo para tu organización.</p>
     </div>
     <div class="card-footer">
@@ -456,7 +530,8 @@
   </a>
 
   <!-- 7. PMV -->
-  <a class="card" href="pmv.html" target="_blank" style="--card-accent:#fbbf24" data-tags="pmv mvp producto minimo viable lean startup validacion">
+  <a class="card" href="pmv.html" target="_blank" style="--card-accent:var(--c-amarillo)" data-tags="pmv mvp producto minimo viable lean startup validacion">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🚀</div>
       <div class="card-arrow">→</div>
@@ -473,7 +548,8 @@
   </a>
 
   <!-- 8. Ruleta -->
-  <a class="card" href="ruleta.html" target="_blank" style="--card-accent:#34d399" data-tags="ruleta participantes dinamica grupo aleatorio juego">
+  <a class="card" href="ruleta.html" target="_blank" style="--card-accent:var(--c-teal)" data-tags="ruleta participantes dinamica grupo aleatorio juego">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🎡</div>
       <div class="card-arrow">→</div>
@@ -490,7 +566,8 @@
   </a>
 
   <!-- 9. SCAMPER Ejercicio -->
-  <a class="card" href="scamperejer.html" target="_blank" style="--card-accent:#f472b6" data-tags="scamper lienzo creatividad innovacion ejercicio sustituir combinar">
+  <a class="card" href="scamperejer.html" target="_blank" style="--card-accent:var(--c-rosa)" data-tags="scamper lienzo creatividad innovacion ejercicio sustituir combinar">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">💡</div>
       <div class="card-arrow">→</div>
@@ -507,7 +584,8 @@
   </a>
 
   <!-- 10. SCAMPER Juego -->
-  <a class="card" href="scamperexp.html" target="_blank" style="--card-accent:#60a5fa" data-tags="scamper juego clasificacion interactivo creatividad">
+  <a class="card" href="scamperexp.html" target="_blank" style="--card-accent:var(--c-azul)" data-tags="scamper juego clasificacion interactivo creatividad gamificacion">
+    <span class="tape"></span>
     <div class="card-top">
       <div class="card-icon">🎮</div>
       <div class="card-arrow">→</div>
@@ -523,46 +601,85 @@
     </div>
   </a>
 
-  <a class="card" href="mapa_empatia.html" target="_blank" style="--card-accent:#f97316" data-tags="mapa empatia usuario cliente diseño thinking">
-  <div class="card-top">
-    <div class="card-icon">🧠</div>
-    <div class="card-arrow">→</div>
-  </div>
-  <div class="card-body">
-    <p class="card-tag">Innovación</p>
-    <h2 class="card-title">Mapa de Empatía</h2>
-    <p class="card-desc">Comprende a tu cliente ideal explorando qué piensa, siente, ve y escucha.</p>
-  </div>
-  <div class="card-footer">
-    <span class="card-pill">Usuario</span>
-    <span class="card-pill">Empatía</span>
-  </div>
-</a>
+  <!-- 11. Mapa de Empatía -->
+  <a class="card" href="mapa_empatia.html" target="_blank" style="--card-accent:var(--c-naranja)" data-tags="mapa empatia usuario cliente diseño thinking">
+    <span class="tape"></span>
+    <div class="card-top">
+      <div class="card-icon">🧠</div>
+      <div class="card-arrow">→</div>
+    </div>
+    <div class="card-body">
+      <p class="card-tag">Innovación</p>
+      <h2 class="card-title">Mapa de Empatía</h2>
+      <p class="card-desc">Comprende a tu cliente ideal explorando qué piensa, siente, ve y escucha.</p>
+    </div>
+    <div class="card-footer">
+      <span class="card-pill">Usuario</span>
+      <span class="card-pill">Empatía</span>
+    </div>
+  </a>
 
-  <a class="card" href="calculadoraEnergia.html" target="_blank" style="--card-accent:#34d399" data-tags="energia electricidad calculadora cnfl tarifas sostenibilidad">
-  <div class="card-top">
-    <div class="card-icon">⚡</div>
-    <div class="card-arrow">→</div>
-  </div>
-  <div class="card-body">
-    <p class="card-tag">Sostenibilidad</p>
-    <h2 class="card-title">EcoCalcula CR</h2>
-    <p class="card-desc">Calcula tu consumo eléctrico mensual y el costo según la tarifa residencial de la CNFL.</p>
-  </div>
-  <div class="card-footer">
-    <span class="card-pill">Energía</span>
-    <span class="card-pill">CNFL</span>
-    <span class="card-pill">Sostenibilidad</span>
-  </div>
-</a>
+  <!-- 12. EcoCalcula CR -->
+  <a class="card" href="calculadoraEnergia.html" target="_blank" style="--card-accent:var(--c-verde)" data-tags="energia electricidad calculadora cnfl tarifas sostenibilidad">
+    <span class="tape"></span>
+    <div class="card-top">
+      <div class="card-icon">⚡</div>
+      <div class="card-arrow">→</div>
+    </div>
+    <div class="card-body">
+      <p class="card-tag">Sostenibilidad</p>
+      <h2 class="card-title">EcoCalcula CR</h2>
+      <p class="card-desc">Calcula tu consumo eléctrico mensual y el costo según la tarifa residencial de la CNFL.</p>
+    </div>
+    <div class="card-footer">
+      <span class="card-pill">Energía</span>
+      <span class="card-pill">CNFL</span>
+      <span class="card-pill">Sostenibilidad</span>
+    </div>
+  </a>
 
-  <p class="no-results" id="noResults"></p>
+  <p class="no-results" id="noResults">
+    <span class="big">Sin resultados</span>
+    Intente con otra palabra, por ejemplo «costos», «canvas» o «FODA».
+  </p>
 
 </div>
 
-<footer>Herramientas para Emprendimiento e Innovación · <strong style="color:var(--text)">Roberto Mora Castro</strong></footer>
+<footer>
+  <p class="credit">Herramientas para Emprendimiento e Innovación · <strong>Roberto Mora Castro</strong></p>
+  <p class="mono">COTEPECOS · Educación Comercial y de Servicios</p>
+</footer>
 
+<script>
+  const input = document.getElementById('searchInput');
+  const cards = Array.from(document.querySelectorAll('.card'));
+  const noResults = document.getElementById('noResults');
+  const toolCount = document.getElementById('toolCount');
+  const total = cards.length;
 
+  function normalizar(t) {
+    return t.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  }
+
+  input.addEventListener('input', () => {
+    const q = normalizar(input.value.trim());
+    let visibles = 0;
+
+    cards.forEach(card => {
+      const texto = normalizar(
+        card.textContent + ' ' + (card.dataset.tags || '')
+      );
+      const match = q === '' || texto.includes(q);
+      card.classList.toggle('hidden', !match);
+      if (match) visibles++;
+    });
+
+    noResults.style.display = visibles === 0 ? 'block' : 'none';
+    toolCount.innerHTML = q === ''
+      ? `<b>${total}</b> herramientas`
+      : `<b>${visibles}</b> de ${total}`;
+  });
+</script>
 
 </body>
 </html>
