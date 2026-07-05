@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FARO - Navegación Estratégica</title>
+    
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+    <!-- Fuente Inter y Space Grotesk para un look Tech -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;900&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+
+    <style>
+        :root {
+            --f-color: 16, 185, 129; /* Emerald 500 */
+            --a-color: 245, 158, 11; /* Amber 500 */
+            --r-color: 244, 63, 94;  /* Rose 500 */
+            --o-color: 59, 130, 246; /* Blue 500 */
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #111827;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, .font-tech {
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Scrollbar minimalista */
+        ::-webkit-scrollbar { width: 4px; height: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #9ca3af; }
+
+        /* Background dinámico (Malla y luces) */
+        .bg-mesh {
+            background-image: 
+                linear-gradient(rgba(17, 24, 39, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(17, 24, 39, 0.03) 1px, transparent 1px);
+            background-size: 32px 32px;
+        }
+
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.4;
+            animation: float 20s infinite alternate ease-in-out;
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        @keyframes float {
+            0% { transform: translate(0, 0) scale(1); }
+            33% { transform: translate(30px, -50px) scale(1.1); }
+            66% { transform: translate(-20px, 20px) scale(0.9); }
+            100% { transform: translate(0, 0) scale(1); }
+        }
+
+        /* Utilidades para exportación */
+        .is-exporting .hide-on-export { display: none !important; }
+        .is-exporting .export-shadow-fix { box-shadow: none !important; border: 1px solid #e5e7eb; }
+        .is-exporting .bg-mesh { background-image: none !important; background-color: #ffffff; }
+        
+        /* Corregir tipografía de colores basura en CSS que puede causar bugs */
+        .scrollbar-thumb { background: #9ca3af; } 
+
+        /* Interacciones y animaciones de UI */
+        .card-hover { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+        .card-hover:hover { transform: translateY(-3px) scale(1.01); box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
+        
+        .pulse-ring {
+            animation: pulse-ring 3s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+        }
+        
+        @keyframes pulse-ring {
+            0% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+            70% { box-shadow: 0 0 0 20px rgba(99, 102, 241, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0); }
+        }
+
+        .fade-in-up { animation: fadeInUp 0.6s ease-out forwards; }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Estilo para los items (tarjetas magnéticas) */
+        .faro-item {
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .faro-item::before {
+            content: '';
+            position: absolute;
+            left: 0; top: 0; bottom: 0; width: 4px;
+            transition: width 0.2s ease;
+        }
+        .faro-item:hover::before { width: 6px; }
+        .faro-item.type-F::before { background: rgb(var(--f-color)); }
+        .faro-item.type-A::before { background: rgb(var(--a-color)); }
+        .faro-item.type-R::before { background: rgb(var(--r-color)); }
+        .faro-item.type-O::before { background: rgb(var(--o-color)); }
+
+        /* Líneas de cuadrícula centrales */
+        .matrix-divider-x {
+            position: absolute; left: 0; right: 0; top: 50%; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(17, 24, 39, 0.1) 20%, rgba(17, 24, 39, 0.1) 80%, transparent);
+            z-index: 10;
+        }
+        .matrix-divider-y {
+            position: absolute; top: 0; bottom: 0; left: 50%; width: 1px;
+            background: linear-gradient(180deg, transparent, rgba(17, 24, 39, 0.1) 20%, rgba(17, 24, 39, 0.1) 80%, transparent);
+            z-index: 10;
+        }
+
+        /* Input expansible */
+        .input-wrapper {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            max-height: 0;
+            opacity: 0;
+            overflow: hidden;
+            transform: translateY(10px);
+        }
+        .input-wrapper.active {
+            max-height: 100px;
+            opacity: 1;
+            transform: translateY(0);
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body class="bg-mesh relative min-h-screen">
+
+    <!-- Luces ambientales (Blobs) -->
+    <div class="blob bg-indigo-300 w-[500px] h-[500px] top-[-10%] left-[-10%]"></div>
+    <div class="blob bg-fuchsia-300 w-[400px] h-[400px] bottom-10 right-[-5%] animation-delay-2000"></div>
+    <div class="blob bg-emerald-200 w-[300px] h-[300px] top-[40%] left-[30%] animation-delay-4000 opacity-30"></div>
+
+    <!-- Sistema de Notificaciones (Toast) -->
+    <div id="toast" class="fixed top-6 right-6 z-50 flex items-center gap-3 bg-gray-900/90 backdrop-blur-md border border-gray-700 text-white px-5 py-3 rounded-2xl shadow-2xl transition-all duration-400 transform translate-x-full opacity-0 pointer-events-none">
+        <div id="toast-icon" class="text-indigo-400"><i class="ph-fill ph-check-circle text-xl"></i></div>
+        <p id="toast-msg" class="text-sm font-semibold tracking-wide">Mensaje</p>
+    </div>
+
+    <nav class="fixed bottom-6 left-1/2 transform -translate-x-1/2 z-40 w-[95%] max-w-max">
+        <div class="bg-white/70 backdrop-blur-xl border border-white shadow-[0_8px_30px_rgb(0,0,0,0.08)] p-2 rounded-3xl flex items-center gap-2 overflow-x-auto custom-scrollbar">
+            <div class="flex items-center gap-3 px-4 py-2 border-r border-gray-200/50">
+                <div class="bg-gray-900 text-white p-2 rounded-xl">
+                    <i class="ph-bold ph-radar text-xl"></i>
+                </div>
+                <span class="font-tech font-bold text-xl tracking-tight text-gray-900">FARO</span>
+            </div>
+            
+            <div class="flex gap-1 px-2" id="nav-tabs">
+                <button onclick="switchTab('lienzo')" data-tab="lienzo" class="tab-btn active relative group px-6 py-2.5 rounded-2xl font-semibold text-sm transition-all duration-300 bg-white shadow-sm text-gray-900 border border-gray-100 flex items-center gap-2">
+                    <i class="ph-bold ph-layout"></i>
+                    <span>Lienzo Espacial</span>
+                </button>
+                <button onclick="switchTab('info')" data-tab="info" class="tab-btn relative group px-6 py-2.5 rounded-2xl font-semibold text-sm transition-all duration-300 text-gray-500 hover:text-gray-900 hover:bg-white/50 flex items-center gap-2">
+                    <i class="ph-bold ph-lightbulb"></i>
+                    <span>Estrategia</span>
+                </button>
+                <button onclick="switchTab('casos')" data-tab="casos" class="tab-btn relative group px-6 py-2.5 rounded-2xl font-semibold text-sm transition-all duration-300 text-gray-500 hover:text-gray-900 hover:bg-white/50 flex items-center gap-2">
+                    <i class="ph-bold ph-folders"></i>
+                    <span>Casos de Uso</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="relative z-10 max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 pt-10 pb-32 min-h-screen">
+        
+        <!-- ================= PESTAÑA 1: LIENZO ESPACIAL ================= -->
+        <section id="tab-lienzo" class="tab-content block fade-in-up">
+            
+            <!-- Controles Superiores -->
+            <div class="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 mb-8 bg-white/40 backdrop-blur-md p-6 rounded-[2rem] border border-white shadow-sm">
+                <div>
+                    <h2 class="font-tech text-3xl font-bold text-gray-900 mb-1 flex items-center gap-3">
+                        Matriz de Navegación 
+                        <span class="px-3 py-1 bg-indigo-100 text-indigo-700 text-xs rounded-full font-bold uppercase tracking-widest border border-indigo-200">Emprendimiento</span>
+                    </h2>
+                    <p class="text-gray-500 font-medium">Mapea variables, proyecta escenarios y define tu ventaja competitiva.</p>
+                </div>
+                
+                <div class="flex flex-wrap items-center gap-3 bg-white p-1.5 rounded-2xl shadow-sm border border-gray-100 w-full lg:w-auto">
+                    <button onclick="clearCanvas()" class="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors">
+                        <i class="ph-bold ph-trash"></i> Limpiar
+                    </button>
+                    <div class="w-px h-6 bg-gray-200 hidden lg:block"></div>
+                    <button onclick="exportCanvas('png')" class="flex-1 lg:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm text-gray-700 hover:bg-gray-50 transition-colors border border-transparent hover:border-gray-200">
+                        <i class="ph-bold ph-image"></i> Exportar PNG
+                    </button>
+                    <button onclick="exportCanvas('pdf')" class="flex-1 lg:flex-none flex items-center justify-center gap-2 bg-gray-900 text-white px-6 py-2.5 rounded-xl font-semibold text-sm hover:bg-indigo-600 hover:shadow-lg hover:shadow-indigo-500/30 transition-all">
+                        <i class="ph-bold ph-file-pdf"></i> Generar PDF
+                    </button>
+                </div>
+            </div>
+
+            <!-- Área de la Cuadrícula -->
+            <div class="overflow-x-auto pb-10">
+                <div id="export-area" class="bg-white/80 backdrop-blur-2xl relative min-w-[1000px] w-full rounded-[2.5rem] border border-white shadow-[0_20px_40px_-15px_rgba(0,0,0,0.05)] p-10" style="aspect-ratio: 11/8.5;">
+                    
+                    <!-- Encabezado del Documento -->
+                    <div class="flex justify-between items-start mb-10 relative z-20">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 bg-gray-900 rounded-2xl flex items-center justify-center text-white shadow-lg">
+                                <i class="ph-bold ph-radar text-3xl"></i>
+                            </div>
+                            <div>
+                                <h1 class="font-tech text-3xl font-bold text-gray-900 tracking-tight leading-none">Análisis FARO</h1>
+                                <p class="text-sm font-bold text-gray-400 uppercase tracking-[0.2em] mt-1">Strategic Framework</p>
+                            </div>
+                        </div>
+                        <div class="flex gap-8 bg-gray-50/80 p-4 rounded-2xl border border-gray-100">
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Proyecto / Empresa</span>
+                                <!-- Elementos para manejar la entrada y la exportación -->
+                                <input type="text" id="project-input" placeholder="Nombre del proyecto..." class="bg-transparent border-b border-gray-300 focus:border-indigo-500 outline-none text-sm font-bold text-gray-800 w-48 pb-1 transition-colors placeholder:text-gray-300 font-tech">
+                                <span id="project-display" class="hidden text-sm font-bold text-gray-800 w-48 border-b border-gray-300 pb-1 font-tech"></span>
+                            </div>
+                            <div class="flex flex-col">
+                                <span class="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-1">Fecha de Análisis</span>
+                                <span class="text-sm font-bold text-gray-800 border-b border-gray-300 pb-1 font-tech" id="date-display"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- El Grid 2x2 (La Matriz Espacial) -->
+                    <div class="relative w-full h-[calc(100%-120px)] rounded-3xl border border-gray-200/60 bg-gray-50/30 overflow-hidden">
+                        
+                        <!-- Ejes cruzados (X / Y) -->
+                        <div class="matrix-divider-x"></div>
+                        <div class="matrix-divider-y"></div>
+
+                        <!-- Nodo Central (El Faro) -->
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 bg-white p-2 rounded-2xl shadow-xl border border-gray-100 pulse-ring hide-on-export flex items-center justify-center group cursor-pointer" title="Centro Estratégico">
+                            <div class="w-10 h-10 bg-gray-900 rounded-xl flex items-center justify-center text-white transition-transform group-hover:scale-110 group-hover:rotate-90 duration-500">
+                                <i class="ph-bold ph-plus text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-20 hidden is-exporting:flex bg-white p-2 rounded-xl border border-gray-200 show-on-export">
+                            <div class="w-6 h-6 bg-gray-900 rounded-md flex items-center justify-center text-white"><i class="ph-bold ph-radar text-xs"></i></div>
+                        </div>
+
+                        <div class="grid grid-cols-2 grid-rows-2 w-full h-full">
+                            
+                            <!-- F: Fortalezas -->
+                            <div class="relative p-6 flex flex-col group/quad">
+                                <!-- Glow corner -->
+                                <div class="absolute top-0 left-0 w-32 h-32 bg-emerald-400/10 rounded-br-full blur-2xl transition-all group-hover/quad:bg-emerald-400/20"></div>
+                                
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center shadow-sm border border-emerald-200/50"><i class="ph-fill ph-trend-up text-xl"></i></div>
+                                        <div>
+                                            <h3 class="font-tech text-xl font-bold text-emerald-900 leading-none">Fortalezas</h3>
+                                            <p class="text-[10px] font-bold text-emerald-600/70 uppercase tracking-widest mt-1">Ventajas Competitivas</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleInput('F')" class="hide-on-export w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-emerald-600 hover:border-emerald-300 flex items-center justify-center shadow-sm transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                
+                                <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2 relative z-10" id="list-F"></div>
+
+                                <!-- Input Box -->
+                                <div id="input-wrap-F" class="input-wrapper relative z-10 hide-on-export">
+                                    <div class="flex gap-2 bg-white p-1 rounded-xl border border-emerald-200 shadow-sm">
+                                        <input type="text" id="input-F" placeholder="Ej: Tecnología propietaria..." class="flex-grow bg-transparent text-sm font-medium px-3 outline-none text-gray-700" onkeypress="handleEnter(event, 'F')">
+                                        <button onclick="addItem('F')" class="bg-emerald-500 hover:bg-emerald-600 text-white p-2 rounded-lg transition-colors"><i class="ph-bold ph-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- A: Áreas de Mejora -->
+                            <div class="relative p-6 flex flex-col group/quad">
+                                <div class="absolute top-0 right-0 w-32 h-32 bg-amber-400/10 rounded-bl-full blur-2xl transition-all group-hover/quad:bg-amber-400/20"></div>
+                                
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center shadow-sm border border-amber-200/50"><i class="ph-fill ph-wrench text-xl"></i></div>
+                                        <div>
+                                            <h3 class="font-tech text-xl font-bold text-amber-900 leading-none">Áreas de Mejora</h3>
+                                            <p class="text-[10px] font-bold text-amber-600/70 uppercase tracking-widest mt-1">Puntos Críticos Internos</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleInput('A')" class="hide-on-export w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-amber-600 hover:border-amber-300 flex items-center justify-center shadow-sm transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                
+                                <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2 relative z-10" id="list-A"></div>
+
+                                <div id="input-wrap-A" class="input-wrapper relative z-10 hide-on-export">
+                                    <div class="flex gap-2 bg-white p-1 rounded-xl border border-amber-200 shadow-sm">
+                                        <input type="text" id="input-A" placeholder="Ej: Costos de producción altos..." class="flex-grow bg-transparent text-sm font-medium px-3 outline-none text-gray-700" onkeypress="handleEnter(event, 'A')">
+                                        <button onclick="addItem('A')" class="bg-amber-500 hover:bg-amber-600 text-white p-2 rounded-lg transition-colors"><i class="ph-bold ph-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- R: Retos -->
+                            <div class="relative p-6 flex flex-col group/quad">
+                                <div class="absolute bottom-0 left-0 w-32 h-32 bg-rose-400/10 rounded-tr-full blur-2xl transition-all group-hover/quad:bg-rose-400/20"></div>
+                                
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-rose-100 text-rose-600 flex items-center justify-center shadow-sm border border-rose-200/50"><i class="ph-fill ph-mountains text-xl"></i></div>
+                                        <div>
+                                            <h3 class="font-tech text-xl font-bold text-rose-900 leading-none">Retos</h3>
+                                            <p class="text-[10px] font-bold text-rose-600/70 uppercase tracking-widest mt-1">Desafíos del Entorno</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleInput('R')" class="hide-on-export w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-rose-600 hover:border-rose-300 flex items-center justify-center shadow-sm transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                
+                                <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2 relative z-10" id="list-R"></div>
+
+                                <div id="input-wrap-R" class="input-wrapper relative z-10 hide-on-export">
+                                    <div class="flex gap-2 bg-white p-1 rounded-xl border border-rose-200 shadow-sm">
+                                        <input type="text" id="input-R" placeholder="Ej: Nuevas regulaciones..." class="flex-grow bg-transparent text-sm font-medium px-3 outline-none text-gray-700" onkeypress="handleEnter(event, 'R')">
+                                        <button onclick="addItem('R')" class="bg-rose-500 hover:bg-rose-600 text-white p-2 rounded-lg transition-colors"><i class="ph-bold ph-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- O: Oportunidades -->
+                            <div class="relative p-6 flex flex-col group/quad">
+                                <div class="absolute bottom-0 right-0 w-32 h-32 bg-blue-400/10 rounded-tl-full blur-2xl transition-all group-hover/quad:bg-blue-400/20"></div>
+                                
+                                <div class="flex justify-between items-start mb-4 relative z-10">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center shadow-sm border border-blue-200/50"><i class="ph-fill ph-rocket-launch text-xl"></i></div>
+                                        <div>
+                                            <h3 class="font-tech text-xl font-bold text-blue-900 leading-none">Oportunidades</h3>
+                                            <p class="text-[10px] font-bold text-blue-600/70 uppercase tracking-widest mt-1">Nuevos Escenarios</p>
+                                        </div>
+                                    </div>
+                                    <button onclick="toggleInput('O')" class="hide-on-export w-8 h-8 rounded-full bg-white border border-gray-200 text-gray-500 hover:text-blue-600 hover:border-blue-300 flex items-center justify-center shadow-sm transition-colors"><i class="ph-bold ph-plus"></i></button>
+                                </div>
+                                
+                                <div class="flex-grow overflow-y-auto custom-scrollbar pr-2 flex flex-col gap-2 relative z-10" id="list-O"></div>
+
+                                <div id="input-wrap-O" class="input-wrapper relative z-10 hide-on-export">
+                                    <div class="flex gap-2 bg-white p-1 rounded-xl border border-blue-200 shadow-sm">
+                                        <input type="text" id="input-O" placeholder="Ej: Expansión de mercado..." class="flex-grow bg-transparent text-sm font-medium px-3 outline-none text-gray-700" onkeypress="handleEnter(event, 'O')">
+                                        <button onclick="addItem('O')" class="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"><i class="ph-bold ph-arrow-right"></i></button>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PESTAÑA 2: ESTRATEGIA ================= -->
+        <section id="tab-info" class="tab-content hidden fade-in-up max-w-6xl mx-auto">
+            
+            <div class="text-center space-y-4 mb-12 pt-8">
+                <span class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-gray-900 text-white font-bold text-xs uppercase tracking-widest shadow-md">
+                    <i class="ph-fill ph-lightbulb text-yellow-400"></i> Metodología Modernizada
+                </span>
+                <h2 class="font-tech text-4xl md:text-6xl font-black text-gray-900 tracking-tighter">
+                    El fin del <span class="text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-orange-500 line-through decoration-gray-900 decoration-[6px]">FODA</span> tradicional.
+                </h2>
+                <p class="text-xl text-gray-600 max-w-3xl mx-auto font-medium">
+                    En ecosistemas de alta innovación, el lenguaje importa. FARO cambia el paradigma de "supervivencia y defensa" a uno de <strong class="text-indigo-600">optimización y crecimiento agresivo.</strong>
+                </p>
+            </div>
+
+            <!-- Bento Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-12 gap-6">
+                
+                <!-- Caja 1: El problema (Span 4) -->
+                <div class="md:col-span-5 bg-white p-8 rounded-[2rem] border border-gray-200 shadow-sm hover:shadow-xl transition-shadow relative overflow-hidden group">
+                    <div class="absolute -right-10 -top-10 w-40 h-40 bg-red-50 rounded-full blur-3xl group-hover:bg-red-100 transition-colors"></div>
+                    <div class="relative z-10">
+                        <div class="w-12 h-12 bg-red-100 text-red-600 rounded-2xl flex items-center justify-center mb-6">
+                            <i class="ph-bold ph-x text-2xl"></i>
+                        </div>
+                        <h3 class="font-tech text-2xl font-bold text-gray-900 mb-6">El Sesgo Defensivo</h3>
+                        <div class="space-y-6">
+                            <div class="border-l-2 border-red-200 pl-4">
+                                <h4 class="font-bold text-gray-400 uppercase tracking-wider text-xs mb-1">Debilidades</h4>
+                                <p class="text-gray-700 text-sm font-medium">Condiciona psicológicamente al equipo a ver fallas estructurales permanentes. Sugiere incompetencia en lugar de desarrollo.</p>
+                            </div>
+                            <div class="border-l-2 border-red-200 pl-4">
+                                <h4 class="font-bold text-gray-400 uppercase tracking-wider text-xs mb-1">Amenazas</h4>
+                                <p class="text-gray-700 text-sm font-medium">Activa una mentalidad de protección y aversión al riesgo, paralizando la toma de decisiones audaces.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Caja 2: La Solución (Span 7) -->
+                <div class="md:col-span-7 bg-gray-900 text-white p-8 rounded-[2rem] shadow-2xl relative overflow-hidden group">
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wNSkiLz48L3N2Zz4=')] opacity-50"></div>
+                    <div class="absolute -right-20 -bottom-20 text-indigo-500/20 transform group-hover:scale-110 transition-transform duration-700">
+                        <i class="ph-bold ph-radar text-[250px]"></i>
+                    </div>
+                    
+                    <div class="relative z-10 h-full flex flex-col justify-center">
+                        <div class="w-12 h-12 bg-indigo-500/30 text-indigo-300 rounded-2xl flex items-center justify-center mb-6 backdrop-blur-md border border-indigo-500/30">
+                            <i class="ph-bold ph-check text-2xl"></i>
+                        </div>
+                        <h3 class="font-tech text-3xl md:text-4xl font-bold mb-8">Estrategia Proactiva FARO</h3>
+                        
+                        <div class="grid sm:grid-cols-2 gap-6">
+                            <div class="bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                                <h4 class="font-tech text-amber-400 font-bold text-lg mb-2 flex items-center gap-2">
+                                    <i class="ph-bold ph-wrench"></i> Áreas de Mejora
+                                </h4>
+                                <p class="text-gray-300 text-sm leading-relaxed">
+                                    Instaura una cultura de optimización continua. Entiende que un proceso o habilidad está iterando, no "roto".
+                                </p>
+                            </div>
+                            <div class="bg-white/5 backdrop-blur-sm p-5 rounded-2xl border border-white/10 hover:bg-white/10 transition-colors">
+                                <h4 class="font-tech text-rose-400 font-bold text-lg mb-2 flex items-center gap-2">
+                                    <i class="ph-bold ph-mountains"></i> Retos
+                                </h4>
+                                <p class="text-gray-300 text-sm leading-relaxed">
+                                    Replantea los obstáculos como variables del entorno de mercado que deben superarse mediante competitividad.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= PESTAÑA 3: CASOS ================= -->
+        <section id="tab-casos" class="tab-content hidden fade-in-up max-w-6xl mx-auto">
+            <div class="mb-12 pt-8">
+                <h2 class="font-tech text-4xl font-bold text-gray-900 mb-2">Casos de Aplicación</h2>
+                <p class="text-lg text-gray-500 font-medium">Escenarios pre-profesionales para integrar la matriz FARO.</p>
+            </div>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                
+                <!-- Carpeta 1 -->
+                <div class="relative group card-hover">
+                    <!-- Pestaña superior -->
+                    <div class="absolute -top-4 left-6 px-4 py-1 bg-gray-900 text-white rounded-t-xl font-bold text-[10px] uppercase tracking-widest z-0 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-emerald-400"></div> Incubadora
+                    </div>
+                    <div class="p-8 rounded-[2rem] bg-white border border-gray-200 shadow-sm h-full flex flex-col relative z-10">
+                        <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center mb-6">
+                            <i class="ph-bold ph-rocket text-3xl"></i>
+                        </div>
+                        <h4 class="font-tech text-2xl font-bold text-gray-900 mb-6 leading-tight">Proyecto de Emprendimiento</h4>
+                        
+                        <div class="space-y-4 mt-auto">
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-emerald-600 font-bold text-sm">F</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Diseño de producto patentable y escalable.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-amber-600 font-bold text-sm">A</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Alta dependencia de un solo proveedor inicial.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-rose-600 font-bold text-sm">R</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Captar la primera ronda de capital semilla.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-blue-600 font-bold text-sm">O</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Nicho de mercado desatendido por grandes marcas.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carpeta 2 -->
+                <div class="relative group card-hover md:mt-8">
+                    <div class="absolute -top-4 left-6 px-4 py-1 bg-gray-900 text-white rounded-t-xl font-bold text-[10px] uppercase tracking-widest z-0 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-blue-400"></div> Análisis
+                    </div>
+                    <div class="p-8 rounded-[2rem] bg-white border border-gray-200 shadow-sm h-full flex flex-col relative z-10">
+                        <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mb-6">
+                            <i class="ph-bold ph-chart-polar text-3xl"></i>
+                        </div>
+                        <h4 class="font-tech text-2xl font-bold text-gray-900 mb-6 leading-tight">Estudio de Caso de Negocios</h4>
+                        
+                        <div class="space-y-4 mt-auto">
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-emerald-600 font-bold text-sm">F</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Ecosistema de usuarios (Efecto Red) masivo.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-amber-600 font-bold text-sm">A</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Estructura de costos fijos demasiado pesada.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-rose-600 font-bold text-sm">R</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Aparición de tecnologías disruptivas sustitutas.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-blue-600 font-bold text-sm">O</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Expansión mediante fusiones y adquisiciones.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Carpeta 3 -->
+                <div class="relative group card-hover">
+                    <div class="absolute -top-4 left-6 px-4 py-1 bg-gray-900 text-white rounded-t-xl font-bold text-[10px] uppercase tracking-widest z-0 flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-rose-400"></div> Gestión
+                    </div>
+                    <div class="p-8 rounded-[2rem] bg-white border border-gray-200 shadow-sm h-full flex flex-col relative z-10">
+                        <div class="w-14 h-14 bg-rose-50 text-rose-600 rounded-2xl flex items-center justify-center mb-6">
+                            <i class="ph-bold ph-users-three text-3xl"></i>
+                        </div>
+                        <h4 class="font-tech text-2xl font-bold text-gray-900 mb-6 leading-tight">Dirección de Eventos (PM)</h4>
+                        
+                        <div class="space-y-4 mt-auto">
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-emerald-600 font-bold text-sm">F</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Comité organizador con alta cohesión y liderazgo.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-amber-600 font-bold text-sm">A</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Falta de un sistema automatizado para registros.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-rose-600 font-bold text-sm">R</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Competir por fechas con otros eventos institucionales.</p></div>
+                            <div class="flex items-start gap-3 bg-gray-50 p-2.5 rounded-xl border border-gray-100"><span class="text-blue-600 font-bold text-sm">O</span><p class="text-xs font-semibold text-gray-600 mt-0.5">Conseguir patrocinios B2B para fondear la logística.</p></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+    </main>
+
+    <script>
+        // Fecha actual
+        document.getElementById('date-display').textContent = new Date().toLocaleDateString();
+
+        // Estado central de los datos
+        let faroData = {
+            F: [
+                { id: 1, text: "Producto mínimo viable (MVP) testeado y validado." },
+                { id: 2, text: "Equipo fundador con perfiles técnicos complementarios." }
+            ],
+            A: [
+                { id: 3, text: "Costo de adquisición de clientes (CAC) elevado." },
+                { id: 4, text: "Falta de estandarización en procesos contables." }
+            ],
+            R: [
+                { id: 5, text: "Competidores directos con mayor músculo financiero." },
+                { id: 6, text: "Cambios en los algoritmos de redes sociales." }
+            ],
+            O: [
+                { id: 7, text: "Modelos de negocio freemium en alza en el sector." },
+                { id: 8, text: "Posibilidad de aplicar a fondos de capital semilla locales." }
+            ]
+        };
+
+        // Renderizado del lienzo
+        function renderQuadrant(q) {
+            const container = document.getElementById(`list-${q}`);
+            container.innerHTML = '';
+            
+            faroData[q].forEach(item => {
+                const div = document.createElement('div');
+                div.className = `faro-item type-${q} rounded-xl p-3 pr-8 flex items-start gap-2 group/btn`;
+                
+                div.innerHTML = `
+                    <div class="mt-1 w-1.5 h-1.5 rounded-full flex-shrink-0 bg-gray-300"></div>
+                    <p class="text-sm font-semibold text-gray-800 leading-snug break-words w-full">${item.text}</p>
+                    <button onclick="removeItem('${q}', ${item.id})" class="hide-on-export absolute top-1/2 right-2 -translate-y-1/2 p-1.5 bg-gray-100/80 hover:bg-red-100 text-gray-400 hover:text-red-500 rounded-lg opacity-0 group-hover/btn:opacity-100 transition-all cursor-pointer">
+                        <i class="ph-bold ph-x text-xs"></i>
+                    </button>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function renderAll() {
+            renderQuadrant('F');
+            renderQuadrant('A');
+            renderQuadrant('R');
+            renderQuadrant('O');
+        }
+
+        // Acciones CRUD
+        function toggleInput(q) {
+            const wrapper = document.getElementById(`input-wrap-${q}`);
+            const input = document.getElementById(`input-${q}`);
+            wrapper.classList.toggle('active');
+            if(wrapper.classList.contains('active')) {
+                input.focus();
+            }
+        }
+
+        function addItem(q) {
+            const input = document.getElementById(`input-${q}`);
+            const text = input.value.trim();
+            if (text) {
+                faroData[q].push({ id: Date.now(), text: text });
+                input.value = '';
+                renderQuadrant(q);
+                // Opcional: Auto-cerrar input
+                // document.getElementById(`input-wrap-${q}`).classList.remove('active');
+            }
+        }
+
+        function handleEnter(e, q) {
+            if (e.key === 'Enter') addItem(q);
+        }
+
+        function removeItem(q, id) {
+            faroData[q] = faroData[q].filter(item => item.id !== id);
+            renderQuadrant(q);
+        }
+
+        function clearCanvas() {
+            if(confirm("¿Estás seguro de limpiar todo el lienzo?")) {
+                faroData = { F: [], A: [], R: [], O: [] };
+                renderAll();
+                showToast("Lienzo limpiado exitosamente", "check");
+            }
+        }
+
+        // Navegación de pestañas
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => {
+                el.classList.add('hidden');
+                el.classList.remove('block');
+            });
+            document.getElementById(`tab-${tabId}`).classList.remove('hidden');
+            document.getElementById(`tab-${tabId}`).classList.add('block');
+
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                if(btn.dataset.tab === tabId) {
+                    btn.classList.add('active', 'bg-white', 'shadow-sm', 'text-gray-900', 'border-gray-100');
+                    btn.classList.remove('text-gray-500', 'hover:bg-white/50');
+                } else {
+                    btn.classList.remove('active', 'bg-white', 'shadow-sm', 'text-gray-900', 'border-gray-100');
+                    btn.classList.add('text-gray-500', 'hover:bg-white/50');
+                }
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // Sistema de Toasts
+        function showToast(msg, icon = 'check-circle') {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-msg').textContent = msg;
+            document.getElementById('toast-icon').innerHTML = `<i class="ph-fill ph-${icon} text-xl"></i>`;
+            
+            toast.classList.remove('translate-x-full', 'opacity-0');
+            
+            setTimeout(() => {
+                toast.classList.add('translate-x-full', 'opacity-0');
+            }, 3000);
+        }
+
+        // Exportación de alta calidad
+        async function exportCanvas(type) {
+            if (typeof html2canvas === 'undefined' || typeof jspdf === 'undefined') {
+                showToast("Cargando motor de renderizado...", "circle-notch");
+                return;
+            }
+
+            const canvasElement = document.getElementById('export-area');
+            const originalStyle = canvasElement.style.cssText;
+            
+            // ==========================================
+            // PREPARAR UI PARA LA FOTO
+            // ==========================================
+            
+            // 1. Manejar el input del título para que no se corte
+            const projInput = document.getElementById('project-input');
+            const projDisplay = document.getElementById('project-display');
+            
+            // Pasar el valor del input al span y mostrar el span
+            projDisplay.textContent = projInput.value || 'Sin Nombre';
+            projInput.classList.add('hidden');
+            projDisplay.classList.remove('hidden');
+
+            // 2. Ocultar botones y adaptar estilos
+            document.body.classList.add('is-exporting');
+            
+            // 3. Forzar un fondo sólido en el contenedor para el PDF
+            canvasElement.style.backgroundColor = "#ffffff";
+            canvasElement.style.borderRadius = "0";
+            
+            showToast("Procesando imagen...", "camera");
+
+            try {
+                // Esperar a que el DOM aplique las clases
+                await new Promise(resolve => setTimeout(resolve, 150));
+
+                const canvas = await html2canvas(canvasElement, {
+                    scale: 2, // Alta resolución (Retina)
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
+
+                const imgData = canvas.toDataURL('image/png');
+
+                if (type === 'png') {
+                    const link = document.createElement('a');
+                    link.download = 'Analisis-FARO-Estrategico.png';
+                    link.href = imgData;
+                    link.click();
+                    showToast("PNG guardado con éxito", "image");
+                } 
+                else if (type === 'pdf') {
+                    const { jsPDF } = window.jspdf;
+                    // letter size = 11 x 8.5 pulgadas en modo apaisado (landscape)
+                    const pdf = new jsPDF('l', 'in', 'letter');
+                    pdf.addImage(imgData, 'PNG', 0, 0, 11, 8.5);
+                    pdf.save('Analisis-FARO-Estrategico.pdf');
+                    showToast("PDF generado con éxito", "file-pdf");
+                }
+            } catch (error) {
+                console.error("Error en la exportación:", error);
+                showToast("Ocurrió un error al exportar", "warning-circle");
+            } finally {
+                // ==========================================
+                // RESTAURAR UI DESPUÉS DE LA FOTO
+                // ==========================================
+                document.body.classList.remove('is-exporting');
+                canvasElement.style.cssText = originalStyle;
+                
+                // Devolver el input a su estado normal
+                projDisplay.classList.add('hidden');
+                projInput.classList.remove('hidden');
+            }
+        }
+
+        // Inicializar aplicación
+        window.onload = renderAll;
+    </script>
+</body>
+</html>
