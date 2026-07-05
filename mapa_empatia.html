@@ -1,666 +1,1321 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mapa de Empatía</title>
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- html2canvas & jsPDF para Exportar a PDF -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mapa de Empatía</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,700;12..96,800&family=Instrument+Sans:ital,wght@0,400;0,500;0,600;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<!-- html2canvas & jsPDF para exportar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <style>
-        /* Estilos específicos para la exportación a PDF */
-        .is-exporting .note-delete-btn,
-        .is-exporting .empty-placeholder {
-            display: none !important;
-        }
-        .is-exporting .note {
-            box-shadow: none !important;
-            transform: none !important;
-            border-color: rgba(0,0,0,0.05) !important;
-        }
-        .is-exporting {
-            background-color: #f1f5f9 !important; /* bg-slate-100 */
-        }
-        
-        /* Ocultar barra de desplazamiento visualmente pero permitir scroll */
-        .no-scrollbar::-webkit-scrollbar {
-            width: 4px;
-        }
-        .no-scrollbar::-webkit-scrollbar-track {
-            background: transparent;
-        }
-        .no-scrollbar::-webkit-scrollbar-thumb {
-            background-color: #cbd5e1;
-            border-radius: 20px;
-        }
-    </style>
+<style>
+  :root {
+    --paper: #fbfcfe;
+    --grid-line: #e4ecf7;
+    --ink: #21293c;
+    --ink-soft: #5b6478;
+    --muted: #8a92a6;
+    --card: #ffffff;
+    --card-border: #dfe4ee;
+    --marker: #ffe94a;
+
+    --c-azul: #1971c2;
+    --c-teal: #0ca678;
+    --c-ambar: #e8a000;
+    --c-violeta: #7048e8;
+    --c-rojo: #e03131;
+    --c-verde: #2f9e44;
+    --c-naranja: #f2632c;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background-color: var(--paper);
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+    color: var(--ink);
+    font-family: 'Instrument Sans', sans-serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+  svg { display: block; }
+
+  /* ============ HEADER ============ */
+  header {
+    background: rgba(251, 252, 254, 0.92);
+    backdrop-filter: blur(6px);
+    border-bottom: 1.5px dashed var(--card-border);
+    padding: 1rem 1.6rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem 1rem;
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  .brand-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--c-naranja) 13%, #fff);
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+  }
+
+  .brand h1 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 800;
+    font-size: 1.45rem;
+    letter-spacing: -0.02em;
+  }
+
+  .brand h1 .marker {
+    position: relative;
+    display: inline-block;
+  }
+
+  .brand h1 .marker::before {
+    content: '';
+    position: absolute;
+    left: -0.12em; right: -0.12em;
+    top: 0.2em; bottom: 0;
+    background: var(--marker);
+    z-index: -1;
+    border-radius: 0.2em 0.5em 0.3em 0.5em;
+    transform: rotate(-1deg);
+  }
+
+  .brand .sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.6rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 0.55rem 1rem;
+    border-radius: 10px;
+    border: 1.5px solid var(--ink);
+    background: #fff;
+    color: var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    transition: transform 0.12s, box-shadow 0.12s, background 0.15s;
+  }
+
+  .btn:hover:not(:disabled) {
+    transform: translate(-1px, -1px);
+    box-shadow: 4px 4px 0 var(--ink);
+  }
+
+  .btn:active:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 1px 1px 0 var(--ink);
+  }
+
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn-danger:hover:not(:disabled) { background: #fdefef; color: var(--c-rojo); }
+  .btn-pdf   { background: var(--c-verde); color: #fff; }
+  .btn-png   { background: var(--c-violeta); color: #fff; }
+
+  .btn .spin { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============ LAYOUT ============ */
+  main {
+    flex: 1;
+    width: 100%;
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 1.4rem;
+    display: flex;
+    gap: 1.4rem;
+    align-items: flex-start;
+  }
+
+  aside {
+    width: 300px;
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    position: sticky;
+    top: 88px;
+  }
+
+  #mapBoard {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+    padding: 1.1rem;
+    border-radius: 18px;
+    background: transparent;
+  }
+
+  #mapBoard.is-exporting {
+    background-color: var(--paper) !important;
+    background-image:
+      linear-gradient(var(--grid-line) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+    background-size: 28px 28px;
+  }
+
+  #pdfTitle {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 800;
+    font-size: 1.9rem;
+    text-align: center;
+    display: none;
+  }
+
+  #mapBoard.is-exporting #pdfTitle { display: block; }
+
+  /* ============ PANEL: NUEVA IDEA ============ */
+  .panel {
+    background: var(--card);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 4px 4px 0 var(--ink);
+    padding: 1.1rem;
+  }
+
+  .panel-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.7rem;
+  }
+
+  .panel textarea {
+    width: 100%;
+    border: 1.5px solid var(--card-border);
+    border-radius: 10px;
+    background: var(--paper);
+    padding: 0.7rem 0.85rem;
+    font-family: 'Instrument Sans', sans-serif;
+    font-size: 0.88rem;
+    color: var(--ink);
+    resize: none;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .panel textarea:focus {
+    border-color: var(--ink);
+    background: #fff;
+  }
+
+  .panel-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.75rem;
+    gap: 0.6rem;
+  }
+
+  .color-picker { display: flex; gap: 0.45rem; }
+
+  .color-dot {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    box-shadow: inset 0 0 0 1px rgba(0,0,0,0.08);
+    transition: transform 0.12s, border-color 0.12s;
+  }
+
+  .color-dot:hover { transform: scale(1.15); }
+  .color-dot.active { border-color: var(--ink); transform: scale(1.15); }
+
+  .btn-add {
+    font-size: 0.8rem;
+    font-weight: 600;
+    padding: 0.5rem 1rem;
+    border-radius: 9px;
+    border: 1.5px solid var(--ink);
+    background: var(--ink);
+    color: #fff;
+    box-shadow: 2px 2px 0 rgba(33,41,60,0.35);
+    transition: transform 0.12s, opacity 0.15s;
+  }
+
+  .btn-add:hover:not(:disabled) { transform: translate(-1px, -1px); }
+  .btn-add:disabled { opacity: 0.35; cursor: not-allowed; box-shadow: none; }
+
+  /* ============ BANDEJA Y PAPELERA ============ */
+  .tray {
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-radius: 14px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    min-height: 240px;
+    max-height: 46vh;
+    box-shadow: 0 2px 10px rgba(33,41,60,0.05);
+    transition: border-color 0.15s, box-shadow 0.15s;
+    cursor: pointer;
+  }
+
+  .zone-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding-bottom: 0.65rem;
+    margin-bottom: 0.75rem;
+    border-bottom: 1.5px dashed var(--card-border);
+    pointer-events: none;
+  }
+
+  .zone-head .zh-icon { color: var(--zone-accent, var(--ink-soft)); }
+
+  .zone-count {
+    margin-left: auto;
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    background: color-mix(in srgb, var(--zone-accent, var(--muted)) 12%, #fff);
+    color: var(--zone-accent, var(--ink-soft));
+    border: 1px solid color-mix(in srgb, var(--zone-accent, var(--muted)) 30%, transparent);
+    padding: 0.1rem 0.55rem;
+    border-radius: 999px;
+  }
+
+  .tray-content {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+    padding-right: 4px;
+    pointer-events: none;
+  }
+
+  .tray-content::-webkit-scrollbar { width: 4px; }
+  .tray-content::-webkit-scrollbar-thumb { background: var(--card-border); border-radius: 20px; }
+
+  .trash {
+    border: 2px dashed var(--card-border);
+    border-radius: 14px;
+    padding: 0.95rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    color: var(--ink-soft);
+    font-weight: 600;
+    font-size: 0.88rem;
+    background: transparent;
+    transition: all 0.15s;
+    cursor: pointer;
+  }
+
+  .trash > * { pointer-events: none; }
+
+  .trash.drag-over, .trash:hover {
+    border-color: var(--c-rojo);
+    color: var(--c-rojo);
+    background: #fdefef;
+  }
+
+  /* ============ ZONAS DEL MAPA ============ */
+  .quadrants {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1rem;
+    flex: 1;
+  }
+
+  .bottom-row {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.1rem;
+  }
+
+  .zone {
+    position: relative;
+    background: var(--card);
+    border: 1.5px solid var(--card-border);
+    border-top: 4px solid var(--zone-accent);
+    border-radius: 14px;
+    padding: 2rem 1rem 1rem;
+    min-height: 230px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 10px rgba(33,41,60,0.05);
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+    cursor: pointer;
+  }
+
+  /* cinta adhesiva de cada zona */
+  .zone .tape {
+    position: absolute;
+    top: -13px;
+    left: 50%;
+    width: 88px;
+    height: 24px;
+    transform: translateX(-50%) rotate(-2.5deg);
+    background:
+      repeating-linear-gradient(45deg, rgba(255,255,255,0.22) 0 6px, transparent 6px 12px),
+      var(--zone-accent);
+    opacity: 0.85;
+    border-radius: 2px;
+    box-shadow: 0 2px 4px rgba(33,41,60,0.12);
+    pointer-events: none;
+  }
+
+  .zone:nth-child(even) .tape { transform: translateX(-50%) rotate(2deg); }
+
+  .zone.drag-over {
+    border-color: var(--zone-accent);
+    box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--zone-accent) 40%, transparent);
+    transform: scale(1.015);
+    z-index: 5;
+  }
+
+  .tray.drag-over {
+    border-color: var(--c-azul);
+    box-shadow: 0 10px 26px -8px color-mix(in srgb, var(--c-azul) 35%, transparent);
+  }
+
+  .zone-content {
+    flex: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    align-items: flex-start;
+    align-content: flex-start;
+    pointer-events: none;
+  }
+
+  .empty-placeholder {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.6rem 0;
+    pointer-events: none;
+  }
+
+  .empty-placeholder span {
+    border: 2px dashed var(--card-border);
+    border-radius: 10px;
+    padding: 0.8rem 1.2rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .tray-empty {
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.82rem;
+    margin-top: 2.2rem;
+    pointer-events: none;
+  }
+
+  /* ícono central */
+  .center-badge {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    border-radius: 50%;
+    width: 78px;
+    height: 78px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    pointer-events: none;
+    color: var(--ink-soft);
+  }
+
+  /* ============ NOTAS (post-its) ============ */
+  .note {
+    position: relative;
+    padding: 0.7rem 0.75rem 0.9rem;
+    border-radius: 3px 3px 3px 14px;
+    min-height: 78px;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid rgba(0,0,0,0.07);
+    box-shadow: 0 3px 8px rgba(33,41,60,0.14);
+    cursor: grab;
+    pointer-events: auto;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+
+  .note:active { cursor: grabbing; }
+
+  .zone-content .note { width: calc(50% - 0.4rem); }
+  .tray-content .note { width: 100%; }
+
+  @media (min-width: 1200px) {
+    .zone-content .note { width: 156px; }
+  }
+
+  /* leve rotación tipo post-it */
+  .zone-content .note:nth-child(odd)  { transform: rotate(-1.2deg); }
+  .zone-content .note:nth-child(even) { transform: rotate(1deg); }
+
+  .note:hover {
+    transform: rotate(0deg) translateY(-3px);
+    box-shadow: 0 8px 16px rgba(33,41,60,0.2);
+    z-index: 6;
+  }
+
+  /* esquina doblada */
+  .note::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    border-style: solid;
+    border-width: 14px 14px 0 0;
+    border-color: rgba(0,0,0,0.1) transparent transparent transparent;
+    border-radius: 0 0 0 14px;
+  }
+
+  .note p {
+    font-size: 0.82rem;
+    font-weight: 500;
+    line-height: 1.45;
+    white-space: pre-wrap;
+    word-break: break-word;
+    flex: 1;
+    pointer-events: none;
+  }
+
+  .note.selected {
+    outline: 3px solid var(--c-azul);
+    outline-offset: 2px;
+    transform: rotate(0deg) scale(1.04);
+    z-index: 8;
+  }
+
+  .note.dragging { opacity: 0.45; }
+
+  .note-delete-btn {
+    position: absolute;
+    top: -9px; right: -9px;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+    background: var(--c-rojo);
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s, transform 0.12s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+    z-index: 7;
+  }
+
+  .note:hover .note-delete-btn { opacity: 1; }
+  .note-delete-btn:hover { transform: scale(1.15); }
+  .note-delete-btn svg { pointer-events: none; }
+
+  /* colores de nota (compatibles con datos guardados) */
+  .bg-yellow-200 { background: #fff3a3; }
+  .bg-pink-200   { background: #ffd6e8; }
+  .bg-blue-200   { background: #cfe6ff; }
+  .bg-green-200  { background: #d3f4d9; }
+  .bg-purple-200 { background: #e6dbff; }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(33, 41, 60, 0.45);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .modal-backdrop.open { display: flex; }
+  .modal-backdrop.visible { opacity: 1; }
+
+  .modal-card {
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 6px 6px 0 var(--ink);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 380px;
+    transform: scale(0.94);
+    transition: transform 0.25s;
+  }
+
+  .modal-backdrop.visible .modal-card { transform: scale(1); }
+
+  .modal-card h3 {
+    font-family: 'Bricolage Grotesque', sans-serif;
+    font-size: 1.15rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+  }
+
+  .modal-card p {
+    font-size: 0.87rem;
+    color: var(--ink-soft);
+    line-height: 1.6;
+    margin-bottom: 1.3rem;
+  }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+  .btn-ghost {
+    font-size: 0.83rem;
+    font-weight: 600;
+    padding: 0.5rem 0.95rem;
+    border-radius: 9px;
+    border: 1.5px solid transparent;
+    background: transparent;
+    color: var(--ink-soft);
+    transition: background 0.15s;
+  }
+
+  .btn-ghost:hover { background: var(--paper); }
+
+  .btn-confirm {
+    font-size: 0.83rem;
+    font-weight: 600;
+    padding: 0.5rem 0.95rem;
+    border-radius: 9px;
+    border: 1.5px solid var(--ink);
+    background: var(--c-rojo);
+    color: #fff;
+    box-shadow: 2px 2px 0 var(--ink);
+    transition: transform 0.12s;
+  }
+
+  .btn-confirm:hover { transform: translate(-1px, -1px); }
+
+  /* ============ TOASTS ============ */
+  #toastContainer {
+    position: fixed;
+    top: 84px;
+    right: 1.4rem;
+    z-index: 90;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .toast {
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 500;
+    padding: 0.7rem 1.1rem;
+    border-radius: 10px;
+    box-shadow: 4px 4px 0 rgba(33,41,60,0.25);
+    transform: translateX(30px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.error { background: var(--c-rojo); }
+  .toast.show { transform: translateX(0); opacity: 1; }
+
+  /* ============ TOAST ACCESIBILIDAD ============ */
+  #a11yToast {
+    position: fixed;
+    bottom: 1.4rem;
+    right: 1.4rem;
+    background: var(--c-azul);
+    color: #fff;
+    padding: 0.75rem 1.1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-size: 0.83rem;
+    font-weight: 600;
+    z-index: 90;
+    transform: translateY(90px);
+    opacity: 0;
+    transition: all 0.3s;
+    pointer-events: none;
+  }
+
+  #a11yToast.show { transform: translateY(0); opacity: 1; }
+
+  #a11yToast button {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    border-radius: 50%;
+    width: 26px; height: 26px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    pointer-events: auto;
+    transition: background 0.15s;
+  }
+
+  #a11yToast button:hover { background: rgba(255,255,255,0.35); }
+
+  /* ============ EXPORT MODE ============ */
+  .is-exporting .note-delete-btn,
+  .is-exporting .empty-placeholder,
+  .is-exporting .tray-empty { display: none !important; }
+
+  .is-exporting .note {
+    box-shadow: none !important;
+    transform: none !important;
+  }
+
+  /* ============ RESPONSIVE ============ */
+  @media (max-width: 960px) {
+    main { flex-direction: column; }
+    aside { width: 100%; position: static; }
+    .tray { max-height: 320px; }
+  }
+
+  @media (max-width: 640px) {
+    .quadrants, .bottom-row { grid-template-columns: 1fr; }
+    .center-badge { display: none; }
+    header { padding: 0.8rem 1rem; }
+    main { padding: 1rem; }
+    #mapBoard { padding: 0.6rem; }
+    .header-actions { width: 100%; }
+    .btn { flex: 1; justify-content: center; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
 </head>
-<body class="bg-slate-100 flex flex-col font-sans text-slate-800 min-h-screen">
+<body>
 
-    <!-- Modal de Confirmación (Reemplazo de window.confirm) -->
-    <div id="confirmModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[100] hidden items-center justify-center p-4 opacity-0 transition-opacity duration-300">
-        <div class="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm transform scale-95 transition-transform duration-300" id="confirmModalContent">
-            <h3 class="text-lg font-bold text-slate-800 mb-2">¿Reiniciar tablero?</h3>
-            <p class="text-slate-600 mb-6 text-sm">¿Estás seguro de querer borrar todo y volver al mapa por defecto? Esta acción no se puede deshacer.</p>
-            <div class="flex justify-end gap-3">
-                <button onclick="closeConfirmModal()" class="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 rounded-lg transition-colors">Cancelar</button>
-                <button onclick="confirmReset()" class="px-4 py-2 text-sm font-medium bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors shadow-sm">Sí, reiniciar</button>
-            </div>
-        </div>
+  <!-- Modal de confirmación -->
+  <div id="confirmModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3>¿Reiniciar tablero?</h3>
+      <p>Se borrarán todas las ideas y volverá el mapa de ejemplo. Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeConfirmModal()">Cancelar</button>
+        <button class="btn-confirm" onclick="confirmReset()">Sí, reiniciar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toasts -->
+  <div id="toastContainer"></div>
+
+  <!-- Toast de accesibilidad -->
+  <div id="a11yToast">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 11V6a2 2 0 0 0-4 0v5"/><path d="M14 10V4a2 2 0 0 0-4 0v2"/><path d="M10 10.5V6a2 2 0 0 0-4 0v8"/><path d="M18 8a2 2 0 1 1 4 0v6a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15"/></svg>
+    <span>Idea seleccionada. Toque un área para moverla.</span>
+    <button onclick="clearSelection(event)" title="Cancelar selección">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+    </button>
+  </div>
+
+  <!-- Cabecera -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🧠</div>
+      <div>
+        <h1>Mapa de <span class="marker">Empatía</span></h1>
+        <p class="sub">Innovación · PEI</p>
+      </div>
     </div>
 
-    <!-- Sistema de Toasts (Notificaciones) -->
-    <div id="toastContainer" class="fixed top-20 right-6 z-50 flex flex-col gap-2"></div>
-
-    <!-- Toast de Accesibilidad (Clic para mover) -->
-    <div id="a11yToast" class="fixed bottom-6 right-6 bg-blue-600 text-white px-5 py-3 rounded-full shadow-2xl flex items-center gap-3 transform translate-y-20 opacity-0 transition-all duration-300 z-50 pointer-events-none">
-        <i data-lucide="hand" class="w-5 h-5"></i>
-        <span class="text-sm font-semibold">Idea seleccionada. Haz clic en un área para moverla.</span>
-        <button onclick="clearSelection(event)" class="ml-2 bg-blue-700/50 p-1.5 rounded-full hover:bg-blue-800 transition-colors pointer-events-auto">
-            <i data-lucide="x" class="w-4 h-4"></i>
-        </button>
+    <div class="header-actions">
+      <button class="btn btn-danger" onclick="openConfirmModal()">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+        <span class="btn-txt">Reiniciar</span>
+      </button>
+      <button class="btn btn-png" id="pngBtn" onclick="exportToPNG()">
+        <span class="btn-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+        </span>
+        <span class="btn-txt">Exportar PNG</span>
+      </button>
+      <button class="btn btn-pdf" id="pdfBtn" onclick="exportToPDF()">
+        <span class="btn-icon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        </span>
+        <span class="btn-txt">Exportar PDF</span>
+      </button>
     </div>
+  </header>
 
-    <!-- Cabecera -->
-    <header class="bg-white shadow-sm border-b border-slate-200 px-6 py-4 flex flex-wrap items-center justify-between gap-4 sticky top-0 z-30">
-        <div class="flex items-center gap-3">
-            <div class="bg-blue-600 p-2 rounded-lg shadow-inner">
-                <i data-lucide="map" class="text-white w-6 h-6"></i>
-            </div>
-            <h1 class="text-2xl font-bold text-slate-800">Mapa de Empatía</h1>
+  <main>
+    <!-- Barra lateral -->
+    <aside>
+      <!-- Nueva idea -->
+      <form id="noteForm" class="panel">
+        <label class="panel-label" for="newNoteText">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          Nueva idea
+        </label>
+        <textarea id="newNoteText" rows="3" placeholder="Escriba lo que el usuario siente, piensa, dice…"></textarea>
+        <div class="panel-row">
+          <div class="color-picker" id="colorPicker"></div>
+          <button type="submit" class="btn-add" id="addBtn" disabled>Agregar</button>
         </div>
-        
-        <div class="flex items-center gap-3">
-            <button onclick="openConfirmModal()" class="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-600 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
-                <span class="hidden sm:inline">Reiniciar</span>
-            </button>
-            <button id="exportBtn" onclick="exportToPDF()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-5 py-2 rounded-lg font-medium transition-colors shadow-sm">
-                <i data-lucide="download" id="exportIcon" class="w-4 h-4"></i>
-                <span id="exportText">Exportar PDF</span>
-            </button>
+      </form>
+
+      <!-- Bandeja -->
+      <div id="zone-bandeja" data-zone="bandeja" class="drop-zone tray" style="--zone-accent: var(--c-azul)">
+        <div class="zone-head">
+          <span class="zh-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+          </span>
+          <h3>Bandeja</h3>
+          <span class="zone-count" id="count-bandeja">0</span>
         </div>
-    </header>
+        <div class="tray-content" id="content-bandeja"></div>
+      </div>
 
-    <!-- Contenido Principal -->
-    <main class="flex-1 max-w-[1600px] w-full mx-auto p-4 md:p-6 flex flex-col lg:flex-row gap-6 items-start">
-        
-        <!-- Barra Lateral -->
-        <aside class="w-full lg:w-80 flex flex-col gap-4 lg:sticky lg:top-24 h-auto lg:h-[calc(100vh-8rem)]">
-            
-            <!-- Formulario Nueva Idea -->
-            <form id="noteForm" class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-3">
-                <label class="text-sm font-bold text-slate-700 flex items-center gap-2">
-                    <i data-lucide="plus" class="text-blue-600 w-4 h-4"></i> Añadir Nueva Idea
-                </label>
-                <textarea
-                    id="newNoteText"
-                    placeholder="Escribe lo que el usuario siente, piensa, dice..."
-                    class="w-full p-3 text-sm border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none outline-none transition-all shadow-inner bg-slate-50 focus:bg-white"
-                    rows="3"
-                ></textarea>
-                <div class="flex items-center justify-between mt-1">
-                    <div class="flex gap-2" id="colorPicker">
-                        <!-- Botones de colores se inyectan por JS -->
-                    </div>
-                    <button type="submit" id="addBtn" disabled class="bg-slate-800 hover:bg-slate-900 disabled:bg-slate-300 disabled:cursor-not-allowed text-white p-2.5 rounded-lg transition-colors font-medium text-sm shadow-sm">
-                        Agregar
-                    </button>
-                </div>
-            </form>
+      <!-- Papelera -->
+      <div id="zone-trash" data-zone="trash" class="drop-zone trash">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        <span>Papelera</span>
+      </div>
+    </aside>
 
-            <!-- Bandeja -->
-            <div id="zone-bandeja" data-zone="bandeja" class="drop-zone flex-1 bg-white p-4 rounded-xl border-2 transition-all flex flex-col min-h-[250px] border-slate-200 shadow-sm cursor-pointer">
-                <div class="flex items-center gap-2 font-bold text-slate-700 border-b border-slate-100 pb-3 mb-3 pointer-events-none">
-                    <i data-lucide="inbox" class="text-blue-600 w-5 h-5"></i>
-                    <h3>Bandeja</h3>
-                    <span id="count-bandeja" class="ml-auto text-xs bg-slate-100 px-2 py-1 rounded-full">0</span>
-                </div>
-                <div id="content-bandeja" class="flex-1 overflow-y-auto no-scrollbar flex flex-col gap-3 pr-1 pointer-events-none">
-                    <!-- Notas de bandeja -->
-                </div>
-            </div>
+    <!-- Tablero -->
+    <section id="mapBoard">
+      <h2 id="pdfTitle">Mapa de Empatía</h2>
 
-            <!-- Papelera -->
-            <div id="zone-trash" data-zone="trash" class="drop-zone p-4 border-2 border-dashed rounded-xl flex items-center justify-center gap-2 transition-all font-medium border-slate-300 text-slate-500 hover:bg-slate-50 cursor-pointer">
-                <i data-lucide="trash-2" class="w-5 h-5 pointer-events-none"></i>
-                <span class="pointer-events-none">Papelera</span>
-            </div>
-        </aside>
+      <div class="quadrants">
+        <!-- Piensa -->
+        <div id="zone-piensa" data-zone="piensa" class="drop-zone zone" style="--zone-accent: var(--c-azul)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9.5 2A2.5 2.5 0 0 1 12 4.5v15a2.5 2.5 0 0 1-4.96.44 2.5 2.5 0 0 1-2.96-3.08 3 3 0 0 1-.34-5.58 2.5 2.5 0 0 1 1.32-4.24 2.5 2.5 0 0 1 1.98-3A2.5 2.5 0 0 1 9.5 2Z"/><path d="M14.5 2A2.5 2.5 0 0 0 12 4.5v15a2.5 2.5 0 0 0 4.96.44 2.5 2.5 0 0 0 2.96-3.08 3 3 0 0 0 .34-5.58 2.5 2.5 0 0 0-1.32-4.24 2.5 2.5 0 0 0-1.98-3A2.5 2.5 0 0 0 14.5 2Z"/></svg>
+            </span>
+            <h3>¿Qué piensa y siente?</h3>
+            <span class="zone-count" id="count-piensa">0</span>
+          </div>
+          <div class="zone-content" id="content-piensa"></div>
+        </div>
 
-        <!-- Tablero Principal del Mapa (Para PDF) -->
-        <section id="mapBoard" class="flex-1 w-full flex flex-col gap-4 p-4 bg-slate-100 rounded-2xl" style="box-sizing: border-box;">
-            
-            <h2 id="pdfTitle" class="text-3xl font-bold text-slate-800 mb-2 text-center hidden">Mapa de Empatía</h2>
+        <!-- Ve -->
+        <div id="zone-ve" data-zone="ve" class="drop-zone zone" style="--zone-accent: var(--c-teal)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"/><circle cx="12" cy="12" r="3"/></svg>
+            </span>
+            <h3>¿Qué ve?</h3>
+            <span class="zone-count" id="count-ve">0</span>
+          </div>
+          <div class="zone-content" id="content-ve"></div>
+        </div>
 
-            <div class="relative grid grid-cols-1 md:grid-cols-2 gap-4 flex-1">
-                
-                <!-- Piensa -->
-                <div id="zone-piensa" data-zone="piensa" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-blue-50 border-blue-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="brain" class="text-blue-600 w-5 h-5"></i>
-                        <h3>¿Qué piensa y siente?</h3>
-                        <span id="count-piensa" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-piensa" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
+        <!-- Escucha -->
+        <div id="zone-escucha" data-zone="escucha" class="drop-zone zone" style="--zone-accent: var(--c-ambar)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 8.5a6.5 6.5 0 1 1 13 0c0 6-6 6-6 10a3.5 3.5 0 1 1-7 0"/><path d="M15 8.5a2.5 2.5 0 0 0-5 0v1a2 2 0 1 1 0 4"/></svg>
+            </span>
+            <h3>¿Qué escucha?</h3>
+            <span class="zone-count" id="count-escucha">0</span>
+          </div>
+          <div class="zone-content" id="content-escucha"></div>
+        </div>
 
-                <!-- Ve -->
-                <div id="zone-ve" data-zone="ve" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-emerald-50 border-emerald-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="eye" class="text-emerald-600 w-5 h-5"></i>
-                        <h3>¿Qué ve?</h3>
-                        <span id="count-ve" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-ve" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
+        <!-- Dice -->
+        <div id="zone-dice" data-zone="dice" class="drop-zone zone" style="--zone-accent: var(--c-violeta)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+            </span>
+            <h3>¿Qué dice y hace?</h3>
+            <span class="zone-count" id="count-dice">0</span>
+          </div>
+          <div class="zone-content" id="content-dice"></div>
+        </div>
 
-                <!-- Escucha -->
-                <div id="zone-escucha" data-zone="escucha" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-amber-50 border-amber-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="ear" class="text-amber-600 w-5 h-5"></i>
-                        <h3>¿Qué escucha?</h3>
-                        <span id="count-escucha" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-escucha" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
+        <!-- Ícono central -->
+        <div class="center-badge">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        </div>
+      </div>
 
-                <!-- Dice -->
-                <div id="zone-dice" data-zone="dice" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-purple-50 border-purple-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="message-circle" class="text-purple-600 w-5 h-5"></i>
-                        <h3>¿Qué dice y hace?</h3>
-                        <span id="count-dice" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-dice" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
-                
-                <!-- Ícono central -->
-                <div class="hidden md:flex absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white rounded-full p-4 shadow-xl border-4 border-slate-50 z-10 pointer-events-none text-slate-300">
-                    <i data-lucide="user" class="w-12 h-12" stroke-width="1.5"></i>
-                </div>
-            </div>
+      <div class="bottom-row">
+        <!-- Esfuerzos -->
+        <div id="zone-esfuerzos" data-zone="esfuerzos" class="drop-zone zone" style="--zone-accent: var(--c-rojo)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            </span>
+            <h3>Esfuerzos (Dolores)</h3>
+            <span class="zone-count" id="count-esfuerzos">0</span>
+          </div>
+          <div class="zone-content" id="content-esfuerzos"></div>
+        </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Esfuerzos -->
-                <div id="zone-esfuerzos" data-zone="esfuerzos" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-red-50 border-red-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="alert-circle" class="text-red-600 w-5 h-5"></i>
-                        <h3>Esfuerzos (Dolores)</h3>
-                        <span id="count-esfuerzos" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-esfuerzos" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
+        <!-- Resultados -->
+        <div id="zone-resultados" data-zone="resultados" class="drop-zone zone" style="--zone-accent: var(--c-verde)">
+          <span class="tape"></span>
+          <div class="zone-head">
+            <span class="zh-icon">
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>
+            </span>
+            <h3>Resultados (Beneficios)</h3>
+            <span class="zone-count" id="count-resultados">0</span>
+          </div>
+          <div class="zone-content" id="content-resultados"></div>
+        </div>
+      </div>
+    </section>
+  </main>
 
-                <!-- Resultados -->
-                <div id="zone-resultados" data-zone="resultados" class="drop-zone relative p-4 rounded-xl border-2 transition-all flex flex-col gap-3 min-h-[220px] bg-green-50 border-green-200 cursor-pointer">
-                    <div class="flex items-center gap-2 font-bold text-slate-700 mb-1 border-b border-slate-900/10 pb-2 pointer-events-none">
-                        <i data-lucide="award" class="text-green-600 w-5 h-5"></i>
-                        <h3>Resultados (Beneficios)</h3>
-                        <span id="count-resultados" class="ml-auto text-xs font-bold text-slate-600 bg-white/60 px-2 py-1 rounded-full shadow-sm">0</span>
-                    </div>
-                    <div id="content-resultados" class="flex flex-wrap gap-3 items-start content-start flex-1 pointer-events-none"></div>
-                </div>
-            </div>
-        </section>
-    </main>
+<script>
+  // ---------------- DATOS Y ESTADO ----------------
+  const defaultItems = [
+    { id: '1', text: 'Siente que no tiene suficiente tiempo libre para sí mismo.', category: 'piensa', color: 'bg-yellow-200' },
+    { id: '2', text: '"Deberías probar esta nueva aplicación, es genial."', category: 'escucha', color: 'bg-blue-200' },
+    { id: '3', text: 'Mucha publicidad engañosa en redes sociales.', category: 've', color: 'bg-pink-200' },
+    { id: '4', text: 'Comparte artículos sobre productividad en LinkedIn.', category: 'dice', color: 'bg-green-200' },
+    { id: '5', text: 'Frustración por procesos lentos y burocráticos.', category: 'esfuerzos', color: 'bg-purple-200' },
+    { id: '6', text: 'Desea ahorrar al menos 2 horas a la semana.', category: 'resultados', color: 'bg-yellow-200' }
+  ];
 
-    <script>
-        // Inicializar Iconos
-        lucide.createIcons();
+  const colors = [
+    { name: 'Amarillo', class: 'bg-yellow-200', hex: '#fff3a3' },
+    { name: 'Rosa',     class: 'bg-pink-200',   hex: '#ffd6e8' },
+    { name: 'Azul',     class: 'bg-blue-200',   hex: '#cfe6ff' },
+    { name: 'Verde',    class: 'bg-green-200',  hex: '#d3f4d9' },
+    { name: 'Morado',   class: 'bg-purple-200', hex: '#e6dbff' }
+  ];
 
-        // ---------------- DATOS Y ESTADO ----------------
-        const defaultItems = [
-            { id: '1', text: 'Siente que no tiene suficiente tiempo libre para sí mismo.', category: 'piensa', color: 'bg-yellow-200' },
-            { id: '2', text: '"Deberías probar esta nueva aplicación, es genial."', category: 'escucha', color: 'bg-blue-200' },
-            { id: '3', text: 'Mucha publicidad engañosa en redes sociales.', category: 've', color: 'bg-pink-200' },
-            { id: '4', text: 'Comparte artículos sobre productividad en LinkedIn.', category: 'dice', color: 'bg-green-200' },
-            { id: '5', text: 'Frustración por procesos lentos y burocráticos.', category: 'esfuerzos', color: 'bg-purple-200' },
-            { id: '6', text: 'Desea ahorrar al menos 2 horas a la semana.', category: 'resultados', color: 'bg-yellow-200' }
-        ];
+  let items = [];
+  let selectedColor = 'bg-yellow-200';
+  let draggedItemId = null;
+  let selectedItemId = null;
 
-        const colors = [
-            { name: 'Amarillo', class: 'bg-yellow-200' },
-            { name: 'Rosa', class: 'bg-pink-200' },
-            { name: 'Azul', class: 'bg-blue-200' },
-            { name: 'Verde', class: 'bg-green-200' },
-            { name: 'Morado', class: 'bg-purple-200' }
-        ];
+  function loadData() {
+    const saved = localStorage.getItem('empathyMapDataHtml');
+    if (saved) {
+      try { items = JSON.parse(saved); }
+      catch (e) { console.error('Error parseando localStorage', e); items = [...defaultItems]; }
+    } else {
+      items = [...defaultItems];
+    }
+  }
 
-        let items = [];
-        let selectedColor = 'bg-yellow-200';
-        let draggedItemId = null;
-        let selectedItemId = null;
+  function saveData() {
+    localStorage.setItem('empathyMapDataHtml', JSON.stringify(items));
+  }
 
-        // Cargar desde LocalStorage
-        function loadData() {
-            const saved = localStorage.getItem('empathyMapDataHtml');
-            if (saved) {
-                try {
-                    items = JSON.parse(saved);
-                } catch (e) {
-                    console.error('Error parseando localStorage', e);
-                    items = [...defaultItems];
-                }
-            } else {
-                items = [...defaultItems];
+  // ---------------- UTILIDADES ----------------
+  function escapeHTML(str) {
+    return str.replace(/[&<>'"]/g,
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+    );
+  }
+
+  function showToastMessage(msg, isError = false) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.innerText = msg;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // ---------------- RENDERIZADO ----------------
+  function renderColors() {
+    const container = document.getElementById('colorPicker');
+    container.innerHTML = '';
+    colors.forEach(c => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.title = c.name;
+      btn.className = 'color-dot' + (selectedColor === c.class ? ' active' : '');
+      btn.style.background = c.hex;
+      btn.setAttribute('aria-label', 'Color ' + c.name);
+      btn.onclick = () => { selectedColor = c.class; renderColors(); };
+      container.appendChild(btn);
+    });
+  }
+
+  const categories = ['bandeja', 'piensa', 've', 'escucha', 'dice', 'esfuerzos', 'resultados'];
+
+  function renderNotes() {
+    const containers = {};
+    categories.forEach(cat => {
+      containers[cat] = document.getElementById(`content-${cat}`);
+      if (containers[cat]) containers[cat].innerHTML = '';
+      document.getElementById(`count-${cat}`).innerText = '0';
+    });
+
+    const grouped = {};
+    categories.forEach(c => grouped[c] = []);
+    items.forEach(item => { if (grouped[item.category]) grouped[item.category].push(item); });
+
+    categories.forEach(cat => {
+      const zoneItems = grouped[cat];
+      document.getElementById(`count-${cat}`).innerText = zoneItems.length;
+
+      if (zoneItems.length === 0 && cat !== 'bandeja') {
+        containers[cat].innerHTML = `
+          <div class="empty-placeholder"><span>Arrastre ideas aquí</span></div>`;
+      } else if (zoneItems.length === 0 && cat === 'bandeja') {
+        containers[cat].innerHTML = `<div class="tray-empty">Las nuevas ideas aparecerán aquí.</div>`;
+      } else {
+        zoneItems.forEach(item => {
+          const isSelected = selectedItemId === item.id;
+          const noteHTML = `
+            <div id="note-${item.id}" draggable="true"
+                 class="note ${item.color}${isSelected ? ' selected' : ''}"
+                 role="button" tabindex="0" aria-label="Idea: ${escapeHTML(item.text)}">
+              <p>${escapeHTML(item.text)}</p>
+              <button class="note-delete-btn" title="Eliminar" aria-label="Eliminar idea">
+                <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+              </button>
+            </div>`;
+
+          const template = document.createElement('template');
+          template.innerHTML = noteHTML.trim();
+          const noteElement = template.content.firstChild;
+
+          noteElement.addEventListener('dragstart', (e) => handleDragStart(e, item.id));
+          noteElement.addEventListener('click', (e) => {
+            e.stopPropagation();
+            handleNoteClick(item.id);
+          });
+          noteElement.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              handleNoteClick(item.id);
             }
-        }
+          });
 
-        function saveData() {
-            localStorage.setItem('empathyMapDataHtml', JSON.stringify(items));
-        }
+          noteElement.querySelector('.note-delete-btn').addEventListener('click', (e) => {
+            e.stopPropagation();
+            deleteNote(item.id);
+          });
 
-        // ---------------- UI: RENDERIZADO ----------------
-        function renderColors() {
-            const container = document.getElementById('colorPicker');
-            container.innerHTML = '';
-            colors.forEach(c => {
-                const btn = document.createElement('button');
-                btn.type = 'button';
-                btn.title = c.name;
-                btn.className = `w-7 h-7 rounded-full border-2 transition-all shadow-sm ${c.class} ${selectedColor === c.class ? 'border-slate-800 scale-110' : 'border-transparent hover:scale-110'}`;
-                btn.onclick = () => {
-                    selectedColor = c.class;
-                    renderColors();
-                };
-                container.appendChild(btn);
-            });
-        }
-
-        function renderNotes() {
-            // Limpiar zonas
-            const categories = ['bandeja', 'piensa', 've', 'escucha', 'dice', 'esfuerzos', 'resultados'];
-            const containers = {};
-            
-            categories.forEach(cat => {
-                containers[cat] = document.getElementById(`content-${cat}`);
-                if(containers[cat]) containers[cat].innerHTML = '';
-                document.getElementById(`count-${cat}`).innerText = '0';
-            });
-
-            // Agrupar y renderizar
-            const grouped = {};
-            categories.forEach(c => grouped[c] = []);
-            
-            items.forEach(item => {
-                if(grouped[item.category]) {
-                    grouped[item.category].push(item);
-                }
-            });
-
-            categories.forEach(cat => {
-                const zoneItems = grouped[cat];
-                document.getElementById(`count-${cat}`).innerText = zoneItems.length;
-
-                if (zoneItems.length === 0 && cat !== 'bandeja') {
-                    containers[cat].innerHTML = `
-                        <div class="empty-placeholder w-full h-full flex flex-col items-center justify-center opacity-40 text-sm font-medium pointer-events-none mt-4">
-                            <span class="border-2 border-dashed border-slate-400 rounded-lg p-4">Arrastra ideas aquí</span>
-                        </div>
-                    `;
-                } else if (zoneItems.length === 0 && cat === 'bandeja') {
-                    containers[cat].innerHTML = `<div class="text-center text-slate-400 text-sm mt-10 empty-placeholder pointer-events-none">Las nuevas ideas aparecerán aquí.</div>`;
-                } else {
-                    zoneItems.forEach(item => {
-                        const isSelected = selectedItemId === item.id;
-                        const widthClass = cat === 'bandeja' ? 'w-full' : 'w-full sm:w-36 md:w-40';
-                        const selectClass = isSelected ? 'ring-4 ring-blue-500 scale-105 shadow-lg z-20' : '';
-                        
-                        const noteHTML = `
-                            <div 
-                                id="note-${item.id}"
-                                draggable="true"
-                                class="note group relative p-3 rounded-lg shadow-sm cursor-grab active:cursor-grabbing transform transition-all pointer-events-auto
-                                ${item.color} ${widthClass} min-h-[80px] flex flex-col hover:shadow-md hover:-translate-y-1 border border-black/5 ${selectClass}"
-                            >
-                                <p class="text-sm font-medium text-slate-800 leading-snug whitespace-pre-wrap flex-1 break-words pointer-events-none">${escapeHTML(item.text)}</p>
-                                <button
-                                    class="note-delete-btn absolute -top-2 -right-2 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity shadow-sm z-30"
-                                    title="Eliminar"
-                                >
-                                    <i data-lucide="x" class="w-3.5 h-3.5 pointer-events-none"></i>
-                                </button>
-                            </div>
-                        `;
-                        
-                        const template = document.createElement('template');
-                        template.innerHTML = noteHTML.trim();
-                        const noteElement = template.content.firstChild;
-
-                        // Eventos de la nota
-                        noteElement.addEventListener('dragstart', (e) => handleDragStart(e, item.id));
-                        noteElement.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            handleNoteClick(item.id);
-                        });
-
-                        // Evento borrar
-                        const delBtn = noteElement.querySelector('.note-delete-btn');
-                        delBtn.addEventListener('click', (e) => {
-                            e.stopPropagation();
-                            deleteNote(item.id);
-                        });
-
-                        containers[cat].appendChild(noteElement);
-                    });
-                }
-            });
-
-            lucide.createIcons();
-            updateA11yToast();
-        }
-
-        // ---------------- UTILIDADES ----------------
-        function escapeHTML(str) {
-            return str.replace(/[&<>'"]/g, 
-                tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
-            );
-        }
-
-        function showToastMessage(msg, isError = false) {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            toast.className = `px-4 py-3 rounded-lg shadow-lg text-white text-sm font-medium transition-all transform translate-x-10 opacity-0 ${isError ? 'bg-red-600' : 'bg-slate-800'}`;
-            toast.innerText = msg;
-            container.appendChild(toast);
-            
-            // Animar entrada
-            requestAnimationFrame(() => {
-                toast.classList.remove('translate-x-10', 'opacity-0');
-            });
-
-            // Eliminar después de 3s
-            setTimeout(() => {
-                toast.classList.add('translate-x-10', 'opacity-0');
-                setTimeout(() => toast.remove(), 300);
-            }, 3000);
-        }
-
-        // ---------------- MODAL CONFIRMACION ----------------
-        const modal = document.getElementById('confirmModal');
-        const modalContent = document.getElementById('confirmModalContent');
-
-        function openConfirmModal() {
-            modal.classList.remove('hidden');
-            modal.classList.add('flex');
-            requestAnimationFrame(() => {
-                modal.classList.remove('opacity-0');
-                modalContent.classList.remove('scale-95');
-            });
-        }
-
-        function closeConfirmModal() {
-            modal.classList.add('opacity-0');
-            modalContent.classList.add('scale-95');
-            setTimeout(() => {
-                modal.classList.add('hidden');
-                modal.classList.remove('flex');
-            }, 300);
-        }
-
-        function confirmReset() {
-            items = [...defaultItems];
-            saveData();
-            renderNotes();
-            closeConfirmModal();
-            showToastMessage("Tablero reiniciado");
-        }
-
-        // ---------------- LOGICA CORE ----------------
-
-        function addNote(e) {
-            e.preventDefault();
-            const input = document.getElementById('newNoteText');
-            const text = input.value.trim();
-            if (!text) return;
-
-            const newItem = {
-                id: Date.now().toString(),
-                text: text,
-                category: 'bandeja',
-                color: selectedColor
-            };
-
-            items.unshift(newItem); // Al inicio
-            saveData();
-            renderNotes();
-            
-            input.value = '';
-            checkInput();
-            showToastMessage("Idea añadida a la bandeja");
-        }
-
-        function deleteNote(id) {
-            items = items.filter(item => item.id !== id);
-            if (selectedItemId === id) selectedItemId = null;
-            saveData();
-            renderNotes();
-        }
-
-        // Form Input Listener
-        const newNoteInput = document.getElementById('newNoteText');
-        const addBtn = document.getElementById('addBtn');
-        
-        function checkInput() {
-            addBtn.disabled = newNoteInput.value.trim().length === 0;
-        }
-
-        newNoteInput.addEventListener('input', checkInput);
-        newNoteInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                if(!addBtn.disabled) addNote(e);
-            }
+          containers[cat].appendChild(noteElement);
         });
-        document.getElementById('noteForm').addEventListener('submit', addNote);
+      }
+    });
 
-        // ---------------- DRAG & DROP Y SELECCIÓN ----------------
-        
-        function handleDragStart(e, id) {
-            draggedItemId = id;
-            selectedItemId = null; 
-            e.dataTransfer.effectAllowed = 'move';
-            // Configurar imagen ghost (opcional)
-            setTimeout(() => {
-                document.getElementById(`note-${id}`).classList.add('opacity-50');
-            }, 0);
+    updateA11yToast();
+  }
+
+  // ---------------- MODAL ----------------
+  const modal = document.getElementById('confirmModal');
+
+  function openConfirmModal() {
+    modal.classList.add('open');
+    requestAnimationFrame(() => modal.classList.add('visible'));
+  }
+
+  function closeConfirmModal() {
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.remove('open'), 250);
+  }
+
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeConfirmModal(); });
+
+  function confirmReset() {
+    items = [...defaultItems];
+    saveData();
+    renderNotes();
+    closeConfirmModal();
+    showToastMessage('Tablero reiniciado');
+  }
+
+  // ---------------- LÓGICA CORE ----------------
+  function addNote(e) {
+    e.preventDefault();
+    const input = document.getElementById('newNoteText');
+    const text = input.value.trim();
+    if (!text) return;
+
+    items.unshift({
+      id: Date.now().toString(),
+      text: text,
+      category: 'bandeja',
+      color: selectedColor
+    });
+    saveData();
+    renderNotes();
+    input.value = '';
+    checkInput();
+    showToastMessage('Idea añadida a la bandeja');
+  }
+
+  function deleteNote(id) {
+    items = items.filter(item => item.id !== id);
+    if (selectedItemId === id) selectedItemId = null;
+    saveData();
+    renderNotes();
+  }
+
+  const newNoteInput = document.getElementById('newNoteText');
+  const addBtn = document.getElementById('addBtn');
+
+  function checkInput() {
+    addBtn.disabled = newNoteInput.value.trim().length === 0;
+  }
+
+  newNoteInput.addEventListener('input', checkInput);
+  newNoteInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      if (!addBtn.disabled) addNote(e);
+    }
+  });
+  document.getElementById('noteForm').addEventListener('submit', addNote);
+
+  // ---------------- DRAG & DROP Y SELECCIÓN ----------------
+  function handleDragStart(e, id) {
+    draggedItemId = id;
+    selectedItemId = null;
+    e.dataTransfer.effectAllowed = 'move';
+    setTimeout(() => {
+      const el = document.getElementById(`note-${id}`);
+      if (el) el.classList.add('dragging');
+    }, 0);
+  }
+
+  function handleDragEnd() {
+    if (draggedItemId) {
+      const el = document.getElementById(`note-${draggedItemId}`);
+      if (el) el.classList.remove('dragging');
+    }
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+  }
+
+  document.querySelectorAll('.drop-zone').forEach(zone => {
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      zone.classList.add('drag-over');
+    });
+
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const zoneId = zone.dataset.zone;
+      const id = draggedItemId;
+      handleDragEnd();
+      draggedItemId = null;
+
+      if (id) {
+        if (zoneId === 'trash') {
+          deleteNote(id);
+          showToastMessage('Idea eliminada');
+        } else {
+          const idx = items.findIndex(i => i.id === id);
+          if (idx > -1) {
+            items[idx].category = zoneId;
+            saveData();
+            renderNotes();
+          }
         }
+      }
+    });
 
-        function handleDragEnd(e) {
-            if(draggedItemId) {
-                const el = document.getElementById(`note-${draggedItemId}`);
-                if(el) el.classList.remove('opacity-50');
-                draggedItemId = null;
-            }
-            document.querySelectorAll('.drop-zone').forEach(z => {
-                z.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-50', 'bg-red-100', 'border-red-500', 'scale-[1.02]');
-            });
-        }
-
-        // Configurar Zonas
-        document.querySelectorAll('.drop-zone').forEach(zone => {
-            zone.addEventListener('dragover', (e) => {
-                e.preventDefault(); // Permitir drop
-                e.dataTransfer.dropEffect = 'move';
-                
-                const zoneId = zone.dataset.zone;
-                if(zoneId === 'trash') {
-                    zone.classList.add('bg-red-100', 'border-red-500', 'text-red-600');
-                } else if(zoneId !== 'bandeja') {
-                    zone.classList.add('ring-4', 'ring-blue-400', 'ring-opacity-50', 'scale-[1.02]', 'z-10');
-                } else {
-                    zone.classList.add('ring-4', 'ring-blue-300', 'ring-opacity-50');
-                }
-            });
-
-            zone.addEventListener('dragleave', (e) => {
-                const zoneId = zone.dataset.zone;
-                if(zoneId === 'trash') {
-                    zone.classList.remove('bg-red-100', 'border-red-500', 'text-red-600');
-                } else if(zoneId !== 'bandeja') {
-                    zone.classList.remove('ring-4', 'ring-blue-400', 'ring-opacity-50', 'scale-[1.02]', 'z-10');
-                } else {
-                    zone.classList.remove('ring-4', 'ring-blue-300', 'ring-opacity-50');
-                }
-            });
-
-            zone.addEventListener('drop', (e) => {
-                e.preventDefault();
-                handleDragEnd(); // Limpiar UI
-                
-                const zoneId = zone.dataset.zone;
-                
-                if (draggedItemId) {
-                    if (zoneId === 'trash') {
-                        deleteNote(draggedItemId);
-                    } else {
-                        // Actualizar categoría
-                        const itemIndex = items.findIndex(i => i.id === draggedItemId);
-                        if (itemIndex > -1) {
-                            items[itemIndex].category = zoneId;
-                            saveData();
-                            renderNotes();
-                        }
-                    }
-                    draggedItemId = null;
-                }
-            });
-
-            // Clic en la zona (para el modo accesibilidad)
-            zone.addEventListener('click', () => {
-                if (selectedItemId) {
-                    const zoneId = zone.dataset.zone;
-                    if (zoneId === 'trash') {
-                        deleteNote(selectedItemId);
-                    } else {
-                        const itemIndex = items.findIndex(i => i.id === selectedItemId);
-                        if (itemIndex > -1) {
-                            items[itemIndex].category = zoneId;
-                            selectedItemId = null;
-                            saveData();
-                            renderNotes();
-                        }
-                    }
-                }
-            });
-        });
-
-        document.addEventListener('dragend', handleDragEnd);
-
-        // ---------------- MODO ACCESIBILIDAD ----------------
-        function handleNoteClick(id) {
-            selectedItemId = selectedItemId === id ? null : id;
-            renderNotes(); // Re-render para mostrar estilos
-        }
-
-        function clearSelection(e) {
-            if(e) e.stopPropagation();
+    // Clic en la zona (modo accesibilidad)
+    zone.addEventListener('click', () => {
+      if (selectedItemId) {
+        const zoneId = zone.dataset.zone;
+        if (zoneId === 'trash') {
+          deleteNote(selectedItemId);
+          showToastMessage('Idea eliminada');
+        } else {
+          const idx = items.findIndex(i => i.id === selectedItemId);
+          if (idx > -1) {
+            items[idx].category = zoneId;
             selectedItemId = null;
+            saveData();
             renderNotes();
+          }
         }
+      }
+    });
+  });
 
-        function updateA11yToast() {
-            const toast = document.getElementById('a11yToast');
-            if (selectedItemId) {
-                toast.classList.remove('translate-y-20', 'opacity-0');
-            } else {
-                toast.classList.add('translate-y-20', 'opacity-0');
-            }
+  document.addEventListener('dragend', handleDragEnd);
 
-            // Actualizar UI de las zonas para sugerir clics
-            document.querySelectorAll('.drop-zone').forEach(zone => {
-                if(selectedItemId) {
-                    if(zone.dataset.zone === 'trash') {
-                        zone.classList.add('hover:border-red-400', 'hover:bg-red-50', 'hover:text-red-500');
-                    } else {
-                        zone.classList.add('hover:shadow-md', 'hover:border-blue-400');
-                    }
-                } else {
-                    zone.classList.remove('hover:border-red-400', 'hover:bg-red-50', 'hover:text-red-500', 'hover:shadow-md', 'hover:border-blue-400');
-                }
-            });
-        }
+  // ---------------- MODO ACCESIBILIDAD ----------------
+  function handleNoteClick(id) {
+    selectedItemId = selectedItemId === id ? null : id;
+    renderNotes();
+  }
 
-        // Clic fuera para deseleccionar
-        document.addEventListener('click', (e) => {
-            if (selectedItemId && !e.target.closest('.note') && !e.target.closest('.drop-zone') && !e.target.closest('#a11yToast')) {
-                clearSelection();
-            }
-        });
+  function clearSelection(e) {
+    if (e) e.stopPropagation();
+    selectedItemId = null;
+    renderNotes();
+  }
 
-        // ---------------- EXPORTAR PDF ----------------
-        async function exportToPDF() {
-            const mapBoard = document.getElementById('mapBoard');
-            const exportBtn = document.getElementById('exportBtn');
-            const exportText = document.getElementById('exportText');
-            const exportIcon = document.getElementById('exportIcon');
-            const pdfTitle = document.getElementById('pdfTitle');
-            
-            if (!mapBoard || typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
-                showToastMessage("Las librerías PDF aún no cargan. Intenta en un segundo.", true);
-                return;
-            }
+  function updateA11yToast() {
+    document.getElementById('a11yToast').classList.toggle('show', !!selectedItemId);
+  }
 
-            // Estado de carga
-            exportBtn.disabled = true;
-            exportText.innerText = 'Generando...';
-            exportIcon.setAttribute('data-lucide', 'loader');
-            lucide.createIcons();
-            exportIcon.classList.add('animate-spin');
+  document.addEventListener('click', (e) => {
+    if (selectedItemId && !e.target.closest('.note') && !e.target.closest('.drop-zone') && !e.target.closest('#a11yToast')) {
+      clearSelection();
+    }
+  });
 
-            // Preparar UI para la foto
-            mapBoard.classList.add('is-exporting');
-            pdfTitle.classList.remove('hidden');
+  // ---------------- EXPORTAR (PDF / PNG) ----------------
+  function setButtonLoading(btn, loading, defaultText) {
+    const txt = btn.querySelector('.btn-txt');
+    const icon = btn.querySelector('.btn-icon');
+    btn.disabled = loading;
+    txt.innerText = loading ? 'Generando…' : defaultText;
+    if (icon) {
+      icon.innerHTML = loading
+        ? '<svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+        : icon.dataset.original;
+    }
+  }
 
-            try {
-                const canvas = await html2canvas(mapBoard, {
-                    scale: 2,
-                    useCORS: true,
-                    backgroundColor: '#f1f5f9'
-                });
+  async function captureBoard() {
+    const mapBoard = document.getElementById('mapBoard');
+    mapBoard.classList.add('is-exporting');
+    try {
+      const canvas = await html2canvas(mapBoard, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#fbfcfe'
+      });
+      return canvas;
+    } finally {
+      mapBoard.classList.remove('is-exporting');
+    }
+  }
 
-                const imgData = canvas.toDataURL('image/png');
-                const pdfWidth = canvas.width;
-                const pdfHeight = canvas.height;
+  async function exportToPDF() {
+    if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+      showToastMessage('Las librerías aún no cargan. Intente en un segundo.', true);
+      return;
+    }
+    const btn = document.getElementById('pdfBtn');
+    setButtonLoading(btn, true, 'Exportar PDF');
 
-                const { jsPDF } = window.jspdf;
-                const pdf = new jsPDF({
-                    orientation: pdfWidth > pdfHeight ? 'landscape' : 'portrait',
-                    unit: 'px',
-                    format: [pdfWidth, pdfHeight]
-                });
+    try {
+      const canvas = await captureBoard();
+      const imgData = canvas.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({
+        orientation: canvas.width > canvas.height ? 'landscape' : 'portrait',
+        unit: 'px',
+        format: [canvas.width, canvas.height]
+      });
+      pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+      pdf.save('mi-mapa-de-empatia.pdf');
+      showToastMessage('PDF descargado correctamente');
+    } catch (error) {
+      console.error('Error generando el PDF:', error);
+      showToastMessage('Hubo un error al generar el PDF.', true);
+    } finally {
+      setButtonLoading(btn, false, 'Exportar PDF');
+    }
+  }
 
-                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-                pdf.save('mi-mapa-de-empatia.pdf');
-                showToastMessage("PDF descargado correctamente");
-                
-            } catch (error) {
-                console.error("Error generando el PDF:", error);
-                showToastMessage("Hubo un error al generar el PDF.", true);
-            } finally {
-                // Restaurar UI
-                mapBoard.classList.remove('is-exporting');
-                pdfTitle.classList.add('hidden');
-                
-                exportBtn.disabled = false;
-                exportText.innerText = 'Exportar PDF';
-                exportIcon.setAttribute('data-lucide', 'download');
-                exportIcon.classList.remove('animate-spin');
-                lucide.createIcons();
-            }
-        }
+  async function exportToPNG() {
+    if (typeof html2canvas === 'undefined') {
+      showToastMessage('Las librerías aún no cargan. Intente en un segundo.', true);
+      return;
+    }
+    const btn = document.getElementById('pngBtn');
+    setButtonLoading(btn, true, 'Exportar PNG');
 
-        // ---------------- ARRANQUE ----------------
-        loadData();
-        renderColors();
-        renderNotes();
+    try {
+      const canvas = await captureBoard();
+      const link = document.createElement('a');
+      link.download = 'mi-mapa-de-empatia.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToastMessage('PNG descargado correctamente');
+    } catch (error) {
+      console.error('Error generando el PNG:', error);
+      showToastMessage('Hubo un error al generar el PNG.', true);
+    } finally {
+      setButtonLoading(btn, false, 'Exportar PNG');
+    }
+  }
 
-    </script>
+  // Guardar íconos originales de los botones de exportación
+  document.querySelectorAll('#pdfBtn .btn-icon, #pngBtn .btn-icon').forEach(icon => {
+    icon.dataset.original = icon.innerHTML;
+  });
+
+  // ---------------- ARRANQUE ----------------
+  loadData();
+  renderColors();
+  renderNotes();
+</script>
+
 </body>
 </html>
