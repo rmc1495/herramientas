@@ -1,639 +1,1320 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Creador de PMV</title>
-    <!-- Cargamos Tailwind CSS desde su CDN oficial para evitar instalaciones -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Cargamos Lucide Icons para los iconos -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Cargamos html2canvas y jsPDF para exportar a PDF en 1 sola página perfecta -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    
-    <style>
-        /* Animaciones suaves para las transiciones entre pasos */
-        .fade-in {
-            animation: fadeIn 0.4s ease-out forwards;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Configuración para impresión */
-        @media print {
-            body { background-color: white !important; }
-            .print-hidden { display: none !important; }
-            .print-block { display: block !important; border: none !important; box-shadow: none !important; }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Creador de PMV</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<!-- html2canvas & jsPDF para exportar -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+  /* IMPORTANTE: no usar color-mix() ni oklch() en este archivo.
+     html2canvas 1.4.1 no los soporta y rompe la exportación PNG/PDF. */
+  :root {
+    --bg: #f6f4ff;
+    --surface: #ffffff;
+    --ink: #2d2a45;
+    --soft: #6d6a8a;
+    --muted: #a09dbd;
+    --border: #e6e2f5;
+
+    --violet: #7c3aed;  --violet-d: #5b21b6;  --violet-l: #f1eaff;
+    --pink:   #ec4899;  --pink-d:   #be185d;  --pink-l:   #ffe9f4;
+    --orange: #fb923c;  --orange-d: #ea6c0a;  --orange-l: #fff1e6;
+    --yellow: #fbbf24;  --yellow-d: #d99e06;  --yellow-l: #fff7e0;
+    --green:  #22c55e;  --green-d:  #15803d;  --green-l:  #e9fbef;
+    --teal:   #06b6d4;  --teal-d:   #0e7490;  --teal-l:   #e4f9fd;
+    --blue:   #3b82f6;  --blue-d:   #1d4ed8;  --blue-l:   #eaf2ff;
+    --red:    #ef4444;  --red-d:    #b91c1c;  --red-l:    #ffecec;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    background-image:
+      radial-gradient(circle at 12% 8%, rgba(124,58,237,0.07) 0, transparent 30%),
+      radial-gradient(circle at 88% 20%, rgba(236,72,153,0.07) 0, transparent 30%),
+      radial-gradient(circle at 70% 90%, rgba(6,182,212,0.06) 0, transparent 32%);
+    color: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+  }
+
+  button { font-family: inherit; cursor: pointer; }
+  svg { display: block; flex-shrink: 0; }
+
+  /* ============ HEADER ============ */
+  header {
+    background: rgba(255,255,255,0.9);
+    backdrop-filter: blur(8px);
+    border-bottom: 2px solid var(--border);
+    position: sticky;
+    top: 0;
+    z-index: 30;
+  }
+
+  .header-inner {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 0.9rem 1.4rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .brand { display: flex; align-items: center; gap: 0.8rem; }
+
+  .brand-icon {
+    width: 46px; height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--orange), var(--pink));
+    box-shadow: 0 4px 0 var(--orange-d);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem;
+  }
+
+  .brand h1 {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1.45rem;
+    line-height: 1.1;
+    background: linear-gradient(90deg, var(--orange), var(--pink));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+
+  .brand .sub {
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .step-counter {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--soft);
+  }
+
+  .step-counter b { color: var(--ink); font-size: 0.95rem; }
+
+  .btn-clear {
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 0.45rem 0.85rem;
+    border-radius: 11px;
+    border: 2px solid var(--border);
+    background: #fff;
+    color: var(--soft);
+    box-shadow: 0 3px 0 var(--border);
+    transition: all 0.15s;
+  }
+
+  .btn-clear:hover { border-color: #ffc9c9; color: var(--red); box-shadow: 0 3px 0 #ffc9c9; }
+  .btn-clear:active { transform: translateY(3px); box-shadow: none; }
+
+  /* barra de progreso */
+  .progress-track { height: 6px; background: var(--border); }
+
+  #progressBar {
+    height: 6px;
+    background: linear-gradient(90deg, var(--orange), var(--pink), var(--violet));
+    border-radius: 0 4px 4px 0;
+    transition: width 0.35s ease;
+  }
+
+  /* ============ LAYOUT ============ */
+  main {
+    max-width: 980px;
+    margin: 0 auto;
+    padding: 2rem 1.4rem 3rem;
+  }
+
+  /* ============ INDICADORES DE PASOS ============ */
+  .steps-bar {
+    display: flex;
+    justify-content: space-between;
+    position: relative;
+    margin-bottom: 2.2rem;
+  }
+
+  .steps-bar::before {
+    content: '';
+    position: absolute;
+    top: 22px; left: 32px; right: 32px;
+    border-top: 3px dotted #d9d4ee;
+    z-index: 0;
+  }
+
+  .step-dot {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.45rem;
+    z-index: 1;
+    width: 72px;
+  }
+
+  .step-dot .circle {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    background: #fff;
+    border: 2px solid var(--border);
+    box-shadow: 0 3px 0 var(--border);
+    color: var(--muted);
+    transition: all 0.2s;
+  }
+
+  .step-dot .lbl {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+    text-align: center;
+    transition: color 0.2s;
+  }
+
+  .step-dot.active .circle {
+    background: linear-gradient(135deg, var(--violet), var(--pink));
+    border-color: transparent;
+    box-shadow: 0 4px 0 var(--violet-d);
+    color: #fff;
+    transform: scale(1.1);
+  }
+
+  .step-dot.active .lbl { color: var(--violet); }
+
+  .step-dot.done .circle {
+    background: var(--green-l);
+    border-color: var(--green);
+    box-shadow: 0 3px 0 var(--green);
+    color: var(--green-d);
+  }
+
+  .step-dot.done .lbl { color: var(--green-d); }
+
+  @media (max-width: 640px) { .steps-bar { display: none; } }
+
+  /* ============ PANEL PRINCIPAL ============ */
+  .panel {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: 24px;
+    box-shadow: 0 8px 0 var(--border);
+    overflow: hidden;
+  }
+
+  .panel-body { padding: 2rem 2.2rem; }
+
+  @media (max-width: 640px) { .panel-body { padding: 1.4rem 1.2rem; } }
+
+  .step-container { animation: fadeIn 0.4s ease-out; }
+  .step-container.hidden { display: none; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .step-eyebrow {
+    display: inline-block;
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--sa, var(--soft));
+    background: var(--sl, var(--bg));
+    padding: 0.3rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 0.7rem;
+  }
+
+  h2 {
+    font-family: 'Baloo 2', sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    line-height: 1.2;
+    margin-bottom: 0.35rem;
+  }
+
+  .step-intro {
+    color: var(--soft);
+    font-size: 0.92rem;
+    font-weight: 600;
+    line-height: 1.65;
+    margin-bottom: 1.6rem;
+  }
+
+  .step-intro strong { color: var(--ink); }
+
+  /* ============ TÉCNICAS (PASO 1) ============ */
+  h3.section-title {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.08rem;
+    font-weight: 700;
+    margin: 1.6rem 0 1rem;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1.2rem;
+  }
+
+  @media (max-width: 640px) { .tech-grid { grid-template-columns: 1fr; } }
+
+  .tech-card {
+    background: var(--tl);
+    border: 2px solid var(--tb);
+    border-radius: 18px;
+    padding: 1.1rem;
+    box-shadow: 0 4px 0 var(--tb);
+  }
+
+  .tech-card h4 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: var(--td);
+    margin-bottom: 0.45rem;
+  }
+
+  .tech-card p {
+    font-size: 0.82rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #4a4668;
+  }
+
+  .tech-card p em { color: var(--td); font-style: italic; }
+
+  /* ============ FORMULARIOS ============ */
+  .field { margin-bottom: 1.2rem; }
+
+  .field label {
+    display: block;
+    font-weight: 800;
+    font-size: 0.9rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .field .hint {
+    font-size: 0.76rem;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 0.45rem;
+  }
+
+  .field input[type="text"], .field textarea {
+    width: 100%;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    padding: 0.75rem 0.9rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+    resize: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .field input:focus, .field textarea:focus {
+    border-color: var(--violet);
+    background: #fff;
+  }
+
+  /* ============ BOTONES ============ */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.45rem;
+    font-size: 0.85rem;
+    font-weight: 800;
+    padding: 0.65rem 1.1rem;
+    border-radius: 14px;
+    border: none;
+    color: #fff;
+    transition: transform 0.1s, box-shadow 0.1s, filter 0.15s, opacity 0.15s;
+    white-space: nowrap;
+  }
+
+  .btn:hover:not(:disabled) { filter: brightness(1.06); }
+  .btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent !important; }
+  .btn:disabled { opacity: 0.55; cursor: not-allowed; }
+
+  .btn-esencial { background: var(--green);  box-shadow: 0 4px 0 var(--green-d); }
+  .btn-futuro   { background: var(--soft);   box-shadow: 0 4px 0 #4a4668; }
+  .btn-primary  { background: linear-gradient(135deg, var(--violet), var(--pink)); box-shadow: 0 4px 0 var(--violet-d); }
+  .btn-pdf      { background: var(--green);  box-shadow: 0 4px 0 var(--green-d); }
+  .btn-png      { background: var(--violet); box-shadow: 0 4px 0 var(--violet-d); }
+  .btn-restart  { background: var(--teal);   box-shadow: 0 4px 0 var(--teal-d); }
+
+  .btn-nav-prev {
+    background: #fff;
+    color: var(--soft);
+    border: 2px solid var(--border);
+    box-shadow: 0 4px 0 var(--border);
+  }
+
+  .btn-nav-prev:disabled { box-shadow: none; color: var(--muted); }
+
+  .spin { animation: spin 0.9s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ============ FUNCIONALIDADES (PASO 4) ============ */
+  .feature-input-row { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+  .feature-input-row input {
+    flex: 1;
+    min-width: 220px;
+    border: 2px solid var(--border);
+    border-radius: 14px;
+    background: var(--bg);
+    padding: 0.75rem 0.9rem;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    outline: none;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .feature-input-row input:focus { border-color: var(--violet); background: #fff; }
+
+  #featuresList { margin-top: 1.4rem; display: flex; flex-direction: column; gap: 0.65rem; }
+
+  .feature-empty {
+    text-align: center;
+    padding: 2.2rem 1rem;
+    border: 2px dashed #d9d4ee;
+    border-radius: 16px;
+    color: var(--muted);
+    font-size: 0.85rem;
+    font-weight: 600;
+    line-height: 1.6;
+  }
+
+  .feature-item {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding: 0.75rem 0.95rem;
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 16px;
+    box-shadow: 0 3px 0 var(--fl);
+    transition: transform 0.15s;
+  }
+
+  .feature-item:hover { transform: translateX(3px); }
+
+  .feature-item .txt {
+    flex: 1;
+    font-size: 0.9rem;
+    font-weight: 700;
+    word-break: break-word;
+  }
+
+  .feature-toggle {
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    border-radius: 999px;
+    border: none;
+    background: var(--fl);
+    color: var(--fd);
+    box-shadow: 0 2px 0 var(--fa);
+    transition: transform 0.1s, box-shadow 0.1s;
+    white-space: nowrap;
+  }
+
+  .feature-toggle:active { transform: translateY(2px); box-shadow: none; }
+
+  .feature-del {
+    background: none;
+    border: none;
+    color: var(--muted);
+    padding: 0.35rem;
+    border-radius: 8px;
+    transition: color 0.15s, background 0.15s;
+  }
+
+  .feature-del:hover { color: var(--red); background: var(--red-l); }
+
+  /* ============ CANVAS FINAL (PASO 6) ============ */
+  .canvas-header-row {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.4rem;
+  }
+
+  .export-btns { display: flex; gap: 0.6rem; flex-wrap: wrap; }
+
+  #canvas-content {
+    background: #ffffff;
+    border: 2px solid var(--border);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 8px 0 var(--border);
+  }
+
+  .canvas-head {
+    background: linear-gradient(120deg, #7c3aed, #ec4899 55%, #fb923c);
+    color: #fff;
+    padding: 1.4rem 1.6rem;
+  }
+
+  .canvas-head h3 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.45rem;
+    font-weight: 800;
+    line-height: 1.2;
+    word-break: break-word;
+  }
+
+  .canvas-head p {
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.8);
+    margin-top: 0.3rem;
+  }
+
+  .canvas-cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  @media (max-width: 760px) { .canvas-cols { grid-template-columns: 1fr; } }
+
+  .canvas-col { padding: 1.3rem; }
+  .canvas-col + .canvas-col { border-left: 2px dashed var(--border); }
+
+  @media (max-width: 760px) {
+    .canvas-col + .canvas-col { border-left: none; border-top: 2px dashed var(--border); }
+  }
+
+  .canvas-col.highlight { background: #faf7ff; }
+
+  .canvas-block + .canvas-block { margin-top: 1.4rem; }
+
+  .canvas-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.62rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--bd);
+    background: var(--bl);
+    padding: 0.28rem 0.7rem;
+    border-radius: 999px;
+    margin-bottom: 0.6rem;
+  }
+
+  .canvas-block p, .canvas-block li {
+    font-size: 0.86rem;
+    font-weight: 600;
+    line-height: 1.6;
+    color: #3b3760;
+    word-break: break-word;
+  }
+
+  .canvas-block p.placeholder,
+  .canvas-block li.placeholder {
+    color: var(--muted);
+    font-style: italic;
+    font-weight: 500;
+  }
+
+  .canvas-feats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 2px dashed var(--border);
+  }
+
+  @media (max-width: 760px) { .canvas-feats { grid-template-columns: 1fr; } }
+
+  .canvas-feat-col { padding: 1.3rem; }
+  .canvas-feat-col.mvp { background: #f4fdf7; }
+  .canvas-feat-col.post { background: #f8f7fd; border-left: 2px dashed var(--border); }
+
+  @media (max-width: 760px) {
+    .canvas-feat-col.post { border-left: none; border-top: 2px dashed var(--border); }
+  }
+
+  .canvas-feat-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.45rem; }
+
+  .canvas-feat-col ul li:not(.placeholder) {
+    position: relative;
+    padding-left: 1.2rem;
+  }
+
+  .canvas-feat-col ul li:not(.placeholder)::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0.42em;
+    width: 9px; height: 9px;
+    border-radius: 50%;
+    background: var(--bd);
+  }
+
+  /* ============ NAVEGACIÓN INFERIOR ============ */
+  .panel-footer {
+    background: #faf9ff;
+    border-top: 2px dashed var(--border);
+    padding: 1.2rem 2.2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.8rem;
+  }
+
+  @media (max-width: 640px) { .panel-footer { padding: 1rem 1.2rem; } }
+
+  /* ============ MODAL ============ */
+  .modal-backdrop {
+    position: fixed; inset: 0;
+    background: rgba(45, 42, 69, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    opacity: 0;
+    transition: opacity 0.25s;
+  }
+
+  .modal-backdrop.open { display: flex; }
+  .modal-backdrop.visible { opacity: 1; }
+
+  .modal-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 22px;
+    box-shadow: 0 8px 0 var(--border);
+    padding: 1.5rem;
+    width: 100%;
+    max-width: 380px;
+    transform: scale(0.94);
+    transition: transform 0.25s;
+  }
+
+  .modal-backdrop.visible .modal-card { transform: scale(1); }
+
+  .modal-card h3 {
+    font-family: 'Baloo 2', sans-serif;
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 0.4rem;
+  }
+
+  .modal-card p {
+    font-size: 0.87rem;
+    font-weight: 600;
+    color: var(--soft);
+    line-height: 1.6;
+    margin-bottom: 1.3rem;
+  }
+
+  .modal-actions { display: flex; justify-content: flex-end; gap: 0.6rem; }
+
+  .btn-ghost {
+    font-size: 0.83rem; font-weight: 800;
+    padding: 0.55rem 1rem;
+    border-radius: 12px;
+    border: none;
+    background: transparent;
+    color: var(--soft);
+    transition: background 0.15s;
+  }
+
+  .btn-ghost:hover { background: var(--bg); }
+
+  .btn-confirm {
+    font-size: 0.83rem; font-weight: 800;
+    padding: 0.55rem 1rem;
+    border-radius: 12px;
+    border: none;
+    background: var(--red);
+    color: #fff;
+    box-shadow: 0 4px 0 var(--red-d);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+
+  .btn-confirm:active { transform: translateY(4px); box-shadow: none; }
+
+  /* ============ TOASTS ============ */
+  #toastContainer {
+    position: fixed;
+    top: 88px; right: 1.4rem;
+    z-index: 90;
+    display: flex; flex-direction: column; gap: 0.5rem;
+  }
+
+  .toast {
+    background: var(--ink);
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 700;
+    padding: 0.7rem 1.1rem;
+    border-radius: 14px;
+    box-shadow: 0 5px 0 rgba(45,42,69,0.25);
+    transform: translateX(30px);
+    opacity: 0;
+    transition: all 0.3s;
+  }
+
+  .toast.error { background: var(--red); box-shadow: 0 5px 0 var(--red-d); }
+  .toast.show { transform: translateX(0); opacity: 1; }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition: none !important; animation: none !important; }
+  }
+</style>
 </head>
-<body class="min-h-screen bg-slate-50 text-slate-800 font-sans selection:bg-indigo-100 selection:text-indigo-900">
+<body>
 
-    <!-- Navbar -->
-    <header class="bg-white border-b border-slate-200 sticky top-0 z-10 print-hidden">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-            <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 p-2 rounded-lg text-white">
-                    <i data-lucide="lightbulb" class="w-6 h-6"></i>
-                </div>
-                <h1 class="text-xl font-bold text-slate-900">Creador de PMV</h1>
-            </div>
-            <div class="text-sm font-medium text-slate-500">
-                Paso <span id="currentStepText">1</span> de 6
-            </div>
+  <!-- Modal de confirmación -->
+  <div id="confirmModal" class="modal-backdrop">
+    <div class="modal-card">
+      <h3>¿Borrar todo?</h3>
+      <p>Se eliminarán todas las respuestas y funcionalidades guardadas, y volverá al paso 1. Esta acción no se puede deshacer.</p>
+      <div class="modal-actions">
+        <button class="btn-ghost" onclick="closeConfirmModal()">Cancelar</button>
+        <button class="btn-confirm" onclick="confirmClear()">Sí, borrar</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toastContainer"></div>
+
+  <header>
+    <div class="header-inner">
+      <div class="brand">
+        <div class="brand-icon">🚀</div>
+        <div>
+          <h1>Creador de PMV</h1>
+          <p class="sub">Lean Startup · PEI</p>
         </div>
-        
-        <!-- Progress bar -->
-        <div class="w-full bg-slate-100 h-1">
-            <div id="progressBar" class="bg-indigo-600 h-1 transition-all duration-300 ease-out" style="width: 16.6%;"></div>
+      </div>
+      <div class="step-counter">
+        <span>Paso <b id="currentStepText">1</b> / 6</span>
+        <button class="btn-clear" onclick="openConfirmModal()">Borrar todo</button>
+      </div>
+    </div>
+    <div class="progress-track"><div id="progressBar" style="width: 16.6%;"></div></div>
+  </header>
+
+  <main>
+
+    <!-- Indicadores de pasos -->
+    <div class="steps-bar" id="stepsBar">
+      <div class="step-dot" data-step="1">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
+        <span class="lbl">Introducción</span>
+      </div>
+      <div class="step-dot" data-step="2">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
+        <span class="lbl">El problema</span>
+      </div>
+      <div class="step-dot" data-step="3">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.7 1.3 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg></div>
+        <span class="lbl">La solución</span>
+      </div>
+      <div class="step-dot" data-step="4">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="6" height="6" rx="1"/><path d="m3 17 2 2 4-4"/><line x1="13" y1="6" x2="21" y2="6"/><line x1="13" y1="12" x2="21" y2="12"/><line x1="13" y1="18" x2="21" y2="18"/></svg></div>
+        <span class="lbl">Funcionalidades</span>
+      </div>
+      <div class="step-dot" data-step="5">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg></div>
+        <span class="lbl">Métricas</span>
+      </div>
+      <div class="step-dot" data-step="6">
+        <div class="circle"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg></div>
+        <span class="lbl">Canvas PMV</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-body">
+
+        <!-- PASO 1: INTRODUCCIÓN -->
+        <div id="step-1" class="step-container" style="--sa:#1d4ed8; --sl:#eaf2ff">
+          <span class="step-eyebrow">Paso 1 · Conceptos</span>
+          <h2>¿Qué es un Producto Mínimo Viable?</h2>
+          <p class="step-intro">
+            El PMV (o MVP en inglés) es la versión <strong>más básica</strong> de su producto, la cual le permite aprender de usuarios reales con el mínimo esfuerzo posible. No se trata de crear un producto defectuoso o a medias, sino de enfocarse únicamente en la funcionalidad central que resuelve el problema de su cliente para comprobar si el mercado realmente lo necesita (validación).
+          </p>
+
+          <h3 class="section-title">Técnicas para lanzar un PMV sin desarrollar tecnología excesiva</h3>
+
+          <div class="tech-grid">
+            <div class="tech-card" style="--tl:#eaf2ff; --tb:#c7dcfb; --td:#1d4ed8">
+              <h4>🚪 Puerta Falsa (Fake Door)</h4>
+              <p>Consiste en crear una página web anunciando el producto como si ya existiera. Se añade un botón de "Comprar" o "Suscribirse". Si el usuario hace clic, se le muestra un mensaje: <em>"Estamos en desarrollo, deje su correo y le avisaremos"</em>. Sirve para medir interés real.</p>
+            </div>
+            <div class="tech-card" style="--tl:#e9fbef; --tb:#bfeccd; --td:#15803d">
+              <h4>🛎️ Conserje (Concierge)</h4>
+              <p>En lugar de crear tecnología, se ofrece el servicio de forma manual y altamente personalizada a unos pocos clientes. Permite aprender qué necesitan y cómo interactúan antes de invertir en automatizar los procesos.</p>
+            </div>
+            <div class="tech-card" style="--tl:#fff7e0; --tb:#f5e3ab; --td:#b45309">
+              <h4>🪄 Mago de Oz</h4>
+              <p>La interfaz para el usuario parece un sistema 100% automático y tecnológico, pero detrás de la cortina, es usted o su equipo realizando el trabajo manualmente para validar si el modelo de negocio es viable.</p>
+            </div>
+            <div class="tech-card" style="--tl:#ffe9f4; --tb:#f8c6de; --td:#be185d">
+              <h4>🧩 A retazos (Piecemeal)</h4>
+              <p>Implica utilizar herramientas gratuitas o de bajo costo que ya existen (WhatsApp, Google Forms, Typeform, Zapier) y conectarlas para simular la funcionalidad de su producto final sin necesidad de programar.</p>
+            </div>
+          </div>
         </div>
-    </header>
 
-    <main class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Indicador de pasos visual -->
-        <div class="hidden sm:flex justify-between mb-12 relative print-hidden">
-            <div class="absolute top-1/2 left-0 w-full h-0.5 bg-slate-200 -z-10 -translate-y-1/2"></div>
-            
-            <!-- Paso 1 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-1" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200">
-                    <i data-lucide="book-open" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-1" class="text-xs font-medium text-indigo-900">Introducción</span>
-            </div>
+        <!-- PASO 2: PROBLEMA -->
+        <div id="step-2" class="step-container hidden" style="--sa:#0e7490; --sl:#e4f9fd">
+          <span class="step-eyebrow">Paso 2 · Contexto</span>
+          <h2>Definición del contexto</h2>
+          <p class="step-intro">Todo gran producto comienza entendiendo un problema real.</p>
 
-            <!-- Paso 2 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-2" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="target" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-2" class="text-xs font-medium text-slate-400">El Problema</span>
-            </div>
-            
-            <!-- Paso 3 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-3" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="lightbulb" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-3" class="text-xs font-medium text-slate-400">La Solución</span>
-            </div>
-
-            <!-- Paso 4 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-4" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="list-todo" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-4" class="text-xs font-medium text-slate-400">Funcionalidades</span>
-            </div>
-
-            <!-- Paso 5 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-5" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="line-chart" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-5" class="text-xs font-medium text-slate-400">Métricas</span>
-            </div>
-
-            <!-- Paso 6 -->
-            <div class="flex flex-col items-center gap-2 bg-slate-50 px-2">
-                <div id="indicator-6" class="w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400">
-                    <i data-lucide="layout-template" class="w-5 h-5"></i>
-                </div>
-                <span id="indicator-text-6" class="text-xs font-medium text-slate-400">Canvas PMV</span>
-            </div>
+          <div class="field">
+            <label for="projectName">Nombre del proyecto (opcional)</label>
+            <input type="text" id="projectName" data-persist placeholder="Ej. EcoDelivery">
+          </div>
+          <div class="field">
+            <label for="problem">¿Qué problema está resolviendo?</label>
+            <textarea id="problem" data-persist rows="3" placeholder="Ej. Las personas quieren comer saludable pero no tienen tiempo para cocinar o buscar restaurantes sanos cerca."></textarea>
+          </div>
+          <div class="field">
+            <label for="audience">¿Quién es su público objetivo?</label>
+            <input type="text" id="audience" data-persist placeholder="Ej. Profesionales de 25-40 años que trabajan en oficinas">
+          </div>
         </div>
 
-        <!-- Contenedor Principal del Formulario -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-8 print-block">
-            <div class="p-6 sm:p-10">
-                
-                <!-- PASO 1: INTRODUCCIÓN -->
-                <div id="step-1" class="step-container space-y-6 fade-in">
-                    <div class="border-b border-slate-100 pb-6">
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">¿Qué es un Producto Mínimo Viable (PMV)?</h2>
-                        <p class="text-slate-600 leading-relaxed">
-                            El PMV (o MVP en inglés) es la versión <strong>más básica</strong> de su producto, la cual le permite aprender de usuarios reales con el mínimo esfuerzo posible. No se trata de crear un producto defectuoso o a medias, sino de enfocarse únicamente en la funcionalidad central que resuelve el problema de su cliente para comprobar si el mercado realmente lo necesita (validación).
-                        </p>
-                    </div>
+        <!-- PASO 3: SOLUCIÓN -->
+        <div id="step-3" class="step-container hidden" style="--sa:#b45309; --sl:#fff7e0">
+          <span class="step-eyebrow">Paso 3 · Propuesta</span>
+          <h2>Su solución</h2>
+          <p class="step-intro">¿Cómo mejorará la vida de sus usuarios?</p>
 
-                    <div>
-                        <h3 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
-                            <i data-lucide="sparkles" class="w-5 h-5 text-indigo-500"></i>
-                            Técnicas comunes para lanzar un PMV sin desarrollar tecnología excesiva:
-                        </h3>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <!-- Tecnica 1 -->
-                            <div class="bg-indigo-50 border border-indigo-100 p-4 rounded-xl">
-                                <h4 class="font-bold text-indigo-900 flex items-center gap-2 mb-2">
-                                    <i data-lucide="door-open" class="w-4 h-4"></i> Puerta Falsa (Fake Door)
-                                </h4>
-                                <p class="text-sm text-indigo-800">
-                                    Consiste en crear una página web anunciando el producto como si ya existiera. Se añade un botón de "Comprar" o "Suscribirse". Si el usuario hace clic, se le muestra un mensaje: <em>"Estamos en desarrollo, deje su correo y le avisaremos"</em>. Sirve para medir interés real.
-                                </p>
-                            </div>
-                            
-                            <!-- Tecnica 2 -->
-                            <div class="bg-emerald-50 border border-emerald-100 p-4 rounded-xl">
-                                <h4 class="font-bold text-emerald-900 flex items-center gap-2 mb-2">
-                                    <i data-lucide="user-check" class="w-4 h-4"></i> Conserje (Concierge)
-                                </h4>
-                                <p class="text-sm text-emerald-800">
-                                    En lugar de crear tecnología, se ofrece el servicio de forma manual y altamente personalizada a unos pocos clientes. Permite aprender qué necesitan y cómo interactúan antes de invertir en automatizar los procesos.
-                                </p>
-                            </div>
-
-                            <!-- Tecnica 3 -->
-                            <div class="bg-amber-50 border border-amber-100 p-4 rounded-xl">
-                                <h4 class="font-bold text-amber-900 flex items-center gap-2 mb-2">
-                                    <i data-lucide="wand-2" class="w-4 h-4"></i> Mago de Oz
-                                </h4>
-                                <p class="text-sm text-amber-800">
-                                    La interfaz para el usuario parece un sistema 100% automático y tecnológico, pero detrás de la cortina, es usted o su equipo realizando el trabajo manualmente para validar si el modelo de negocio es viable.
-                                </p>
-                            </div>
-
-                            <!-- Tecnica 4 -->
-                            <div class="bg-rose-50 border border-rose-100 p-4 rounded-xl">
-                                <h4 class="font-bold text-rose-900 flex items-center gap-2 mb-2">
-                                    <i data-lucide="puzzle" class="w-4 h-4"></i> A retazos (Piecemeal)
-                                </h4>
-                                <p class="text-sm text-rose-800">
-                                    Implica utilizar herramientas gratuitas o de bajo costo que ya existen (WhatsApp, Google Forms, Typeform, Zapier) y conectarlas para simular la funcionalidad de su producto final sin necesidad de programar.
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 2 -->
-                <div id="step-2" class="step-container space-y-6 fade-in hidden">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Definición del contexto</h2>
-                        <p class="text-slate-500">Todo gran producto comienza entendiendo un problema real.</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Nombre del Proyecto (opcional)</label>
-                            <input type="text" id="projectName" placeholder="Ej. EcoDelivery" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Qué problema está resolviendo?</label>
-                            <textarea id="problem" rows="3" placeholder="Ej. Las personas quieren comer saludable pero no tienen tiempo para cocinar o buscar restaurantes sanos cerca." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">¿Quién es su público objetivo?</label>
-                            <input type="text" id="audience" placeholder="Ej. Profesionales de 25-40 años que trabajan en oficinas" class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 3 -->
-                <div id="step-3" class="step-container space-y-6 fade-in hidden">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Su Solución</h2>
-                        <p class="text-slate-500">¿Cómo mejorará la vida de sus usuarios?</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Propuesta de Valor Única</label>
-                            <p class="text-xs text-slate-500 mb-2">En una frase, ¿por qué deberían elegir su solución?</p>
-                            <textarea id="valueProp" rows="3" placeholder="Ej. Entregamos comida casera y saludable en menos de 30 minutos a la oficina." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">Alternativas Actuales</label>
-                            <p class="text-xs text-slate-500 mb-2">¿Cómo resuelven este problema actualmente los usuarios?</p>
-                            <textarea id="alternatives" rows="2" placeholder="Ej. Apps tradicionales de delivery (comida rápida), llevar recipiente térmico desde casa." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 4 -->
-                <div id="step-4" class="step-container space-y-6 fade-in hidden">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Priorización de Funcionalidades</h2>
-                        <p class="text-slate-500">Anote todas sus ideas y luego decida qué es esencial para lanzar el PMV y qué puede posponerse (Post-PMV).</p>
-                    </div>
-                    
-                    <div class="flex flex-col sm:flex-row gap-2">
-                        <input type="text" id="newFeature" placeholder="Ej. Sistema de pagos con tarjeta..." class="flex-1 px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all">
-                        <div class="flex gap-2">
-                            <button type="button" onclick="addFeatureUI(true)" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm whitespace-nowrap" title="Añadir a funcionalidades esenciales">
-                                <i data-lucide="check-circle" class="w-5 h-5 mr-1"></i> Esencial
-                            </button>
-                            <button type="button" onclick="addFeatureUI(false)" class="bg-slate-600 hover:bg-slate-700 text-white px-4 py-3 rounded-lg flex items-center justify-center transition-colors shadow-sm whitespace-nowrap" title="Añadir para el futuro">
-                                <i data-lucide="list-todo" class="w-5 h-5 mr-1"></i> Futuro
-                            </button>
-                        </div>
-                    </div>
-
-                    <div id="featuresList" class="mt-6 space-y-3">
-                        <!-- Las funcionalidades se inyectarán aquí con JavaScript -->
-                        <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
-                            <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
-                            <p>Aún no ha añadido funcionalidades.</p>
-                            <p class="text-sm mt-1">Comience a escribir en la parte superior.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 5 -->
-                <div id="step-5" class="step-container space-y-6 fade-in hidden">
-                    <div>
-                        <h2 class="text-2xl font-bold text-slate-900 mb-2">Métricas de Éxito</h2>
-                        <p class="text-slate-500">¿Cómo comprobará si el PMV ha validado su idea inicial?</p>
-                    </div>
-                    <div class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-semibold text-slate-700 mb-1">KPIs o Métricas Clave</label>
-                            <p class="text-xs text-slate-500 mb-2">Seleccione 1 o 2 métricas accionables (Ej. Tasa de conversión, Retención, Entrevistas completadas).</p>
-                            <textarea id="metrics" rows="4" placeholder="Ej. Conseguir 50 pedidos pagados en la primera semana. Lograr que el 20% de los usuarios repita un pedido." class="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-600 focus:border-indigo-600 outline-none transition-all resize-none"></textarea>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- PASO 6: CANvAS -->
-                <div id="step-6" class="step-container space-y-6 fade-in hidden">
-                    <div class="flex justify-between items-end print-hidden">
-                        <div>
-                            <h2 class="text-2xl font-bold text-slate-900 mb-2">Canvas del PMV</h2>
-                            <p class="text-slate-500">A continuación, se presenta el resumen estratégico de su Producto Mínimo Viable.</p>
-                        </div>
-                        <button id="btnExport" onclick="exportPDF()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium">
-                            <i data-lucide="download" class="w-4 h-4"></i> Descargar PDF
-                        </button>
-                    </div>
-
-                    <!-- El Canvas en sí -->
-                    <div id="canvas-content" class="border-2 border-slate-800 rounded-xl overflow-hidden bg-white">
-                        
-                        <!-- Header Canvas -->
-                        <div class="bg-slate-800 text-white p-4">
-                            <h3 id="canvas-projectName" class="text-xl font-bold uppercase tracking-wide">Proyecto Sin Nombre</h3>
-                            <p class="text-slate-300 text-sm mt-1">Documento de Definición de Producto Mínimo Viable</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
-                            <!-- Col 1 -->
-                            <div class="border-b lg:border-b-0 lg:border-r border-slate-200 p-5">
-                                <div class="mb-6">
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i data-lucide="target" class="w-3.5 h-3.5"></i> El Problema
-                                    </h4>
-                                    <p id="canvas-problem" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
-                                </div>
-                                <div>
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i data-lucide="target" class="w-3.5 h-3.5"></i> Público Objetivo
-                                    </h4>
-                                    <p id="canvas-audience" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
-                                </div>
-                            </div>
-
-                            <!-- Col 2 -->
-                            <div class="border-b lg:border-b-0 lg:border-r border-slate-200 p-5 bg-slate-50/50">
-                                <div class="mb-6">
-                                    <h4 class="text-xs font-bold text-indigo-500 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i data-lucide="lightbulb" class="w-3.5 h-3.5"></i> Propuesta de Valor
-                                    </h4>
-                                    <p id="canvas-valueProp" class="text-slate-900 font-medium text-sm leading-relaxed text-slate-300 italic font-normal">No especificado</p>
-                                </div>
-                                <div>
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
-                                        Alternativas Actuales
-                                    </h4>
-                                    <p id="canvas-alternatives" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificado</p>
-                                </div>
-                            </div>
-
-                            <!-- Col 3 -->
-                            <div class="p-5 flex flex-col justify-between">
-                                <div>
-                                    <h4 class="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 flex items-center gap-2">
-                                        <i data-lucide="line-chart" class="w-3.5 h-3.5"></i> Métricas de Éxito
-                                    </h4>
-                                    <p id="canvas-metrics" class="text-slate-800 text-sm leading-relaxed text-slate-300 italic">No especificadas</p>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Fila Inferior (Full Width) para Funcionalidades -->
-                        <div class="border-t border-slate-200 grid grid-cols-1 md:grid-cols-2">
-                            <div class="border-b md:border-b-0 md:border-r border-slate-200 p-5 bg-emerald-50/30">
-                                <h4 class="text-xs font-bold text-emerald-600 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Esencial para el PMV (Alcance)
-                                </h4>
-                                <ul id="canvas-mvp-list" class="list-disc list-inside text-sm text-slate-800 space-y-1">
-                                    <li class="text-slate-400 italic list-none">Ninguna funcionalidad definida</li>
-                                </ul>
-                            </div>
-                            
-                            <div class="p-5 bg-slate-50">
-                                <h4 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-3 flex items-center gap-2">
-                                    <i data-lucide="list-todo" class="w-3.5 h-3.5"></i> Post-PMV (Para el futuro)
-                                </h4>
-                                <ul id="canvas-post-mvp-list" class="list-disc list-inside text-sm text-slate-600 space-y-1">
-                                    <li class="text-slate-400 italic list-none">Ninguna funcionalidad en espera</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-            </div>
-            
-            <!-- Footer Navigation Print:hidden -->
-            <div class="bg-slate-50 p-6 border-t border-slate-200 flex justify-between items-center print-hidden">
-                <button id="btnPrev" disabled class="flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-400 cursor-not-allowed opacity-50">
-                    <i data-lucide="chevron-left" class="w-4 h-4"></i> Anterior
-                </button>
-                
-                <button id="btnNext" class="flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-indigo-600 hover:bg-indigo-700 text-white transition-colors shadow-sm">
-                    Siguiente <i data-lucide="chevron-right" class="w-4 h-4"></i>
-                </button>
-
-                <button id="btnRestart" class="hidden flex items-center gap-2 px-6 py-2.5 rounded-lg font-medium bg-emerald-600 hover:bg-emerald-700 text-white transition-colors shadow-sm">
-                    Volver al inicio
-                </button>
-            </div>
+          <div class="field">
+            <label for="valueProp">Propuesta de valor única</label>
+            <p class="hint">En una frase, ¿por qué deberían elegir su solución?</p>
+            <textarea id="valueProp" data-persist rows="3" placeholder="Ej. Entregamos comida casera y saludable en menos de 30 minutos a la oficina."></textarea>
+          </div>
+          <div class="field">
+            <label for="alternatives">Alternativas actuales</label>
+            <p class="hint">¿Cómo resuelven este problema actualmente los usuarios?</p>
+            <textarea id="alternatives" data-persist rows="2" placeholder="Ej. Apps tradicionales de delivery (comida rápida), llevar recipiente térmico desde casa."></textarea>
+          </div>
         </div>
-    </main>
 
-    <!-- Script Principal con la lógica de la App -->
-    <script>
-        // Inicializar iconos de Lucide
-        lucide.createIcons();
+        <!-- PASO 4: FUNCIONALIDADES -->
+        <div id="step-4" class="step-container hidden" style="--sa:#5b21b6; --sl:#f1eaff">
+          <span class="step-eyebrow">Paso 4 · Alcance</span>
+          <h2>Priorización de funcionalidades</h2>
+          <p class="step-intro">Anote todas sus ideas y luego decida qué es esencial para lanzar el PMV y qué puede posponerse (Post-PMV).</p>
 
-        // Estado de la aplicación
-        let currentStep = 1;
-        const totalSteps = 6;
-        let features = [];
+          <div class="feature-input-row">
+            <input type="text" id="newFeature" placeholder="Ej. Sistema de pagos con tarjeta…">
+            <button type="button" class="btn btn-esencial" onclick="addFeatureUI(true)" title="Añadir a funcionalidades esenciales">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              Esencial
+            </button>
+            <button type="button" class="btn btn-futuro" onclick="addFeatureUI(false)" title="Añadir para el futuro">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              Futuro
+            </button>
+          </div>
 
-        // Referencias al DOM
-        const btnNext = document.getElementById('btnNext');
-        const btnPrev = document.getElementById('btnPrev');
-        const btnRestart = document.getElementById('btnRestart');
-        const progressBar = document.getElementById('progressBar');
-        const currentStepText = document.getElementById('currentStepText');
+          <div id="featuresList"></div>
+        </div>
 
-        // Eventos de Navegación
-        btnNext.addEventListener('click', () => {
-            if (currentStep < totalSteps) {
-                currentStep++;
-                updateUI();
-            }
+        <!-- PASO 5: MÉTRICAS -->
+        <div id="step-5" class="step-container hidden" style="--sa:#be185d; --sl:#ffe9f4">
+          <span class="step-eyebrow">Paso 5 · Validación</span>
+          <h2>Métricas de éxito</h2>
+          <p class="step-intro">¿Cómo comprobará si el PMV ha validado su idea inicial?</p>
+
+          <div class="field">
+            <label for="metrics">KPIs o métricas clave</label>
+            <p class="hint">Seleccione 1 o 2 métricas accionables (Ej. tasa de conversión, retención, entrevistas completadas).</p>
+            <textarea id="metrics" data-persist rows="4" placeholder="Ej. Conseguir 50 pedidos pagados en la primera semana. Lograr que el 20% de los usuarios repita un pedido."></textarea>
+          </div>
+        </div>
+
+        <!-- PASO 6: CANVAS -->
+        <div id="step-6" class="step-container hidden" style="--sa:#15803d; --sl:#e9fbef">
+          <div class="canvas-header-row">
+            <div>
+              <span class="step-eyebrow">Paso 6 · Resumen</span>
+              <h2>Canvas del PMV</h2>
+              <p class="step-intro" style="margin-bottom: 0;">El resumen estratégico de su Producto Mínimo Viable.</p>
+            </div>
+            <div class="export-btns">
+              <button id="pngBtn" class="btn btn-png" onclick="exportPNG()">
+                <span class="btn-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+                <span class="btn-txt">PNG</span>
+              </button>
+              <button id="pdfBtn" class="btn btn-pdf" onclick="exportPDF()">
+                <span class="btn-icon"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+                <span class="btn-txt">PDF</span>
+              </button>
+            </div>
+          </div>
+
+          <div id="canvas-content">
+            <div class="canvas-head">
+              <h3 id="canvas-projectName">Proyecto sin nombre</h3>
+              <p>Documento de definición · Producto Mínimo Viable</p>
+            </div>
+
+            <div class="canvas-cols">
+              <div class="canvas-col">
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#b91c1c; --bl:#ffecec">🎯 El problema</span>
+                  <p id="canvas-problem" class="placeholder">No especificado</p>
+                </div>
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#1d4ed8; --bl:#eaf2ff">👥 Público objetivo</span>
+                  <p id="canvas-audience" class="placeholder">No especificado</p>
+                </div>
+              </div>
+
+              <div class="canvas-col highlight">
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#5b21b6; --bl:#f1eaff">💎 Propuesta de valor</span>
+                  <p id="canvas-valueProp" class="placeholder">No especificado</p>
+                </div>
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#b45309; --bl:#fff7e0">🔄 Alternativas actuales</span>
+                  <p id="canvas-alternatives" class="placeholder">No especificado</p>
+                </div>
+              </div>
+
+              <div class="canvas-col">
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#be185d; --bl:#ffe9f4">📈 Métricas de éxito</span>
+                  <p id="canvas-metrics" class="placeholder">No especificadas</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="canvas-feats">
+              <div class="canvas-feat-col mvp">
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#15803d; --bl:#d9f5e2">✅ Esencial para el PMV (Alcance)</span>
+                  <ul id="canvas-mvp-list" style="--bd:#15803d"><li class="placeholder">Ninguna funcionalidad definida</li></ul>
+                </div>
+              </div>
+              <div class="canvas-feat-col post">
+                <div class="canvas-block">
+                  <span class="canvas-badge" style="--bd:#6d6a8a; --bl:#e9e7f3">🕓 Post-PMV (Para el futuro)</span>
+                  <ul id="canvas-post-mvp-list" style="--bd:#6d6a8a"><li class="placeholder">Ninguna funcionalidad en espera</li></ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Navegación -->
+      <div class="panel-footer">
+        <button id="btnPrev" class="btn btn-nav-prev" disabled>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Anterior
+        </button>
+        <button id="btnNext" class="btn btn-primary">
+          Siguiente
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+        <button id="btnRestart" class="btn btn-restart" style="display: none;">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+          Volver al inicio
+        </button>
+      </div>
+    </div>
+  </main>
+
+<script>
+  // ---------------- ESTADO ----------------
+  let currentStep = 1;
+  const totalSteps = 6;
+  let features = [];
+
+  const persistFields = ['projectName', 'problem', 'audience', 'valueProp', 'alternatives', 'metrics'];
+  const STORAGE_KEY = 'pmvCreatorData';
+
+  const btnNext = document.getElementById('btnNext');
+  const btnPrev = document.getElementById('btnPrev');
+  const btnRestart = document.getElementById('btnRestart');
+  const progressBar = document.getElementById('progressBar');
+  const currentStepText = document.getElementById('currentStepText');
+
+  // ---------------- UTILIDADES ----------------
+  function escapeHTML(str) {
+    return String(str).replace(/[&<>'"]/g,
+      tag => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;' }[tag])
+    );
+  }
+
+  function showToast(msg, isError = false) {
+    const container = document.getElementById('toastContainer');
+    const toast = document.createElement('div');
+    toast.className = 'toast' + (isError ? ' error' : '');
+    toast.innerText = msg;
+    container.appendChild(toast);
+    requestAnimationFrame(() => toast.classList.add('show'));
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => toast.remove(), 300);
+    }, 3000);
+  }
+
+  // ---------------- PERSISTENCIA ----------------
+  function saveData() {
+    const data = { currentStep, features, fields: {} };
+    persistFields.forEach(id => data.fields[id] = document.getElementById(id).value);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  }
+
+  function loadData() {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return;
+    try {
+      const data = JSON.parse(saved);
+      if (Array.isArray(data.features)) features = data.features;
+      if (data.fields) {
+        persistFields.forEach(id => {
+          if (typeof data.fields[id] === 'string') document.getElementById(id).value = data.fields[id];
         });
+      }
+      if (Number.isInteger(data.currentStep) && data.currentStep >= 1 && data.currentStep <= totalSteps) {
+        currentStep = data.currentStep;
+      }
+    } catch (e) {
+      console.error('Error cargando datos guardados', e);
+    }
+  }
 
-        btnPrev.addEventListener('click', () => {
-            if (currentStep > 1) {
-                currentStep--;
-                updateUI();
-            }
-        });
+  document.querySelectorAll('[data-persist]').forEach(el => {
+    el.addEventListener('input', saveData);
+  });
 
-        btnRestart.addEventListener('click', () => {
-            currentStep = 1;
-            updateUI();
-        });
+  // ---------------- MODAL BORRAR TODO ----------------
+  const modal = document.getElementById('confirmModal');
 
-        // Evento de teclado para el input de funcionalidades (Enter = Esencial por defecto)
-        document.getElementById('newFeature').addEventListener('keypress', function (e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                window.addFeatureUI(true);
-            }
-        });
+  function openConfirmModal() {
+    modal.classList.add('open');
+    requestAnimationFrame(() => modal.classList.add('visible'));
+  }
 
-        // Función para agregar funcionalidades desde los nuevos botones
-        window.addFeatureUI = (isMVP) => {
-            const input = document.getElementById('newFeature');
-            const text = input.value.trim();
-            if (text !== '') {
-                features.push({ id: Date.now(), text, isMVP });
-                input.value = '';
-                renderFeatures();
-            }
-        };
+  function closeConfirmModal() {
+    modal.classList.remove('visible');
+    setTimeout(() => modal.classList.remove('open'), 250);
+  }
 
-        // Funciones Globales para Funcionalidades
-        window.toggleFeature = (id) => {
-            features = features.map(f => f.id === id ? { ...f, isMVP: !f.isMVP } : f);
-            renderFeatures();
-        };
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeConfirmModal(); });
 
-        window.removeFeature = (id) => {
-            features = features.filter(f => f.id !== id);
-            renderFeatures();
-        };
+  function confirmClear() {
+    features = [];
+    persistFields.forEach(id => document.getElementById(id).value = '');
+    document.getElementById('newFeature').value = '';
+    currentStep = 1;
+    localStorage.removeItem(STORAGE_KEY);
+    renderFeatures();
+    updateUI();
+    closeConfirmModal();
+    showToast('Datos borrados');
+  }
 
-        // Actualizar la lista de funcionalidades en el paso 4
-        function renderFeatures() {
-            const list = document.getElementById('featuresList');
-            if (features.length === 0) {
-                list.innerHTML = `
-                    <div class="text-center py-8 bg-slate-50 border-2 border-dashed border-slate-200 rounded-xl text-slate-500">
-                        <i data-lucide="list-todo" class="w-8 h-8 mx-auto mb-3 opacity-50"></i>
-                        <p>Aún no ha añadido funcionalidades.</p>
-                        <p class="text-sm mt-1">Comience a escribir en la parte superior.</p>
-                    </div>`;
-            } else {
-                list.innerHTML = features.map(f => `
-                    <div class="flex items-center justify-between p-3 bg-white border border-slate-200 rounded-lg shadow-sm hover:border-indigo-300 transition-colors group">
-                        <span class="font-medium text-slate-700 flex-1">${f.text}</span>
-                        <div class="flex items-center gap-3">
-                            <button type="button" onclick="toggleFeature(${f.id})" class="px-3 py-1 text-xs font-bold rounded-full transition-colors ${f.isMVP ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}">
-                                ${f.isMVP ? 'Esencial (PMV)' : 'Futuro (Post-PMV)'}
-                            </button>
-                            <button type="button" onclick="removeFeature(${f.id})" class="text-slate-400 hover:text-red-500 transition-colors p-1" title="Eliminar">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                `).join('');
-            }
-            lucide.createIcons(); // Re-renderizar iconos nuevos
-        }
+  // ---------------- NAVEGACIÓN ----------------
+  btnNext.addEventListener('click', () => {
+    if (currentStep < totalSteps) { currentStep++; saveData(); updateUI(); window.scrollTo({ top: 0 }); }
+  });
 
-        // Función Principal para actualizar las vistas y botones
-        function updateUI() {
-            // 1. Mostrar/Ocultar Pasos
-            document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
-            document.getElementById(`step-${currentStep}`).classList.remove('hidden');
+  btnPrev.addEventListener('click', () => {
+    if (currentStep > 1) { currentStep--; saveData(); updateUI(); window.scrollTo({ top: 0 }); }
+  });
 
-            // 2. Actualizar Textos y Progreso
-            currentStepText.textContent = currentStep;
-            progressBar.style.width = `${(currentStep / totalSteps) * 100}%`;
+  btnRestart.addEventListener('click', () => {
+    currentStep = 1;
+    saveData();
+    updateUI();
+    window.scrollTo({ top: 0 });
+  });
 
-            // 3. Actualizar Indicadores Visuales (Bolitas de arriba)
-            for (let i = 1; i <= totalSteps; i++) {
-                const indicator = document.getElementById(`indicator-${i}`);
-                const text = document.getElementById(`indicator-text-${i}`);
-                
-                if (i === currentStep) { // Paso Activo
-                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-600 border-indigo-600 text-white shadow-md shadow-indigo-200';
-                    text.className = 'text-xs font-medium text-indigo-900';
-                } else if (i < currentStep) { // Paso Completado
-                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-indigo-100 border-indigo-600 text-indigo-600';
-                    text.className = 'text-xs font-medium text-indigo-600';
-                } else { // Paso Futuro
-                    indicator.className = 'w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-200 border-2 bg-white border-slate-300 text-slate-400';
-                    text.className = 'text-xs font-medium text-slate-400';
-                }
-            }
+  // ---------------- FUNCIONALIDADES ----------------
+  document.getElementById('newFeature').addEventListener('keypress', function (e) {
+    if (e.key === 'Enter') { e.preventDefault(); addFeatureUI(true); }
+  });
 
-            // 4. Lógica de los botones de navegación inferiores
-            if (currentStep === 1) {
-                btnPrev.disabled = true;
-                btnPrev.className = 'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-400 cursor-not-allowed opacity-50';
-            } else {
-                btnPrev.disabled = false;
-                btnPrev.className = 'flex items-center gap-2 px-5 py-2.5 rounded-lg font-medium transition-colors text-slate-700 hover:bg-slate-200 bg-white border border-slate-300 shadow-sm';
-            }
+  function addFeatureUI(isMVP) {
+    const input = document.getElementById('newFeature');
+    const text = input.value.trim();
+    if (text !== '') {
+      features.push({ id: Date.now(), text, isMVP });
+      input.value = '';
+      input.focus();
+      saveData();
+      renderFeatures();
+    }
+  }
 
-            if (currentStep === totalSteps) {
-                btnNext.classList.add('hidden');
-                btnRestart.classList.remove('hidden');
-                populateCanvas(); // Llenar el resumen cuando llegamos al paso 6
-            } else {
-                btnNext.classList.remove('hidden');
-                btnRestart.classList.add('hidden');
-            }
-        }
+  function toggleFeature(id) {
+    features = features.map(f => f.id === id ? { ...f, isMVP: !f.isMVP } : f);
+    saveData();
+    renderFeatures();
+  }
 
-        // Función para pasar la información del form al Canvas final
-        function populateCanvas() {
-            const getValue = (id) => document.getElementById(id).value.trim();
-            
-            const setField = (canvasId, text, placeholder) => {
-                const el = document.getElementById(canvasId);
-                if (text) {
-                    // Convertir saltos de línea a <br>
-                    el.innerHTML = text.replace(/\n/g, '<br>');
-                    el.classList.remove('text-slate-300', 'italic', 'font-normal');
-                } else {
-                    el.textContent = placeholder;
-                    el.classList.add('text-slate-300', 'italic');
-                    if (canvasId === 'canvas-valueProp') el.classList.add('font-normal');
-                }
-            };
+  function removeFeature(id) {
+    features = features.filter(f => f.id !== id);
+    saveData();
+    renderFeatures();
+  }
 
-            setField('canvas-projectName', getValue('projectName'), 'Proyecto Sin Nombre');
-            setField('canvas-problem', getValue('problem'), 'No especificado');
-            setField('canvas-audience', getValue('audience'), 'No especificado');
-            setField('canvas-valueProp', getValue('valueProp'), 'No especificado');
-            setField('canvas-alternatives', getValue('alternatives'), 'No especificado');
-            setField('canvas-metrics', getValue('metrics'), 'No especificadas');
+  function renderFeatures() {
+    const list = document.getElementById('featuresList');
+    if (features.length === 0) {
+      list.innerHTML = `
+        <div class="feature-empty">
+          <p><strong>Aún no ha añadido funcionalidades.</strong></p>
+          <p>Escriba una idea arriba y elija si es esencial o para el futuro.</p>
+        </div>`;
+      return;
+    }
 
-            // Separar y mostrar funcionalidades en el Canvas
-            const mvpList = document.getElementById('canvas-mvp-list');
-            const postMvpList = document.getElementById('canvas-post-mvp-list');
-            
-            const mvpFeatures = features.filter(f => f.isMVP);
-            const postMvpFeatures = features.filter(f => !f.isMVP);
+    list.innerHTML = features.map(f => {
+      const colors = f.isMVP
+        ? '--fa:#22c55e; --fd:#15803d; --fl:#d9f5e2'
+        : '--fa:#a09dbd; --fd:#55516f; --fl:#e9e7f3';
+      return `
+      <div class="feature-item" style="${colors}">
+        <span class="txt">${escapeHTML(f.text)}</span>
+        <button type="button" class="feature-toggle" data-action="toggle" data-id="${f.id}">
+          ${f.isMVP ? 'Esencial (PMV)' : 'Futuro (Post-PMV)'}
+        </button>
+        <button type="button" class="feature-del" data-action="remove" data-id="${f.id}" title="Eliminar">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
 
-            if (mvpFeatures.length > 0) {
-                mvpList.innerHTML = mvpFeatures.map(f => `<li>${f.text}</li>`).join('');
-            } else {
-                mvpList.innerHTML = '<li class="text-slate-400 italic list-none">Ninguna funcionalidad definida</li>';
-            }
+  // Delegación de eventos (evita inyectar texto del usuario en atributos onclick)
+  document.getElementById('featuresList').addEventListener('click', (e) => {
+    const btn = e.target.closest('button[data-action]');
+    if (!btn) return;
+    const id = Number(btn.dataset.id);
+    if (btn.dataset.action === 'toggle') toggleFeature(id);
+    if (btn.dataset.action === 'remove') removeFeature(id);
+  });
 
-            if (postMvpFeatures.length > 0) {
-                postMvpList.innerHTML = postMvpFeatures.map(f => `<li>${f.text}</li>`).join('');
-            } else {
-                postMvpList.innerHTML = '<li class="text-slate-400 italic list-none">Ninguna funcionalidad en espera</li>';
-            }
-        }
+  // ---------------- ACTUALIZAR UI ----------------
+  function updateUI() {
+    document.querySelectorAll('.step-container').forEach(el => el.classList.add('hidden'));
+    document.getElementById(`step-${currentStep}`).classList.remove('hidden');
 
-        // Función para exportar a PDF ajustado exactamente a 1 página
-        async function exportPDF() {
-            const { jsPDF } = window.jspdf;
-            const element = document.getElementById('canvas-content');
-            const btn = document.getElementById('btnExport');
-            
-            // Mostrar estado de carga en el botón
-            const originalHTML = btn.innerHTML;
-            btn.innerHTML = '<i data-lucide="loader" class="w-4 h-4 animate-spin"></i> Generando...';
-            lucide.createIcons();
-            btn.disabled = true;
-            btn.classList.add('opacity-75', 'cursor-wait');
+    currentStepText.textContent = currentStep;
+    progressBar.style.width = `${(currentStep / totalSteps) * 100}%`;
 
-            // 1. Crear un contenedor temporal para fijar dimensiones anchas (diseño escritorio)
-            const wrapper = document.createElement('div');
-            wrapper.style.padding = '20px'; 
-            wrapper.style.backgroundColor = '#ffffff'; 
-            wrapper.style.width = '1200px'; 
-            
-            // Envolver el canvas temporalmente
-            element.parentNode.insertBefore(wrapper, element);
-            wrapper.appendChild(element);
+    document.querySelectorAll('.step-dot').forEach(dot => {
+      const step = Number(dot.dataset.step);
+      dot.classList.toggle('active', step === currentStep);
+      dot.classList.toggle('done', step < currentStep);
+    });
 
-            try {
-                // 2. Tomar la "foto" del contenedor
-                const canvas = await html2canvas(wrapper, {
-                    scale: 2, // Alta resolución
-                    useCORS: true,
-                    backgroundColor: '#ffffff'
-                });
+    btnPrev.disabled = currentStep === 1;
 
-                // Restaurar el DOM original inmediatamente
-                wrapper.parentNode.insertBefore(element, wrapper);
-                wrapper.parentNode.removeChild(wrapper);
+    if (currentStep === totalSteps) {
+      btnNext.style.display = 'none';
+      btnRestart.style.display = 'inline-flex';
+      populateCanvas();
+    } else {
+      btnNext.style.display = 'inline-flex';
+      btnRestart.style.display = 'none';
+    }
+  }
 
-                const imgData = canvas.toDataURL('image/jpeg', 1.0);
+  // ---------------- CANVAS FINAL ----------------
+  function populateCanvas() {
+    const getValue = (id) => document.getElementById(id).value.trim();
 
-                // 3. Configurar el documento PDF (A4 en formato horizontal)
-                const pdf = new jsPDF({
-                    orientation: 'landscape',
-                    unit: 'mm',
-                    format: 'a4'
-                });
+    const setField = (canvasId, text, placeholder) => {
+      const el = document.getElementById(canvasId);
+      if (text) {
+        el.innerHTML = escapeHTML(text).replace(/\n/g, '<br>');
+        el.classList.remove('placeholder');
+      } else {
+        el.textContent = placeholder;
+        el.classList.add('placeholder');
+      }
+    };
 
-                // 4. Calcular proporciones para que encaje perfecto sin cortarse
-                const pdfWidth = pdf.internal.pageSize.getWidth();
-                const pdfHeight = pdf.internal.pageSize.getHeight();
-                
-                const imgProps = pdf.getImageProperties(imgData);
-                const margin = 10; // 10mm de margen blanco alrededor
-                const maxImgWidth = pdfWidth - (margin * 2);
-                const maxImgHeight = pdfHeight - (margin * 2);
+    const nameEl = document.getElementById('canvas-projectName');
+    const name = getValue('projectName');
+    nameEl.textContent = name || 'Proyecto sin nombre';
 
-                let renderWidth = maxImgWidth;
-                let renderHeight = (imgProps.height * renderWidth) / imgProps.width;
+    setField('canvas-problem', getValue('problem'), 'No especificado');
+    setField('canvas-audience', getValue('audience'), 'No especificado');
+    setField('canvas-valueProp', getValue('valueProp'), 'No especificado');
+    setField('canvas-alternatives', getValue('alternatives'), 'No especificado');
+    setField('canvas-metrics', getValue('metrics'), 'No especificadas');
 
-                // Si la altura calculada sigue siendo más grande que la hoja, ajustamos por altura
-                if (renderHeight > maxImgHeight) {
-                    renderHeight = maxImgHeight;
-                    renderWidth = (imgProps.width * renderHeight) / imgProps.height;
-                }
+    const mvpList = document.getElementById('canvas-mvp-list');
+    const postMvpList = document.getElementById('canvas-post-mvp-list');
+    const mvpFeatures = features.filter(f => f.isMVP);
+    const postMvpFeatures = features.filter(f => !f.isMVP);
 
-                // Centrar la imagen en la hoja
-                const x = (pdfWidth - renderWidth) / 2;
-                const y = (pdfHeight - renderHeight) / 2;
+    mvpList.innerHTML = mvpFeatures.length > 0
+      ? mvpFeatures.map(f => `<li>${escapeHTML(f.text)}</li>`).join('')
+      : '<li class="placeholder">Ninguna funcionalidad definida</li>';
 
-                // 5. Agregar imagen al PDF y descargar
-                pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight);
-                pdf.save('Canvas_PMV.pdf');
+    postMvpList.innerHTML = postMvpFeatures.length > 0
+      ? postMvpFeatures.map(f => `<li>${escapeHTML(f.text)}</li>`).join('')
+      : '<li class="placeholder">Ninguna funcionalidad en espera</li>';
+  }
 
-            } catch (error) {
-                console.error("Error al generar el PDF:", error);
-                alert("Ocurrió un error al intentar generar el archivo PDF.");
-                
-                // Asegurar que el DOM se restaura en caso de error
-                if (wrapper.parentNode) {
-                    wrapper.parentNode.insertBefore(element, wrapper);
-                    wrapper.parentNode.removeChild(wrapper);
-                }
-            } finally {
-                // Restaurar el botón a la normalidad
-                btn.innerHTML = originalHTML;
-                btn.disabled = false;
-                btn.classList.remove('opacity-75', 'cursor-wait');
-                lucide.createIcons();
-            }
-        }
-    </script>
+  // ---------------- EXPORTAR ----------------
+  function setButtonLoading(btn, loading, defaultText) {
+    const txt = btn.querySelector('.btn-txt');
+    const icon = btn.querySelector('.btn-icon');
+    btn.disabled = loading;
+    txt.innerText = loading ? 'Generando…' : defaultText;
+    if (icon) {
+      if (!icon.dataset.original) icon.dataset.original = icon.innerHTML;
+      icon.innerHTML = loading
+        ? '<svg class="spin" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+        : icon.dataset.original;
+    }
+  }
+
+  // Captura el canvas con ancho fijo de escritorio para un resultado consistente
+  async function captureCanvas() {
+    const element = document.getElementById('canvas-content');
+    const wrapper = document.createElement('div');
+    wrapper.style.padding = '20px';
+    wrapper.style.backgroundColor = '#ffffff';
+    wrapper.style.width = '1200px';
+
+    element.parentNode.insertBefore(wrapper, element);
+    wrapper.appendChild(element);
+
+    try {
+      const canvas = await html2canvas(wrapper, {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: '#ffffff'
+      });
+      return canvas;
+    } finally {
+      // Restaurar el DOM siempre, incluso si hay error
+      wrapper.parentNode.insertBefore(element, wrapper);
+      wrapper.parentNode.removeChild(wrapper);
+    }
+  }
+
+  function safeFileName(base, ext) {
+    const name = document.getElementById('projectName').value.trim();
+    return name ? `${base}_${name.replace(/[^\w\-]+/g, '_')}.${ext}` : `${base}.${ext}`;
+  }
+
+  async function exportPDF() {
+    if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+      showToast('Las librerías aún no cargan. Intente en un segundo.', true);
+      return;
+    }
+    const btn = document.getElementById('pdfBtn');
+    setButtonLoading(btn, true, 'PDF');
+
+    try {
+      const canvas = await captureCanvas();
+      const imgData = canvas.toDataURL('image/jpeg', 1.0);
+
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgProps = pdf.getImageProperties(imgData);
+      const margin = 10;
+      const maxImgWidth = pdfWidth - margin * 2;
+      const maxImgHeight = pdfHeight - margin * 2;
+
+      let renderWidth = maxImgWidth;
+      let renderHeight = (imgProps.height * renderWidth) / imgProps.width;
+
+      if (renderHeight > maxImgHeight) {
+        renderHeight = maxImgHeight;
+        renderWidth = (imgProps.width * renderHeight) / imgProps.height;
+      }
+
+      const x = (pdfWidth - renderWidth) / 2;
+      const y = (pdfHeight - renderHeight) / 2;
+
+      pdf.addImage(imgData, 'JPEG', x, y, renderWidth, renderHeight);
+      pdf.save(safeFileName('Canvas_PMV', 'pdf'));
+      showToast('PDF descargado correctamente');
+    } catch (error) {
+      console.error('Error al generar el PDF:', error);
+      showToast('Ocurrió un error al generar el PDF.', true);
+    } finally {
+      setButtonLoading(btn, false, 'PDF');
+    }
+  }
+
+  async function exportPNG() {
+    if (typeof html2canvas === 'undefined') {
+      showToast('Las librerías aún no cargan. Intente en un segundo.', true);
+      return;
+    }
+    const btn = document.getElementById('pngBtn');
+    setButtonLoading(btn, true, 'PNG');
+
+    try {
+      const canvas = await captureCanvas();
+      const link = document.createElement('a');
+      link.download = safeFileName('Canvas_PMV', 'png');
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('PNG descargado correctamente');
+    } catch (error) {
+      console.error('Error al generar el PNG:', error);
+      showToast('Ocurrió un error al generar el PNG.', true);
+    } finally {
+      setButtonLoading(btn, false, 'PNG');
+    }
+  }
+
+  // ---------------- ARRANQUE ----------------
+  loadData();
+  renderFeatures();
+  updateUI();
+</script>
+
 </body>
 </html>
