@@ -3,344 +3,513 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Herramientas de Análisis Estratégico</title>
-<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<title>Suite de Análisis Estratégico</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
 <style>
-/* ══════════════════════════════════════════
-   GLOBAL RESET & BASE
-══════════════════════════════════════════ */
-*{margin:0;padding:0;box-sizing:border-box}
-body{font-family:'DM Sans',sans-serif;min-height:100vh;transition:background .3s,color .3s}
-body::before{content:'';position:fixed;inset:0;background-image:radial-gradient(circle,rgba(190,180,168,.55) 1px,transparent 1px);background-size:26px 26px;pointer-events:none;z-index:0;opacity:.45}
-
-/* ── PAGE VIEWS ── */
-.view{display:none;position:relative;z-index:1}
-.view.active{display:block}
-
-/* ══════════════════════════════════════════
-   HOME PAGE
-══════════════════════════════════════════ */
-body.home{background:#f2f0ec;color:#252018}
-.home-page{max-width:1060px;margin:0 auto;padding:0 28px 100px}
-
-.hero{padding:64px 0 52px;border-bottom:2px solid #e2dbd2;margin-bottom:56px;display:flex;flex-direction:column;align-items:flex-start;gap:18px}
-.hero-eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:#9e9080;background:#fff;border:1.5px solid #e2dbd2;padding:6px 14px;border-radius:100px;box-shadow:0 1px 4px rgba(0,0,0,.05)}
-.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.6rem,6vw,4.6rem);letter-spacing:-0.045em;line-height:1.02;color:#252018;max-width:720px}
-.hero h1 em{font-style:normal;color:#9e9080}
-.hero-desc{font-size:1.05rem;color:#5e574e;max-width:560px;line-height:1.65;font-weight:300}
-
-.tools-section{margin-bottom:72px}
-.section-label{font-family:'Syne',sans-serif;font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.18em;color:#9e9080;margin-bottom:20px;display:flex;align-items:center;gap:10px}
-.section-label::after{content:'';flex:1;height:1px;background:#e2dbd2}
-
-.tool-cards{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:680px){.tool-cards{grid-template-columns:1fr}}
-
-.tool-card{background:#fff;border:1.5px solid #e2dbd2;border-radius:20px;padding:32px;display:flex;flex-direction:column;gap:20px;box-shadow:0 2px 12px rgba(0,0,0,.06);transition:box-shadow .22s,transform .22s;cursor:pointer;position:relative;overflow:hidden}
-.tool-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;border-radius:20px 20px 0 0}
-.tool-card.foda::before{background:linear-gradient(90deg,#4a7a3a,#8ec97a)}
-.tool-card.pestel::before{background:linear-gradient(90deg,#7a4a8a,#b080c8)}
-.tool-card:hover{box-shadow:0 8px 32px rgba(0,0,0,.12);transform:translateY(-3px)}
-
-.tool-card-top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.tool-badge{width:52px;height:52px;border-radius:14px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:1.1rem;flex-shrink:0}
-.tool-card.foda .tool-badge{background:#c4debb;color:#4a7a3a}
-.tool-card.pestel .tool-badge{background:#d8c4e8;color:#7a4a8a}
-.tool-arrow{width:36px;height:36px;border-radius:10px;border:1.5px solid #e2dbd2;display:flex;align-items:center;justify-content:center;color:#9e9080;transition:all .2s;flex-shrink:0}
-.tool-card:hover .tool-arrow{background:#252018;border-color:#252018;color:#f2f0ec;transform:translateX(3px) translateY(-3px)}
-
-.tool-name{font-family:'Syne',sans-serif;font-weight:800;font-size:1.7rem;letter-spacing:-0.03em;line-height:1;margin-bottom:4px}
-.tool-card.foda .tool-name{color:#4a7a3a}
-.tool-card.pestel .tool-name{color:#7a4a8a}
-.tool-fullname{font-size:.8rem;color:#9e9080;font-weight:400;letter-spacing:.01em}
-.tool-desc{font-size:.84rem;color:#5e574e;line-height:1.65;font-weight:300}
-.tool-tags{display:flex;gap:8px;flex-wrap:wrap}
-.tag{font-size:.69rem;font-weight:600;padding:4px 10px;border-radius:100px;background:#f8f6f2;color:#9e9080;border:1px solid #e2dbd2}
-.tool-cta{display:flex;align-items:center;gap:8px;font-size:.8rem;font-weight:600;color:#9e9080;margin-top:4px}
-
-/* EXPLAIN GRID */
-.explain-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
-@media(max-width:720px){.explain-grid{grid-template-columns:1fr}}
-.explain-card{background:#fff;border:1.5px solid #e2dbd2;border-radius:18px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.05)}
-.explain-head{display:flex;align-items:center;gap:16px;padding:20px 24px;border-bottom:1.5px solid #e2dbd2}
-.explain-icon{width:46px;height:46px;border-radius:13px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.8rem;line-height:1.1;text-align:center;flex-shrink:0}
-.explain-title{font-family:'Syne',sans-serif;font-weight:700;font-size:1.05rem}
-.explain-body{padding:20px 24px;display:flex;flex-direction:column;gap:14px}
-.explain-intro{font-size:.84rem;color:#5e574e;line-height:1.65;font-weight:300}
-.explain-list{display:flex;flex-direction:column;gap:8px}
-.explain-item{display:flex;align-items:flex-start;gap:12px;padding:10px 14px;border-radius:10px}
-.explain-letter{width:26px;height:26px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:.8rem;flex-shrink:0}
-.explain-item-label{font-family:'Syne',sans-serif;font-weight:700;font-size:.82rem;margin-bottom:1px}
-.explain-item-desc{font-size:.76rem;color:#5e574e;line-height:1.5;font-weight:300}
-.explain-use{background:#f8f6f2;border-radius:10px;padding:12px 16px;font-size:.78rem;color:#5e574e;line-height:1.6;border:1px solid #e2dbd2}
-
-/* FODA item colors */
-.fi-F{background:#edf5e9}.fi-F .explain-letter{background:#c8e0be;color:#3d6030}
-.fi-O{background:#e8f2fc}.fi-O .explain-letter{background:#b8d4f0;color:#2d5580}
-.fi-D{background:#fdf0f0}.fi-D .explain-letter{background:#f0c8c8;color:#8a3030}
-.fi-A{background:#fdf4ec}.fi-A .explain-letter{background:#f0d8b8;color:#8a5020}
-/* PESTEL item colors */
-.pi-P{background:#fdf0f0}.pi-P .explain-letter{background:#f5d0d0;color:#c26060}
-.pi-E{background:#fdf7ec}.pi-E .explain-letter{background:#f5e2b0;color:#b88a30}
-.pi-S{background:#eef8f1}.pi-S .explain-letter{background:#c2e8cc;color:#4a9460}
-.pi-T{background:#eaf4fc}.pi-T .explain-letter{background:#b8d8f0;color:#3a7aaa}
-.pi-Ec{background:#f2eff9}.pi-Ec .explain-letter{background:#d4c8f4;color:#6a52b0;font-size:.65rem}
-.pi-L{background:#fdf0f6}.pi-L .explain-letter{background:#f4c8dc;color:#b8508a}
-
-.home-footer{border-top:1px solid #e2dbd2;padding:28px 0 0;margin-top:48px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:10px;font-size:.75rem;color:#9e9080}
-
-/* ══════════════════════════════════════════
-   SHARED TOOL STYLES
-══════════════════════════════════════════ */
-.tool-app{max-width:1200px;margin:0 auto;padding:0 28px 80px}
-
-.back-bar{padding:20px 0 0}
-.back-btn{display:inline-flex;align-items:center;gap:7px;font-size:.8rem;font-weight:500;transition:color .18s;cursor:pointer;background:none;border:none;font-family:'DM Sans',sans-serif}
-.back-btn svg{transition:transform .18s}
-.back-btn:hover svg{transform:translateX(-3px)}
-
-.tool-header{padding:32px 0 26px;display:flex;align-items:flex-end;justify-content:space-between;gap:20px;flex-wrap:wrap;border-bottom:2px solid;margin-bottom:30px}
-.logo-area h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(2.2rem,5vw,3.4rem);letter-spacing:-0.04em;line-height:1}
-.logo-area p{font-size:.88rem;margin-top:6px;font-weight:300}
-.header-actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-
-.btn{display:inline-flex;align-items:center;gap:7px;padding:9px 16px;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:.82rem;font-weight:500;cursor:pointer;transition:all .18s;border:none;white-space:nowrap}
-.btn-ghost{box-shadow:0 1px 3px rgba(0,0,0,.06)}
-.btn-danger:hover{background:#ffe4e4}
-.btn-primary{font-weight:600;box-shadow:0 2px 8px rgba(35,45,32,.18)}
-.btn-primary:hover{transform:translateY(-1px);box-shadow:0 4px 16px rgba(35,45,32,.22)}
-.btn-sep{width:1px;height:28px;flex-shrink:0}
-
-.project-bar{display:flex;align-items:center;gap:12px;margin-bottom:22px;flex-wrap:wrap}
-.project-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.14em;white-space:nowrap}
-.project-input{flex:1;max-width:420px;border-radius:10px;padding:10px 16px;font-family:'Syne',sans-serif;font-size:.98rem;font-weight:700;outline:none;transition:border-color .2s;box-shadow:0 1px 3px rgba(0,0,0,.05);border:1.5px solid}
-
-.stats-bar{display:flex;gap:0;margin-bottom:22px;border-radius:14px;border:1.5px solid;overflow:hidden;flex-wrap:wrap;box-shadow:0 2px 8px rgba(0,0,0,.05)}
-.stat-item{flex:1;min-width:90px;padding:14px 18px}
-.stat-num{font-family:'Syne',sans-serif;font-weight:800;font-size:1.6rem;line-height:1}
-.stat-label{font-size:.67rem;text-transform:uppercase;letter-spacing:.09em;margin-top:3px}
-.stat-sep{width:1.5px}
-
-.legend-bar{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:24px;padding:11px 18px;border-radius:10px;border:1.5px solid;align-items:center;box-shadow:0 1px 4px rgba(0,0,0,.04)}
-.legend-item{display:flex;align-items:center;gap:6px;font-size:.76rem}
-.legend-chip{padding:2px 9px;border-radius:20px;font-size:.7rem;font-weight:600}
-.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
-
-.foda-card,.category-card{background:#fff;border-radius:16px;border:1.5px solid;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(0,0,0,.05);transition:box-shadow .2s}
-.foda-card:hover,.category-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.09)}
-.card-header{display:flex;align-items:center;gap:12px;padding:16px 18px 14px;border-bottom:1.5px solid;flex-shrink:0}
-.card-badge,.card-letter{border-radius:12px;display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;flex-shrink:0}
-.card-badge{width:42px;height:42px;font-size:1.05rem}
-.card-letter{width:38px;height:38px;border-radius:10px;font-size:1rem}
-.card-title-wrap{flex:1;min-width:0}
-.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:.95rem}
-.card-sub{font-size:.68rem;margin-top:2px;font-weight:400;line-height:1.4}
-.factor-count{font-family:'Syne',sans-serif;font-size:.8rem;font-weight:700;padding:3px 10px;border-radius:20px;flex-shrink:0}
-
-.factors-list{padding:10px 14px;display:flex;flex-direction:column;gap:5px;flex:1;min-height:60px}
-.factor-item{display:flex;align-items:flex-start;gap:8px;padding:8px 10px;border-radius:8px;border:1.5px solid transparent;animation:slideIn .18s ease;transition:border-color .15s}
-.factor-item:hover{border-color:rgba(0,0,0,.1)}
-@keyframes slideIn{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
-.factor-num{font-family:'Syne',sans-serif;font-weight:700;font-size:.7rem;width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:3px}
-.factor-dot{width:7px;height:7px;border-radius:50%;margin-top:6px;flex-shrink:0}
-.factor-text{flex:1;font-size:.8rem;line-height:1.5;cursor:pointer;min-width:0;word-break:break-word}
-.factor-text[contenteditable="true"]{outline:none;background:rgba(0,0,0,.03);border-radius:4px;padding:1px 5px}
-.factor-impact{display:flex;gap:2px;flex-shrink:0;margin-top:2px}
-.impact-btn{width:22px;height:22px;border-radius:6px;border:1.5px solid;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.65rem;transition:all .15s;font-weight:700}
-.impact-btn.active-pos{background:#e8f8ec;border-color:#7ec898;color:#3a8050}
-.impact-btn.active-neg{background:#fceaea;border-color:#e8a0a0;color:#b04040}
-.impact-btn.active-neu{background:#fef6e4;border-color:#e8c07a;color:#906820}
-.delete-btn{width:22px;height:22px;border-radius:6px;border:none;background:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:.9rem;transition:all .15s;opacity:0;flex-shrink:0}
-.factor-item:hover .delete-btn{opacity:1}
-.delete-btn:hover{color:#b04040;background:#fceaea}
-.empty-hint{text-align:center;font-size:.73rem;padding:14px 0 6px;font-style:italic}
-
-.add-area{padding:6px 14px 14px;flex-shrink:0}
-.add-row{display:flex;gap:6px;align-items:center}
-.add-input{flex:1;border-radius:8px;padding:8px 12px;font-family:'DM Sans',sans-serif;font-size:.8rem;outline:none;transition:all .2s;border:1.5px dashed}
-.add-input:focus{border-style:solid}
-.add-btn{width:32px;height:32px;border-radius:8px;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:1.15rem;font-weight:700;transition:all .15s;flex-shrink:0;color:#fff;box-shadow:0 1px 4px rgba(0,0,0,.14)}
-.add-btn:hover{opacity:.88;transform:scale(1.06)}
-
-/* TOAST */
-.toast{position:fixed;bottom:28px;right:28px;padding:11px 18px;border-radius:10px;font-size:.84rem;font-weight:600;transform:translateY(70px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);z-index:1000;pointer-events:none;box-shadow:0 4px 20px rgba(0,0,0,.12)}
-.toast.show{transform:translateY(0);opacity:1}
-.toast.ok{background:#2d2620;color:#f9f7f4}
-.toast.err{background:#fceaea;color:#b04040;border:1.5px solid #e8a0a0}
-
-/* MODAL */
-.modal-backdrop{position:fixed;inset:0;background:rgba(35,40,32,.3);backdrop-filter:blur(6px);z-index:500;display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .2s}
-.modal-backdrop.open{opacity:1;pointer-events:all}
-.modal{background:#fff;border:1.5px solid #e2dbd2;border-radius:18px;padding:30px;max-width:540px;width:100%;transform:scale(.96);transition:transform .2s;box-shadow:0 16px 60px rgba(0,0,0,.12)}
-.modal-backdrop.open .modal{transform:scale(1)}
-.modal h2{font-family:'Syne',sans-serif;font-weight:700;font-size:1.2rem;margin-bottom:8px}
-.modal p{font-size:.84rem;margin-bottom:18px;line-height:1.6}
-.modal-actions{display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;margin-top:20px}
-.json-preview{border:1.5px solid;border-radius:10px;padding:14px;font-family:monospace;font-size:.72rem;max-height:200px;overflow-y:auto;white-space:pre-wrap;word-break:break-all}
-.drop-zone{border:2px dashed;border-radius:12px;padding:30px 20px;text-align:center;cursor:pointer;transition:all .2s}
-.drop-zone input{display:none}
-.drop-zone p{font-size:.84rem;line-height:1.7}
-.drop-zone .icon{font-size:2rem;display:block;margin-bottom:8px}
-
-/* ── FODA SPECIFIC ── */
-body.foda-view{background:#f4f6f2;color:#232d20}
-.foda-view .back-btn{color:#8fa082}.foda-view .back-btn:hover{color:#5a6854}
-.foda-view .tool-header{border-bottom-color:#dde4d8}
-.foda-view .logo-area h1{color:#232d20}.foda-view .logo-area h1 span{color:#8fa082}
-.foda-view .logo-area p{color:#8fa082}
-.foda-view .btn-ghost{background:#fff;color:#5a6854;border:1.5px solid #dde4d8}
-.foda-view .btn-ghost:hover{background:#f7f9f5;border-color:#c8d4c0}
-.foda-view .btn-danger{background:#fff0f0;color:#b04040;border:1.5px solid #f0c8c8}
-.foda-view .btn-primary{background:#232d20;color:#f4f6f2}
-.foda-view .btn-primary:hover{background:#2d3d28}
-.foda-view .btn-json{background:#e8f2fc;color:#2d5580;border:1.5px solid #b8d4f0}
-.foda-view .btn-json:hover{background:#d8eafc}
-.foda-view .btn-sep{background:#dde4d8}
-.foda-view .project-label{color:#8fa082}
-.foda-view .project-input{background:#fff;border-color:#dde4d8;color:#232d20}
-.foda-view .project-input:focus{border-color:#c8d4c0}
-.foda-view .stats-bar{background:#fff;border-color:#dde4d8}
-.foda-view .stat-label{color:#8fa082}
-.foda-view .stat-sep{background:#dde4d8}
-.foda-view .legend-bar{background:#fff;border-color:#dde4d8}
-.foda-view .legend-item{color:#5a6854}
-.foda-view .add-input{background:#f7f9f5;border-color:#dde4d8;color:#232d20}
-.foda-view .add-input:focus{border-color:#c8d4c0;background:#fff}
-.foda-view .add-input::placeholder{color:#8fa082}
-.foda-view .empty-hint{color:#8fa082}
-.foda-view .factor-text{color:#5a6854}
-.foda-view .json-preview{color:#5a7a50;background:#f4f6f2;border-color:#dde4d8}
-.foda-view .drop-zone{background:#f4f6f2;border-color:#dde4d8;color:#5a6854}
-.foda-view .drop-zone:hover,.foda-view .drop-zone.dragover{border-color:#4a7aaa;background:#e8f2fc}
-.foda-view .modal p,.foda-view .modal p strong{color:#5a6854}
-.foda-view .modal p strong{color:#232d20}
-
-.foda-grid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:auto auto;gap:18px}
-@media(max-width:620px){.foda-grid{grid-template-columns:1fr}}
-.axis-wrap{display:grid;grid-template-columns:28px 1fr;grid-template-rows:28px 1fr 1fr;gap:0 8px;align-items:center}
-.axis-label-top{font-family:'Syne',sans-serif;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#8fa082;text-align:center}
-.axis-label-side{writing-mode:vertical-rl;transform:rotate(180deg);font-family:'Syne',sans-serif;font-size:.67rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#8fa082;text-align:center}
-
-/* ── PESTEL SPECIFIC ── */
-body.pestel-view{background:#f5f3ef;color:#2d2620}
-.pestel-view .back-btn{color:#a09284}.pestel-view .back-btn:hover{color:#6b5f54}
-.pestel-view .tool-header{border-bottom-color:#e4ddd5}
-.pestel-view .logo-area h1{color:#2d2620}.pestel-view .logo-area h1 span{color:#a09284}
-.pestel-view .logo-area p{color:#a09284}
-.pestel-view .btn-ghost{background:#fff;color:#6b5f54;border:1.5px solid #e4ddd5}
-.pestel-view .btn-ghost:hover{background:#f9f7f4;border-color:#d4ccbf}
-.pestel-view .btn-danger{background:#fff0f0;color:#c04040;border:1.5px solid #f0c8c8}
-.pestel-view .btn-primary{background:#2d2620;color:#f9f7f4}
-.pestel-view .btn-primary:hover{background:#4a3e34}
-.pestel-view .btn-json{background:#eaf2ff;color:#3a6aaa;border:1.5px solid #c0d8f4}
-.pestel-view .btn-json:hover{background:#daeaff}
-.pestel-view .btn-sep{background:#e4ddd5}
-.pestel-view .project-label{color:#a09284}
-.pestel-view .project-input{background:#fff;border-color:#e4ddd5;color:#2d2620}
-.pestel-view .project-input:focus{border-color:#d4ccbf}
-.pestel-view .stats-bar{background:#fff;border-color:#e4ddd5}
-.pestel-view .stat-label{color:#a09284}
-.pestel-view .stat-sep{background:#e4ddd5}
-.pestel-view .legend-bar{background:#fff;border-color:#e4ddd5}
-.pestel-view .legend-item{color:#6b5f54}
-.pestel-view .add-input{background:#f9f7f4;border-color:#e4ddd5;color:#2d2620}
-.pestel-view .add-input:focus{border-color:#d4ccbf;background:#fff}
-.pestel-view .add-input::placeholder{color:#a09284}
-.pestel-view .empty-hint{color:#a09284}
-.pestel-view .factor-text{color:#6b5f54}
-.pestel-view .impact-btn{background:#f9f7f4;border-color:#e4ddd5;color:#a09284}
-.pestel-view .impact-btn:hover{border-color:#d4ccbf;color:#6b5f54}
-.pestel-view .json-preview{color:#5a7a50;background:#f5f3ef;border-color:#e4ddd5}
-.pestel-view .drop-zone{background:#f5f3ef;border-color:#e4ddd5;color:#6b5f54}
-.pestel-view .drop-zone:hover,.pestel-view .drop-zone.dragover{border-color:#80b8e0;background:#eaf4fc}
-.pestel-view .modal p,.pestel-view .modal p strong{color:#6b5f54}
-.pestel-view .modal p strong{color:#2d2620}
-
-.pestel-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
-@media(max-width:900px){.pestel-grid{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:560px){.pestel-grid{grid-template-columns:1fr}}
-
-/* PRINT */
-@media print{
-  @page{margin:14mm 12mm;size:A4 portrait}
-  *{-webkit-print-color-adjust:exact !important;print-color-adjust:exact !important}
-  body{background:#fff !important}
-  body::before{display:none !important}
-  .tool-app{max-width:100%;padding:0}
-  .back-bar,.tool-header,.header-actions,.project-bar,.legend-bar,.stats-bar,.add-area,.toast,.modal-backdrop,.delete-btn,.factor-impact,.btn,.btn-sep{display:none !important}
-  .print-only{display:block !important}
-  .print-stats{display:flex !important}
-  .foda-grid{display:grid !important;grid-template-columns:1fr 1fr !important;gap:10px !important}
-  .axis-wrap{display:contents !important}
-  .pestel-grid{display:grid !important;grid-template-columns:repeat(2,1fr) !important;gap:10px !important}
-  .foda-card,.category-card{break-inside:avoid;box-shadow:none !important}
-  .factors-list{padding:8px 12px !important}
-  .factor-item{padding:6px 8px !important;break-inside:avoid}
-  .factor-text{font-size:.76rem !important}
+/* IMPORTANTE: no usar color-mix() ni oklch() en este archivo.
+   html2canvas 1.4.1 no los soporta y rompe la exportación PNG/PDF. */
+:root {
+  --bg: #eef1f6;
+  --ink: #16203a;
+  --soft: #56607a;
+  --muted: #8b94ac;
+  --border: #d8deea;
+  --white: #ffffff;
+  --green: #059669;  --purple: #7c3aed;  --indigo: #4f46e5;  --red: #dc2626;
 }
-.print-only{display:none}
-.print-stats{display:none}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  background-image: radial-gradient(circle, #c9d1e0 1px, transparent 1px);
+  background-size: 26px 26px;
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+button { font-family: inherit; cursor: pointer; }
+svg { display: block; flex-shrink: 0; }
+h1, h2, h3, h4, .grotesk { font-family: 'Space Grotesk', sans-serif; }
+
+.view { display: none; }
+.view.active { display: block; }
+
+/* ═══════ COMPONENTES BASE ═══════ */
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px;
+  border-radius: 10px;
+  border: 2px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font-size: .8rem; font-weight: 700;
+  box-shadow: 3px 3px 0 var(--bs, var(--border));
+  transition: transform .1s, box-shadow .1s, background .15s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { transform: translate(-1px,-1px); box-shadow: 4px 4px 0 var(--bs, var(--border)); }
+.btn:active:not(:disabled) { transform: translate(3px,3px); box-shadow: 0 0 0 transparent; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-fill { color: #fff; background: var(--bf); }
+.btn-danger:hover:not(:disabled) { background: #fdeaea; color: var(--red); }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.card-shell {
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 5px 5px 0 var(--cs, var(--border));
+}
+
+/* ═══════ HOME ═══════ */
+.home-page { max-width: 1080px; margin: 0 auto; padding: 0 28px 90px; }
+
+.hero { padding: 60px 0 44px; display: flex; flex-direction: column; align-items: flex-start; gap: 18px; }
+.hero-eyebrow {
+  display: inline-flex; align-items: center; gap: 8px;
+  font-size: .7rem; font-weight: 800; text-transform: uppercase; letter-spacing: .16em;
+  color: var(--ink); background: #fff;
+  border: 2px solid var(--ink); border-radius: 100px;
+  padding: 6px 15px;
+  box-shadow: 3px 3px 0 var(--indigo);
+}
+.hero h1 {
+  font-weight: 700;
+  font-size: clamp(2.4rem, 5.6vw, 4.2rem);
+  letter-spacing: -.035em; line-height: 1.02;
+  text-transform: uppercase;
+  max-width: 760px;
+}
+.hero h1 .stripe {
+  background: linear-gradient(120deg, var(--green), var(--purple), var(--indigo));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.hero-desc { font-size: 1rem; color: var(--soft); max-width: 560px; line-height: 1.65; font-weight: 500; }
+
+.section-label {
+  font-size: .68rem; font-weight: 800; text-transform: uppercase; letter-spacing: .18em;
+  color: var(--muted); margin-bottom: 18px;
+  display: flex; align-items: center; gap: 10px;
+}
+.section-label::after { content: ''; flex: 1; height: 2px; background: var(--border); }
+
+.tool-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; margin-bottom: 64px; }
+@media (max-width: 860px) { .tool-cards { grid-template-columns: 1fr; } }
+
+.tool-card {
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 16px;
+  padding: 26px;
+  display: flex; flex-direction: column; gap: 16px;
+  box-shadow: 6px 6px 0 var(--tc);
+  transition: transform .18s, box-shadow .18s;
+  cursor: pointer;
+}
+.tool-card:hover { transform: translate(-3px,-3px); box-shadow: 9px 9px 0 var(--tc); }
+.tool-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.tool-badge {
+  padding: 8px 14px;
+  border-radius: 10px;
+  font-family: 'Space Grotesk', sans-serif;
+  font-weight: 700; font-size: 1rem; letter-spacing: .04em;
+  background: var(--tc); color: #fff;
+  flex-shrink: 0;
+}
+.tool-arrow {
+  width: 36px; height: 36px; border-radius: 10px;
+  border: 2px solid var(--ink);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink); background: #fff;
+  transition: all .18s; flex-shrink: 0;
+}
+.tool-card:hover .tool-arrow { background: var(--ink); color: #fff; transform: rotate(-45deg); }
+.tool-name { font-weight: 700; font-size: 1.6rem; letter-spacing: -.02em; line-height: 1; text-transform: uppercase; color: var(--tc); }
+.tool-fullname { font-size: .74rem; color: var(--muted); font-weight: 600; margin-top: 5px; line-height: 1.5; }
+.tool-desc { font-size: .82rem; color: var(--soft); line-height: 1.65; font-weight: 500; flex: 1; }
+.tool-tags { display: flex; gap: 7px; flex-wrap: wrap; }
+.tag {
+  font-size: .64rem; font-weight: 700; padding: 4px 10px;
+  border-radius: 100px; background: var(--tl); color: var(--td);
+  text-transform: uppercase; letter-spacing: .05em;
+}
+
+.explain-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+@media (max-width: 980px) { .explain-grid { grid-template-columns: 1fr; } }
+.explain-card { background: #fff; border: 2px solid var(--ink); border-radius: 16px; overflow: hidden; box-shadow: 5px 5px 0 var(--border); }
+.explain-head {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--eh);
+}
+.explain-icon {
+  padding: 7px 11px; border-radius: 9px;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .8rem;
+  background: var(--ei); color: #fff; flex-shrink: 0;
+}
+.explain-title { font-weight: 700; font-size: 1.02rem; text-transform: uppercase; letter-spacing: .01em; }
+.explain-alias { font-size: .7rem; color: var(--soft); margin-top: 2px; font-weight: 600; }
+.explain-body { padding: 18px 20px; display: flex; flex-direction: column; gap: 13px; }
+.explain-intro { font-size: .8rem; color: var(--soft); line-height: 1.65; font-weight: 500; }
+.explain-list { display: flex; flex-direction: column; gap: 7px; }
+.explain-item { display: flex; align-items: flex-start; gap: 11px; padding: 9px 12px; border-radius: 10px; background: var(--xl); }
+.explain-letter {
+  min-width: 26px; height: 26px; padding: 0 5px; border-radius: 7px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .78rem;
+  background: var(--xc); color: #fff; flex-shrink: 0;
+}
+.explain-item-label { font-weight: 700; font-size: .8rem; margin-bottom: 1px; }
+.explain-item-desc { font-size: .73rem; color: var(--soft); line-height: 1.5; font-weight: 500; }
+.explain-use {
+  background: var(--bg); border: 2px dashed var(--border); border-radius: 10px;
+  padding: 11px 14px; font-size: .75rem; color: var(--soft); line-height: 1.6; font-weight: 500;
+}
+.explain-use strong { color: var(--ink); }
+
+.combo-note {
+  margin-top: 26px; background: #fff; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 24px 28px; box-shadow: 5px 5px 0 var(--border);
+  display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap;
+}
+.combo-icon {
+  width: 46px; height: 46px; border-radius: 12px;
+  background: linear-gradient(135deg, var(--green), var(--purple));
+  display: flex; align-items: center; justify-content: center;
+  color: #fff; flex-shrink: 0;
+}
+.combo-note h3 { font-weight: 700; font-size: 1rem; margin-bottom: 7px; text-transform: uppercase; }
+.combo-note p { font-size: .82rem; color: var(--soft); line-height: 1.65; font-weight: 500; }
+.combo-note p strong { font-weight: 700; }
+
+.home-footer {
+  border-top: 2px solid var(--border); padding: 24px 0 0; margin-top: 48px;
+  display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px;
+  font-size: .72rem; color: var(--muted); font-weight: 600;
+}
+
+/* ═══════ VISTAS DE HERRAMIENTA ═══════ */
+.tool-app { max-width: 1220px; margin: 0 auto; padding: 0 28px 80px; }
+
+.back-bar { padding: 22px 0 0; }
+.back-btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  font-size: .78rem; font-weight: 700; color: var(--soft);
+  background: none; border: none; transition: color .15s;
+}
+.back-btn:hover { color: var(--ink); }
+.back-btn svg { transition: transform .15s; }
+.back-btn:hover svg { transform: translateX(-3px); }
+
+.tool-header {
+  padding: 26px 0 22px;
+  display: flex; align-items: flex-end; justify-content: space-between;
+  gap: 18px; flex-wrap: wrap; margin-bottom: 24px;
+  position: relative;
+}
+.tool-header::after {
+  content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 6px;
+  background: repeating-linear-gradient(-45deg, var(--ta) 0 10px, transparent 10px 20px);
+  border-radius: 3px;
+}
+.logo-area h1 {
+  font-weight: 700; font-size: clamp(2rem, 4.6vw, 3.1rem);
+  letter-spacing: -.03em; line-height: 1; text-transform: uppercase;
+  color: var(--ink);
+}
+.logo-area h1 .dot { color: var(--ta); }
+.logo-area p { font-size: .84rem; margin-top: 6px; color: var(--soft); font-weight: 500; }
+.header-actions { display: flex; gap: 9px; flex-wrap: wrap; align-items: center; padding-bottom: 12px; }
+
+.project-bar { display: flex; align-items: center; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
+.project-label { font-size: .66rem; font-weight: 800; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); white-space: nowrap; }
+.project-input {
+  flex: 1; max-width: 440px;
+  border: 2px solid var(--ink); border-radius: 10px;
+  padding: 10px 15px;
+  font-family: 'Space Grotesk', sans-serif; font-size: .95rem; font-weight: 700;
+  color: var(--ink); background: #fff; outline: none;
+  box-shadow: 3px 3px 0 var(--border);
+  transition: box-shadow .15s;
+}
+.project-input:focus { box-shadow: 3px 3px 0 var(--ta); }
+
+.stats-bar {
+  display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap;
+}
+.stat-chip {
+  background: #fff; border: 2px solid var(--ink); border-radius: 12px;
+  padding: 10px 18px; min-width: 96px;
+  box-shadow: 3px 3px 0 var(--sc, var(--border));
+}
+.stat-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 1.45rem; line-height: 1; color: var(--sc, var(--ink)); }
+.stat-label { font-size: .6rem; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin-top: 4px; }
+
+.legend-bar {
+  display: flex; gap: 14px; flex-wrap: wrap; align-items: center;
+  margin-bottom: 22px; padding: 10px 16px;
+  background: #fff; border: 2px solid var(--border); border-radius: 10px;
+  font-size: .74rem; color: var(--soft); font-weight: 600;
+}
+.legend-dot { width: 9px; height: 9px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+.legend-hint { margin-left: auto; font-size: .7rem; color: var(--muted); font-style: italic; }
+
+/* tarjetas de categoría */
+.cat-card {
+  background: #fff; border: 2px solid var(--ink); border-radius: 14px;
+  overflow: hidden; display: flex; flex-direction: column;
+  box-shadow: 5px 5px 0 var(--cc);
+}
+.card-header {
+  display: flex; align-items: center; gap: 11px;
+  padding: 13px 15px;
+  border-bottom: 2px solid var(--ink);
+  background: var(--cl);
+}
+.card-badge {
+  min-width: 38px; height: 38px; padding: 0 8px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .95rem;
+  background: var(--cc); color: #fff; flex-shrink: 0;
+}
+.card-title-wrap { flex: 1; min-width: 0; }
+.card-title { font-weight: 700; font-size: .92rem; text-transform: uppercase; letter-spacing: .01em; }
+.card-sub { font-size: .66rem; color: var(--soft); margin-top: 2px; font-weight: 500; line-height: 1.4; }
+.factor-count {
+  font-family: 'Space Grotesk', sans-serif; font-size: .8rem; font-weight: 700;
+  padding: 3px 11px; border-radius: 20px;
+  background: #fff; border: 2px solid var(--cc); color: var(--cc);
+  flex-shrink: 0;
+}
+
+.factors-list { padding: 10px 13px; display: flex; flex-direction: column; gap: 6px; flex: 1; min-height: 64px; }
+.factor-item {
+  display: flex; align-items: flex-start; gap: 8px;
+  padding: 8px 10px; border-radius: 9px;
+  background: var(--cl);
+  border: 1.5px solid transparent;
+  animation: slideIn .18s ease;
+  transition: border-color .15s;
+}
+.factor-item:hover { border-color: var(--cc); }
+@keyframes slideIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.factor-num {
+  font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: .68rem;
+  min-width: 19px; height: 19px; border-radius: 5px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--cc); color: #fff; flex-shrink: 0; margin-top: 2px;
+}
+.factor-dot { width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0; }
+.factor-text { flex: 1; font-size: .8rem; line-height: 1.5; font-weight: 500; color: var(--ink); cursor: text; min-width: 0; word-break: break-word; }
+.factor-text[contenteditable="true"]:focus { outline: none; background: rgba(255,255,255,.7); border-radius: 4px; padding: 1px 5px; }
+.factor-impact { display: flex; gap: 3px; flex-shrink: 0; margin-top: 1px; }
+.impact-btn {
+  width: 22px; height: 22px; border-radius: 6px;
+  border: 1.5px solid var(--border); background: #fff;
+  color: var(--muted); font-size: .68rem; font-weight: 800;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.impact-btn:hover { border-color: var(--ink); color: var(--ink); }
+.impact-btn.on-pos { background: #d9f2e6; border-color: #059669; color: #047857; }
+.impact-btn.on-neg { background: #fbdfdf; border-color: #dc2626; color: #b91c1c; }
+.impact-btn.on-neu { background: #fdf0d5; border-color: #d97706; color: #b45309; }
+.delete-btn {
+  width: 22px; height: 22px; border-radius: 6px; border: none; background: none;
+  color: var(--muted); font-size: .95rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: all .12s; flex-shrink: 0;
+}
+.factor-item:hover .delete-btn { opacity: 1; }
+.delete-btn:hover { color: var(--red); background: #fbdfdf; }
+.empty-hint { text-align: center; font-size: .72rem; padding: 14px 0 6px; font-style: italic; color: var(--muted); font-weight: 500; }
+
+.add-area { padding: 6px 13px 13px; flex-shrink: 0; }
+.add-row { display: flex; gap: 6px; align-items: center; }
+.add-input {
+  flex: 1; border: 2px dashed var(--border); border-radius: 9px;
+  padding: 8px 12px; font-family: 'Inter', sans-serif; font-size: .78rem; font-weight: 500;
+  background: var(--bg); color: var(--ink); outline: none; transition: all .15s;
+}
+.add-input:focus { border-style: solid; border-color: var(--cc); background: #fff; }
+.add-input::placeholder { color: var(--muted); }
+.add-btn {
+  width: 33px; height: 33px; border-radius: 9px; border: 2px solid var(--ink);
+  background: var(--cc); color: #fff;
+  font-size: 1.15rem; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: transform .1s, box-shadow .1s; flex-shrink: 0;
+}
+.add-btn:hover { transform: translate(-1px,-1px); box-shadow: 3px 3px 0 var(--ink); }
+.add-btn:active { transform: translate(2px,2px); box-shadow: 0 0 0 transparent; }
+
+/* rejillas */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+@media (max-width: 920px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 580px) { .grid-3 { grid-template-columns: 1fr; } }
+
+.axis-wrap { display: grid; grid-template-columns: 26px 1fr; grid-template-rows: 26px auto auto; gap: 2px 8px; align-items: center; }
+.axis-top { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.axis-lbl {
+  font-family: 'Space Grotesk', sans-serif; font-size: .64rem; font-weight: 700;
+  text-transform: uppercase; letter-spacing: .12em; color: var(--muted); text-align: center;
+}
+.axis-side { writing-mode: vertical-rl; transform: rotate(180deg); }
+.axis-rows { display: grid; gap: 16px; margin-top: 8px; }
+
+/* ═══════ MODALES / TOAST ═══════ */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(22,32,58,.4); backdrop-filter: blur(4px);
+  z-index: 500; display: flex; align-items: center; justify-content: center; padding: 20px;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.modal-backdrop.open { opacity: 1; pointer-events: all; }
+.modal {
+  background: #fff; border: 2px solid var(--ink); border-radius: 16px;
+  padding: 28px; max-width: 540px; width: 100%;
+  box-shadow: 7px 7px 0 var(--border);
+  transform: scale(.96); transition: transform .2s;
+}
+.modal-backdrop.open .modal { transform: scale(1); }
+.modal h2 { font-weight: 700; font-size: 1.15rem; margin-bottom: 8px; text-transform: uppercase; }
+.modal p { font-size: .83rem; margin-bottom: 16px; line-height: 1.6; color: var(--soft); font-weight: 500; }
+.modal p strong { color: var(--ink); }
+.modal-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; margin-top: 18px; }
+.json-preview {
+  border: 2px solid var(--border); border-radius: 10px; padding: 13px;
+  font-family: monospace; font-size: .7rem; color: var(--soft);
+  max-height: 190px; overflow-y: auto; white-space: pre-wrap; word-break: break-all;
+  background: var(--bg);
+}
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 12px;
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  background: var(--bg); color: var(--soft); transition: all .18s;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--indigo); background: #eceafd; }
+.drop-zone input { display: none; }
+.drop-zone p { font-size: .82rem; line-height: 1.7; margin: 0; }
+.drop-zone .icon { font-size: 1.9rem; display: block; margin-bottom: 8px; }
+
+.toast {
+  position: fixed; bottom: 26px; right: 26px;
+  padding: 12px 19px; border-radius: 12px;
+  font-size: .82rem; font-weight: 700;
+  border: 2px solid var(--ink);
+  transform: translateY(70px); opacity: 0;
+  transition: all .3s cubic-bezier(.34,1.56,.64,1);
+  z-index: 1000; pointer-events: none;
+}
+.toast.show { transform: translateY(0); opacity: 1; }
+.toast.ok { background: var(--ink); color: #fff; box-shadow: 4px 4px 0 rgba(22,32,58,.25); }
+.toast.err { background: #fbdfdf; color: #b91c1c; box-shadow: 4px 4px 0 #dc2626; }
+
+/* ═══════ PLANTILLA DE EXPORTACIÓN (carta horizontal 11 × 8.5) ═══════ */
+#exportDoc {
+  position: fixed; left: -20000px; top: 0;
+  width: 1320px; height: 1020px; /* proporción exacta 11:8.5 */
+  background: #ffffff;
+  font-family: 'Inter', sans-serif;
+  color: #16203a;
+  padding: 46px 50px;
+  display: flex; flex-direction: column;
+  z-index: -1;
+}
+.xp-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 24px; margin-bottom: 20px; }
+.xp-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 46px; line-height: 1; letter-spacing: -.02em; text-transform: uppercase; }
+.xp-subtitle { font-size: 14px; font-weight: 600; color: #56607a; margin-top: 7px; }
+.xp-meta { text-align: right; }
+.xp-project { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 22px; }
+.xp-date { font-size: 13px; font-weight: 600; color: #8b94ac; margin-top: 4px; }
+.xp-rule { height: 7px; border-radius: 4px; margin-bottom: 16px; }
+.xp-stats { display: flex; gap: 12px; margin-bottom: 18px; }
+.xp-stat { border: 2px solid #16203a; border-radius: 11px; padding: 9px 18px; min-width: 110px; background: #fff; }
+.xp-stat-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 25px; line-height: 1; }
+.xp-stat-lbl { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: #8b94ac; margin-top: 4px; }
+.xp-grid { flex: 1; display: grid; gap: 16px; min-height: 0; }
+.xp-card { border: 2px solid #16203a; border-radius: 13px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; background: #fff; }
+.xp-card-head { display: flex; align-items: center; gap: 11px; padding: 11px 14px; border-bottom: 2px solid #16203a; }
+.xp-badge { min-width: 34px; height: 34px; padding: 0 8px; border-radius: 9px; display: flex; align-items: center; justify-content: center; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; color: #fff; flex-shrink: 0; }
+.xp-card-title { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 16px; text-transform: uppercase; flex: 1; }
+.xp-count { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 14px; padding: 2px 12px; border-radius: 20px; background: #fff; }
+.xp-list { padding: 10px 14px; display: flex; flex-direction: column; gap: 6px; overflow: hidden; flex: 1; }
+.xp-item { display: flex; align-items: flex-start; gap: 9px; font-size: 13px; line-height: 1.45; font-weight: 500; }
+.xp-item-num { font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 11px; min-width: 19px; height: 19px; border-radius: 5px; display: flex; align-items: center; justify-content: center; color: #fff; flex-shrink: 0; margin-top: 1px; }
+.xp-item-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+.xp-empty { font-size: 12px; font-style: italic; color: #8b94ac; }
+.xp-foot { display: flex; justify-content: space-between; font-size: 11px; font-weight: 600; color: #8b94ac; margin-top: 14px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
 </style>
 </head>
-<body class="home">
+<body>
 
-<!-- ══════════════════════════════════════
-  VIEW 1: HOME
-══════════════════════════════════════ -->
+<!-- ═══════ VISTA: HOME ═══════ -->
 <div id="view-home" class="view active">
 <div class="home-page">
 
   <div class="hero">
     <span class="hero-eyebrow">
-      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-      Suite Estratégica
+      <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+      Suite Estratégica · PEI
     </span>
-    <h1>Herramientas de<br>Análisis <em>Estratégico</em></h1>
-    <p class="hero-desc">Diagnóstica tu organización con rigor. Dos herramientas complementarias para comprender el entorno y tomar decisiones con claridad.</p>
+    <h1>Herramientas de <span class="stripe">Análisis Estratégico</span></h1>
+    <p class="hero-desc">Diagnostique su organización con rigor. Tres marcos complementarios para comprender el entorno, evaluar la situación interna y tomar decisiones con claridad.</p>
   </div>
 
-  <section class="tools-section">
+  <section>
     <div class="section-label">Herramientas disponibles</div>
     <div class="tool-cards">
 
-      <div class="tool-card foda" onclick="showView('foda')">
+      <div class="tool-card" style="--tc:#059669; --tl:#e7f7f0; --td:#047857" onclick="showView('foda')">
         <div class="tool-card-top">
           <div class="tool-badge">F·O·D·A</div>
-          <div class="tool-arrow">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          </div>
+          <div class="tool-arrow"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
         <div>
           <div class="tool-name">FODA</div>
           <div class="tool-fullname">Fortalezas · Oportunidades · Debilidades · Amenazas</div>
         </div>
-        <p class="tool-desc">Diagnóstico estratégico en cuatro cuadrantes que evalúa tanto los factores internos de la organización como las condiciones del entorno externo.</p>
-        <div class="tool-tags">
-          <span class="tag">Interno & Externo</span>
-          <span class="tag">Diagnóstico rápido</span>
-          <span class="tag">Planificación</span>
-        </div>
-        <div class="tool-cta">Abrir herramienta <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <p class="tool-desc">Diagnóstico en cuatro cuadrantes que evalúa los factores internos de la organización y las condiciones del entorno externo.</p>
+        <div class="tool-tags"><span class="tag">Interno & Externo</span><span class="tag">Diagnóstico</span></div>
       </div>
 
-      <div class="tool-card pestel" onclick="showView('pestel')">
+      <div class="tool-card" style="--tc:#7c3aed; --tl:#f0e9fd; --td:#6d28d9" onclick="showView('pestel')">
         <div class="tool-card-top">
           <div class="tool-badge">PESTEL</div>
-          <div class="tool-arrow">
-            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="7" y1="17" x2="17" y2="7"/><polyline points="7 7 17 7 17 17"/></svg>
-          </div>
+          <div class="tool-arrow"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
         <div>
           <div class="tool-name">PESTEL</div>
           <div class="tool-fullname">Político · Económico · Social · Tecnológico · Ecológico · Legal</div>
         </div>
-        <p class="tool-desc">Marco de análisis del macroentorno que examina seis dimensiones del contexto externo para identificar oportunidades y riesgos del ecosistema.</p>
-        <div class="tool-tags">
-          <span class="tag">Macroentorno</span>
-          <span class="tag">6 dimensiones</span>
-          <span class="tag">Contexto externo</span>
+        <p class="tool-desc">Marco de análisis del macroentorno que examina seis dimensiones del contexto externo para identificar oportunidades y riesgos.</p>
+        <div class="tool-tags"><span class="tag">Macroentorno</span><span class="tag">6 dimensiones</span></div>
+      </div>
+
+      <div class="tool-card" style="--tc:#4f46e5; --tl:#eceafd; --td:#4338ca" onclick="showView('faro')">
+        <div class="tool-card-top">
+          <div class="tool-badge">FARO</div>
+          <div class="tool-arrow"><svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
         </div>
-        <div class="tool-cta">Abrir herramienta <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+        <div>
+          <div class="tool-name">FARO</div>
+          <div class="tool-fullname">Fortalezas · Áreas de Mejora · Retos · Oportunidades</div>
+        </div>
+        <p class="tool-desc">La versión moderna del FODA: cambia el lenguaje defensivo por uno de optimización y crecimiento, ideal para emprendimientos.</p>
+        <div class="tool-tags"><span class="tag">Mentalidad proactiva</span><span class="tag">Emprendimiento</span></div>
       </div>
     </div>
   </section>
@@ -350,608 +519,675 @@ body.pestel-view{background:#f5f3ef;color:#2d2620}
     <div class="explain-grid">
 
       <div class="explain-card">
-        <div class="explain-head" style="background:#f5fbf2;border-bottom-color:#c4debb">
-          <div class="explain-icon" style="background:#c4debb;color:#3d6030">F·O<br>D·A</div>
+        <div class="explain-head" style="--eh:#e7f7f0; --ei:#059669">
+          <div class="explain-icon">FODA</div>
           <div>
-            <div class="explain-title" style="color:#4a7a3a">Análisis FODA</div>
-            <div style="font-size:.74rem;color:#8fa082;margin-top:2px">También conocido como DAFO o SWOT</div>
+            <div class="explain-title" style="color:#047857">Análisis FODA</div>
+            <div class="explain-alias">También conocido como DAFO o SWOT</div>
           </div>
         </div>
         <div class="explain-body">
-          <p class="explain-intro">El análisis FODA permite evaluar la situación actual de una organización mediante cuatro categorías que cruzan factores internos con condiciones externas para diseñar estrategias coherentes.</p>
+          <p class="explain-intro">Evalúa la situación actual de una organización mediante cuatro categorías que cruzan factores internos con condiciones externas.</p>
           <div class="explain-list">
-            <div class="explain-item fi-F"><div class="explain-letter">F</div><div class="explain-item-text"><div class="explain-item-label">Fortalezas</div><div class="explain-item-desc">Capacidades, recursos y ventajas internas que distinguen a la organización.</div></div></div>
-            <div class="explain-item fi-O"><div class="explain-letter">O</div><div class="explain-item-text"><div class="explain-item-label">Oportunidades</div><div class="explain-item-desc">Factores externos favorables del entorno que la organización puede aprovechar.</div></div></div>
-            <div class="explain-item fi-D"><div class="explain-letter">D</div><div class="explain-item-text"><div class="explain-item-label">Debilidades</div><div class="explain-item-desc">Limitaciones o carencias internas que reducen la capacidad competitiva.</div></div></div>
-            <div class="explain-item fi-A"><div class="explain-letter">A</div><div class="explain-item-text"><div class="explain-item-label">Amenazas</div><div class="explain-item-desc">Condiciones externas desfavorables que pueden obstaculizar los objetivos.</div></div></div>
+            <div class="explain-item" style="--xl:#e7f7f0; --xc:#059669"><div class="explain-letter">F</div><div><div class="explain-item-label">Fortalezas</div><div class="explain-item-desc">Capacidades y ventajas internas que distinguen a la organización.</div></div></div>
+            <div class="explain-item" style="--xl:#e9f0fe; --xc:#2563eb"><div class="explain-letter">O</div><div><div class="explain-item-label">Oportunidades</div><div class="explain-item-desc">Factores externos favorables que se pueden aprovechar.</div></div></div>
+            <div class="explain-item" style="--xl:#fdeaea; --xc:#dc2626"><div class="explain-letter">D</div><div><div class="explain-item-label">Debilidades</div><div class="explain-item-desc">Limitaciones internas que reducen la capacidad competitiva.</div></div></div>
+            <div class="explain-item" style="--xl:#fdefe6; --xc:#ea580c"><div class="explain-letter">A</div><div><div class="explain-item-label">Amenazas</div><div class="explain-item-desc">Condiciones externas que pueden obstaculizar los objetivos.</div></div></div>
           </div>
-          <div class="explain-use"><strong>¿Cuándo usarlo?</strong> Al iniciar un proyecto, lanzar un producto o revisar la estrategia. Ideal como punto de partida antes de definir objetivos.</div>
+          <div class="explain-use"><strong>¿Cuándo usarlo?</strong> Al iniciar un proyecto, lanzar un producto o revisar la estrategia. Ideal como punto de partida.</div>
         </div>
       </div>
 
       <div class="explain-card">
-        <div class="explain-head" style="background:#f6f2fb;border-bottom-color:#d4c8f4">
-          <div class="explain-icon" style="background:#d4c8f4;color:#4a3490;font-size:.75rem;line-height:1.2;text-align:center">PES<br>TEL</div>
+        <div class="explain-head" style="--eh:#f0e9fd; --ei:#7c3aed">
+          <div class="explain-icon">PESTEL</div>
           <div>
-            <div class="explain-title" style="color:#7a4a8a">Análisis PESTEL</div>
-            <div style="font-size:.74rem;color:#8fa082;margin-top:2px">Antes conocido como PEST o STEEP</div>
+            <div class="explain-title" style="color:#6d28d9">Análisis PESTEL</div>
+            <div class="explain-alias">Antes conocido como PEST o STEEP</div>
           </div>
         </div>
         <div class="explain-body">
-          <p class="explain-intro">El análisis PESTEL examina seis dimensiones del contexto externo. Ayuda a comprender fuerzas fuera del control de la empresa que influyen directamente en su desempeño.</p>
+          <p class="explain-intro">Examina seis dimensiones del contexto externo: fuerzas fuera del control de la empresa que influyen en su desempeño.</p>
           <div class="explain-list">
-            <div class="explain-item pi-P"><div class="explain-letter">P</div><div class="explain-item-text"><div class="explain-item-label">Político</div><div class="explain-item-desc">Estabilidad gubernamental, políticas públicas, regulación.</div></div></div>
-            <div class="explain-item pi-E"><div class="explain-letter">E</div><div class="explain-item-text"><div class="explain-item-label">Económico</div><div class="explain-item-desc">Ciclos económicos, inflación, tasas de interés, desempleo.</div></div></div>
-            <div class="explain-item pi-S"><div class="explain-letter">S</div><div class="explain-item-text"><div class="explain-item-label">Social</div><div class="explain-item-desc">Tendencias culturales, demografía, estilos de vida.</div></div></div>
-            <div class="explain-item pi-T"><div class="explain-letter">T</div><div class="explain-item-text"><div class="explain-item-label">Tecnológico</div><div class="explain-item-desc">Innovación, automatización, digitalización, I+D.</div></div></div>
-            <div class="explain-item pi-Ec"><div class="explain-letter">Ec</div><div class="explain-item-text"><div class="explain-item-label">Ecológico</div><div class="explain-item-desc">Cambio climático, regulación ambiental, sostenibilidad.</div></div></div>
-            <div class="explain-item pi-L"><div class="explain-letter">L</div><div class="explain-item-text"><div class="explain-item-label">Legal</div><div class="explain-item-desc">Legislación laboral, propiedad intelectual, normativa sectorial.</div></div></div>
+            <div class="explain-item" style="--xl:#fdeaea; --xc:#dc2626"><div class="explain-letter">P</div><div><div class="explain-item-label">Político</div><div class="explain-item-desc">Estabilidad gubernamental, políticas públicas, regulación.</div></div></div>
+            <div class="explain-item" style="--xl:#fdf3e1; --xc:#d97706"><div class="explain-letter">E</div><div><div class="explain-item-label">Económico</div><div class="explain-item-desc">Ciclos económicos, inflación, tasas de interés, desempleo.</div></div></div>
+            <div class="explain-item" style="--xl:#e7f7f0; --xc:#059669"><div class="explain-letter">S</div><div><div class="explain-item-label">Social</div><div class="explain-item-desc">Tendencias culturales, demografía, estilos de vida.</div></div></div>
+            <div class="explain-item" style="--xl:#e9f0fe; --xc:#2563eb"><div class="explain-letter">T</div><div><div class="explain-item-label">Tecnológico</div><div class="explain-item-desc">Innovación, automatización, digitalización, I+D.</div></div></div>
+            <div class="explain-item" style="--xl:#f0e9fd; --xc:#7c3aed"><div class="explain-letter">Ec</div><div><div class="explain-item-label">Ecológico</div><div class="explain-item-desc">Cambio climático, regulación ambiental, sostenibilidad.</div></div></div>
+            <div class="explain-item" style="--xl:#fce8f1; --xc:#db2777"><div class="explain-letter">L</div><div><div class="explain-item-label">Legal</div><div class="explain-item-desc">Legislación laboral, propiedad intelectual, normativa.</div></div></div>
           </div>
-          <div class="explain-use"><strong>¿Cuándo usarlo?</strong> Para explorar nuevos mercados o anticipar riesgos. Es complementario al FODA: el PESTEL alimenta las Oportunidades y Amenazas.</div>
+          <div class="explain-use"><strong>¿Cuándo usarlo?</strong> Para explorar mercados o anticipar riesgos. Sus hallazgos alimentan las Oportunidades y Amenazas del FODA.</div>
+        </div>
+      </div>
+
+      <div class="explain-card">
+        <div class="explain-head" style="--eh:#eceafd; --ei:#4f46e5">
+          <div class="explain-icon">FARO</div>
+          <div>
+            <div class="explain-title" style="color:#4338ca">Análisis FARO</div>
+            <div class="explain-alias">El FODA con mentalidad proactiva</div>
+          </div>
+        </div>
+        <div class="explain-body">
+          <p class="explain-intro">En ecosistemas de innovación, el lenguaje importa. FARO cambia el paradigma de "supervivencia y defensa" por uno de optimización y crecimiento.</p>
+          <div class="explain-list">
+            <div class="explain-item" style="--xl:#e7f7f0; --xc:#059669"><div class="explain-letter">F</div><div><div class="explain-item-label">Fortalezas</div><div class="explain-item-desc">Ventajas competitivas del proyecto o equipo.</div></div></div>
+            <div class="explain-item" style="--xl:#fdf3e1; --xc:#d97706"><div class="explain-letter">A</div><div><div class="explain-item-label">Áreas de Mejora</div><div class="explain-item-desc">En vez de "debilidades": procesos que están iterando, no rotos. Cultura de optimización continua.</div></div></div>
+            <div class="explain-item" style="--xl:#fce8ec; --xc:#e11d48"><div class="explain-letter">R</div><div><div class="explain-item-label">Retos</div><div class="explain-item-desc">En vez de "amenazas": desafíos del entorno que se superan con competitividad, no con miedo.</div></div></div>
+            <div class="explain-item" style="--xl:#e9f0fe; --xc:#2563eb"><div class="explain-letter">O</div><div><div class="explain-item-label">Oportunidades</div><div class="explain-item-desc">Nuevos escenarios y espacios de crecimiento.</div></div></div>
+          </div>
+          <div class="explain-use"><strong>¿Cuándo usarlo?</strong> En proyectos de emprendimiento y equipos jóvenes, donde el lenguaje defensivo del FODA puede frenar decisiones audaces.</div>
         </div>
       </div>
     </div>
   </section>
 
-  <div style="margin-top:32px;background:#fff;border:1.5px solid #e2dbd2;border-radius:18px;padding:28px 32px;box-shadow:0 2px 8px rgba(0,0,0,.05);display:flex;gap:24px;align-items:flex-start;flex-wrap:wrap">
-    <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#c4debb,#d8c4e8);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-      <svg width="22" height="22" fill="none" stroke="#555" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6" opacity=".5"/></svg>
+  <div class="combo-note">
+    <div class="combo-icon">
+      <svg width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="9" cy="12" r="6"/><circle cx="15" cy="12" r="6" opacity=".55"/></svg>
     </div>
-    <div style="flex:1;min-width:220px">
-      <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;color:#252018;margin-bottom:8px">¿Cómo se complementan?</div>
-      <p style="font-size:.84rem;color:#5e574e;line-height:1.65;font-weight:300">El <strong style="color:#7a4a8a;font-weight:600">PESTEL</strong> analiza el macroentorno externo — ideal para identificar qué está pasando alrededor. El <strong style="color:#4a7a3a;font-weight:600">FODA</strong> toma esos hallazgos y los combina con la realidad interna. Se recomienda <strong style="font-weight:600">primero hacer el PESTEL</strong> y usar sus resultados para las Oportunidades y Amenazas del FODA.</p>
+    <div style="flex:1; min-width:240px">
+      <h3>¿Cómo se complementan?</h3>
+      <p>El <strong style="color:#6d28d9">PESTEL</strong> analiza el macroentorno externo, ideal para identificar qué está pasando alrededor. El <strong style="color:#047857">FODA</strong> toma esos hallazgos y los combina con la realidad interna. El <strong style="color:#4338ca">FARO</strong> es la alternativa moderna al FODA para proyectos de emprendimiento. Se recomienda <strong>hacer primero el PESTEL</strong> y usar sus resultados para las Oportunidades y Amenazas (o Retos) del análisis interno.</p>
     </div>
   </div>
 
   <footer class="home-footer">
-    <p>Suite de Análisis Estratégico · Herramientas de diagnóstico y planeación</p>
+    <p>Suite de Análisis Estratégico · FODA · PESTEL · FARO</p>
     <p>Progreso guardado automáticamente en el navegador</p>
   </footer>
 </div>
 </div>
 
-<!-- ══════════════════════════════════════
-  VIEW 2: FODA
-══════════════════════════════════════ -->
-<div id="view-foda" class="view">
-<div class="tool-app">
+<!-- ═══════ VISTAS DE HERRAMIENTAS (se generan por JS) ═══════ -->
+<div id="view-foda" class="view"></div>
+<div id="view-pestel" class="view"></div>
+<div id="view-faro" class="view"></div>
 
-  <!-- PRINT HEADER -->
-  <div class="print-only" style="padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #232d20">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-      <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2.6rem;letter-spacing:-.04em;color:#232d20;line-height:1">FODA</div><div style="font-size:.78rem;color:#8fa082;margin-top:4px">Análisis estratégico interno y externo</div></div>
-      <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;color:#232d20" id="fPrintProject"></div><div style="font-size:.74rem;color:#8fa082;margin-top:2px" id="fPrintDate"></div></div>
-    </div>
-    <div class="print-stats" style="gap:0;border:1.5px solid #dde4d8;border-radius:10px;overflow:hidden">
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #dde4d8"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#232d20" id="fPNum0">0</div><div style="font-size:.63rem;color:#8fa082;text-transform:uppercase;letter-spacing:.08em">Total</div></div>
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #dde4d8"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#5a8a48" id="fPNum1">0</div><div style="font-size:.63rem;color:#8fa082;text-transform:uppercase;letter-spacing:.08em">Fortalezas</div></div>
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #dde4d8"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#4a7aaa" id="fPNum2">0</div><div style="font-size:.63rem;color:#8fa082;text-transform:uppercase;letter-spacing:.08em">Oportunidades</div></div>
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #dde4d8"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#c06060" id="fPNum3">0</div><div style="font-size:.63rem;color:#8fa082;text-transform:uppercase;letter-spacing:.08em">Debilidades</div></div>
-      <div style="flex:1;padding:10px 16px"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#c07840" id="fPNum4">0</div><div style="font-size:.63rem;color:#8fa082;text-transform:uppercase;letter-spacing:.08em">Amenazas</div></div>
-    </div>
-  </div>
-
-  <div class="back-bar">
-    <button class="back-btn" onclick="showView('home')">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Volver al menú principal
-    </button>
-  </div>
-
-  <header class="tool-header">
-    <div class="logo-area"><h1>FODA <span>·</span></h1><p>Análisis estratégico interno y externo de la organización</p></div>
-    <div class="header-actions">
-      <button class="btn btn-json" onclick="fOpenSaveModal()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Guardar progreso
-      </button>
-      <button class="btn btn-json" onclick="fOpenLoadModal()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Cargar progreso
-      </button>
-      <div class="btn-sep"></div>
-      <button class="btn btn-primary" onclick="fExportPDF()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Descargar PDF
-      </button>
-      <div class="btn-sep"></div>
-      <button class="btn btn-danger" onclick="fClearAll()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M8 6V4h8v2"/></svg>
-        Limpiar
-      </button>
-    </div>
-  </header>
-
-  <div class="project-bar">
-    <span class="project-label">Proyecto</span>
-    <input type="text" id="fProjectName" class="project-input" placeholder="Nombre de la empresa u organización…" oninput="fAutoSave()"/>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat-item"><div class="stat-num" id="fStatTotal" style="color:#232d20">0</div><div class="stat-label">Total</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="fStatF" style="color:#5a8a48">0</div><div class="stat-label">Fortalezas</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="fStatO" style="color:#4a7aaa">0</div><div class="stat-label">Oportunidades</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="fStatD" style="color:#c06060">0</div><div class="stat-label">Debilidades</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="fStatA" style="color:#c07840">0</div><div class="stat-label">Amenazas</div></div>
-  </div>
-
-  <div class="legend-bar">
-    <span style="font-size:.75rem;color:#8fa082;font-weight:600;margin-right:6px">Cuadrantes:</span>
-    <span class="legend-item"><span class="legend-chip" style="background:#c8e0be;color:#3d6030">F</span>Interno · Positivo</span>
-    <span class="legend-item"><span class="legend-chip" style="background:#b8d4f0;color:#2d5580">O</span>Externo · Positivo</span>
-    <span class="legend-item"><span class="legend-chip" style="background:#f0c8c8;color:#8a3030">D</span>Interno · Negativo</span>
-    <span class="legend-item"><span class="legend-chip" style="background:#f0d8b8;color:#8a5020">A</span>Externo · Negativo</span>
-    <span style="margin-left:auto;font-size:.73rem;color:#8fa082;font-style:italic">Clic en texto para editar · Auto-guardado activo</span>
-  </div>
-
-  <div class="axis-wrap">
-    <div></div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;padding-bottom:6px">
-      <div class="axis-label-top">⬤ Interno</div>
-      <div class="axis-label-top">◯ Externo</div>
-    </div>
-    <div class="axis-label-side">Positivo ✦</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" id="fRowPos"></div>
-    <div class="axis-label-side">Negativo ✦</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px" id="fRowNeg"></div>
-  </div>
-</div>
-
-<!-- FODA MODALS -->
-<div class="modal-backdrop" id="fSaveModal" onclick="fCloseModal('fSaveModal')">
+<!-- ═══════ MODALES COMPARTIDOS ═══════ -->
+<div class="modal-backdrop" id="saveModal" onclick="closeModal('saveModal')">
   <div class="modal" onclick="event.stopPropagation()">
     <h2>💾 Guardar progreso</h2>
-    <p>Descarga un archivo <strong>.json</strong> con todos los factores de tu análisis FODA.</p>
-    <div class="json-preview" id="fJsonPreview"></div>
+    <p>Descargue un archivo <strong>.json</strong> con todos los factores de su análisis. Podrá cargarlo después para continuar donde lo dejó.</p>
+    <div class="json-preview" id="jsonPreview"></div>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="fCloseModal('fSaveModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="fDownloadJSON()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Descargar .json
-      </button>
+      <button class="btn" onclick="closeModal('saveModal')">Cancelar</button>
+      <button class="btn btn-fill" style="--bf:#16203a; --bs:#8b94ac" onclick="downloadJSON()">Descargar .json</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="fLoadModal" onclick="fCloseModal('fLoadModal')">
+<div class="modal-backdrop" id="loadModal" onclick="closeModal('loadModal')">
   <div class="modal" onclick="event.stopPropagation()">
     <h2>📂 Cargar progreso</h2>
-    <p>Selecciona o arrastra un archivo <strong>.json</strong> exportado previamente. El análisis actual será <strong>reemplazado</strong>.</p>
-    <div class="drop-zone" id="fDropZone" onclick="document.getElementById('fFileInput').click()" ondragover="fDragOver(event)" ondragleave="fDragLeave()" ondrop="fDropFile(event)">
-      <input type="file" id="fFileInput" accept=".json,application/json" onchange="fLoadFileInput(event)">
+    <p>Seleccione o arrastre un archivo <strong>.json</strong> exportado previamente. El análisis actual será <strong>reemplazado</strong>.</p>
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault(); this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="dropFile(event)">
+      <input type="file" id="fileInput" accept=".json,application/json" onchange="loadFileInput(event)">
       <span class="icon">🗂️</span>
-      <p><strong>Haz clic aquí</strong> o arrastra tu archivo<br><span style="font-size:.75rem">Solo archivos .json de esta herramienta</span></p>
+      <p><strong>Haga clic aquí</strong> o arrastre su archivo<br><span style="font-size:.74rem">Solo archivos .json de esta herramienta</span></p>
     </div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="fCloseModal('fLoadModal')">Cancelar</button></div>
+    <div class="modal-actions"><button class="btn" onclick="closeModal('loadModal')">Cancelar</button></div>
   </div>
 </div>
-</div>
 
-<!-- ══════════════════════════════════════
-  VIEW 3: PESTEL
-══════════════════════════════════════ -->
-<div id="view-pestel" class="view">
-<div class="tool-app">
-
-  <!-- PRINT HEADER -->
-  <div class="print-only" style="padding-bottom:14px;margin-bottom:14px;border-bottom:2px solid #2d2620">
-    <div style="display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px;margin-bottom:14px">
-      <div><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:2.6rem;letter-spacing:-.04em;color:#2d2620;line-height:1">PESTEL</div><div style="font-size:.78rem;color:#a09284;margin-top:4px">Análisis estratégico del entorno</div></div>
-      <div style="text-align:right"><div style="font-family:'Syne',sans-serif;font-weight:700;font-size:1.15rem;color:#2d2620" id="pPrintProject"></div><div style="font-size:.74rem;color:#a09284;margin-top:2px" id="pPrintDate"></div></div>
-    </div>
-    <div class="print-stats" style="gap:0;border:1.5px solid #e4ddd5;border-radius:10px;overflow:hidden">
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #e4ddd5"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#2d2620" id="pPNum0">0</div><div style="font-size:.63rem;color:#a09284;text-transform:uppercase;letter-spacing:.08em">Total</div></div>
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #e4ddd5"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#3a8050" id="pPNum1">0</div><div style="font-size:.63rem;color:#a09284;text-transform:uppercase;letter-spacing:.08em">Positivos</div></div>
-      <div style="flex:1;padding:10px 16px;border-right:1px solid #e4ddd5"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#b04040" id="pPNum2">0</div><div style="font-size:.63rem;color:#a09284;text-transform:uppercase;letter-spacing:.08em">Negativos</div></div>
-      <div style="flex:1;padding:10px 16px"><div style="font-family:'Syne',sans-serif;font-weight:800;font-size:1.3rem;color:#906820" id="pPNum3">0</div><div style="font-size:.63rem;color:#a09284;text-transform:uppercase;letter-spacing:.08em">Neutros</div></div>
-    </div>
-  </div>
-
-  <div class="back-bar">
-    <button class="back-btn" onclick="showView('home')">
-      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
-      Volver al menú principal
-    </button>
-  </div>
-
-  <header class="tool-header">
-    <div class="logo-area"><h1>PESTEL <span>·</span></h1><p>Herramienta de análisis estratégico del entorno</p></div>
-    <div class="header-actions">
-      <button class="btn btn-json" onclick="pOpenSaveModal()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
-        Guardar progreso
-      </button>
-      <button class="btn btn-json" onclick="pOpenLoadModal()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-        Cargar progreso
-      </button>
-      <div class="btn-sep"></div>
-      <button class="btn btn-primary" onclick="pExportPDF()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Descargar PDF
-      </button>
-      <div class="btn-sep"></div>
-      <button class="btn btn-danger" onclick="pClearAll()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M8 6V4h8v2"/></svg>
-        Limpiar
-      </button>
-    </div>
-  </header>
-
-  <div class="project-bar">
-    <span class="project-label">Proyecto</span>
-    <input type="text" id="pProjectName" class="project-input" placeholder="Nombre de la empresa u organización…" oninput="pAutoSave()"/>
-  </div>
-
-  <div class="stats-bar">
-    <div class="stat-item"><div class="stat-num" id="pStatTotal" style="color:#2d2620">0</div><div class="stat-label">Total</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="pStatPos" style="color:#4a9460">0</div><div class="stat-label">Positivos</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="pStatNeg" style="color:#c06060">0</div><div class="stat-label">Negativos</div></div>
-    <div class="stat-sep"></div>
-    <div class="stat-item"><div class="stat-num" id="pStatNeu" style="color:#b08030">0</div><div class="stat-label">Neutros</div></div>
-  </div>
-
-  <div class="legend-bar">
-    <span style="font-size:.75rem;color:#a09284;font-weight:600;margin-right:4px">Impacto:</span>
-    <span class="legend-item"><span class="legend-dot" style="background:#8ec9a0"></span>Positivo (+)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:#e8a0a0"></span>Negativo (−)</span>
-    <span class="legend-item"><span class="legend-dot" style="background:#e8c07a"></span>Neutro (≈)</span>
-    <span style="margin-left:auto;font-size:.73rem;color:#a09284;font-style:italic">Clic en texto para editar · Auto-guardado activo</span>
-  </div>
-
-  <div class="pestel-grid" id="pGrid"></div>
-</div>
-
-<!-- PESTEL MODALS -->
-<div class="modal-backdrop" id="pSaveModal" onclick="pCloseModal('pSaveModal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <h2>💾 Guardar progreso</h2>
-    <p>Descarga un archivo <strong>.json</strong> con todos tus factores. Puedes cargarlo después para continuar exactamente donde lo dejaste.</p>
-    <div class="json-preview" id="pJsonPreview"></div>
+<div class="modal-backdrop" id="confirmModal" onclick="closeModal('confirmModal')">
+  <div class="modal" onclick="event.stopPropagation()" style="max-width:400px">
+    <h2 id="confirmTitle">¿Confirmar?</h2>
+    <p id="confirmText"></p>
     <div class="modal-actions">
-      <button class="btn btn-ghost" onclick="pCloseModal('pSaveModal')">Cancelar</button>
-      <button class="btn btn-primary" onclick="pDownloadJSON()">
-        <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
-        Descargar .json
-      </button>
+      <button class="btn" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn btn-fill" style="--bf:#dc2626; --bs:#8b94ac" onclick="runConfirm()">Sí, continuar</button>
     </div>
   </div>
 </div>
 
-<div class="modal-backdrop" id="pLoadModal" onclick="pCloseModal('pLoadModal')">
-  <div class="modal" onclick="event.stopPropagation()">
-    <h2>📂 Cargar progreso</h2>
-    <p>Selecciona o arrastra un archivo <strong>.json</strong> exportado previamente. El análisis actual será <strong>reemplazado</strong>.</p>
-    <div class="drop-zone" id="pDropZone" onclick="document.getElementById('pFileInput').click()" ondragover="pDragOver(event)" ondragleave="pDragLeave()" ondrop="pDropFile(event)">
-      <input type="file" id="pFileInput" accept=".json,application/json" onchange="pLoadFileInput(event)">
-      <span class="icon">🗂️</span>
-      <p><strong>Haz clic aquí</strong> o arrastra tu archivo<br><span style="font-size:.75rem">Solo archivos .json generados por esta herramienta</span></p>
-    </div>
-    <div class="modal-actions"><button class="btn btn-ghost" onclick="pCloseModal('pLoadModal')">Cancelar</button></div>
-  </div>
-</div>
-</div>
-
-<!-- SHARED TOAST -->
 <div class="toast" id="toast"></div>
+
+<!-- Plantilla oculta para exportación en carta horizontal (11 × 8.5) -->
+<div id="exportDoc" aria-hidden="true"></div>
 
 <script>
 /* ══════════════════════════════════════
-   NAVIGATION
+   CONFIGURACIÓN DE LAS TRES HERRAMIENTAS
+══════════════════════════════════════ */
+const TOOLS = {
+  foda: {
+    name: 'FODA', app: 'Análisis FODA', ls: 'foda_v1', accent: '#059669',
+    tagline: 'Análisis estratégico interno y externo de la organización',
+    hasImpact: false, layout: 'quad',
+    axisTop: ['⬤ Interno', '◯ Externo'], axisSides: ['Positivo', 'Negativo'],
+    rows: [['F','O'], ['D','A']],
+    cats: [
+      { key:'F', label:'Fortalezas',    sub:'Capacidades internas que dan ventaja competitiva',       c:'#059669', l:'#e7f7f0' },
+      { key:'O', label:'Oportunidades', sub:'Factores externos que la organización puede aprovechar', c:'#2563eb', l:'#e9f0fe' },
+      { key:'D', label:'Debilidades',   sub:'Aspectos internos que limitan el desempeño',             c:'#dc2626', l:'#fdeaea' },
+      { key:'A', label:'Amenazas',      sub:'Factores externos que pueden afectar negativamente',     c:'#ea580c', l:'#fdefe6' }
+    ]
+  },
+  pestel: {
+    name: 'PESTEL', app: 'Análisis PESTEL', ls: 'pestel_v1', accent: '#7c3aed',
+    tagline: 'Herramienta de análisis estratégico del macroentorno',
+    hasImpact: true, layout: 'grid3',
+    cats: [
+      { key:'P',  label:'Político',    sub:'Regulaciones, gobiernos, políticas', c:'#dc2626', l:'#fdeaea' },
+      { key:'E',  label:'Económico',   sub:'Mercados, ciclos, finanzas',          c:'#d97706', l:'#fdf3e1' },
+      { key:'S',  label:'Social',      sub:'Demografía, cultura, tendencias',     c:'#059669', l:'#e7f7f0' },
+      { key:'T',  label:'Tecnológico', sub:'Innovación, automatización, I+D',     c:'#2563eb', l:'#e9f0fe' },
+      { key:'Ec', label:'Ecológico',   sub:'Medio ambiente, sostenibilidad',      c:'#7c3aed', l:'#f0e9fd' },
+      { key:'L',  label:'Legal',       sub:'Legislación, derechos, cumplimiento', c:'#db2777', l:'#fce8f1' }
+    ]
+  },
+  faro: {
+    name: 'FARO', app: 'Análisis FARO', ls: 'faro_v1', accent: '#4f46e5',
+    tagline: 'Navegación estratégica con mentalidad proactiva',
+    hasImpact: false, layout: 'quad',
+    axisTop: null, axisSides: ['Interno', 'Entorno'],
+    rows: [['F','A'], ['R','O']],
+    cats: [
+      { key:'F', label:'Fortalezas',      sub:'Ventajas competitivas del proyecto',        c:'#059669', l:'#e7f7f0' },
+      { key:'A', label:'Áreas de Mejora', sub:'Puntos críticos internos en optimización',  c:'#d97706', l:'#fdf3e1' },
+      { key:'R', label:'Retos',           sub:'Desafíos del entorno a superar',            c:'#e11d48', l:'#fce8ec' },
+      { key:'O', label:'Oportunidades',   sub:'Nuevos escenarios de crecimiento',          c:'#2563eb', l:'#e9f0fe' }
+    ]
+  }
+};
+
+// Estado de datos
+const data = {};
+Object.keys(TOOLS).forEach(t => {
+  data[t] = {};
+  TOOLS[t].cats.forEach(c => data[t][c.key] = []);
+});
+
+let currentTool = null;   // herramienta activa (para modales de guardar/cargar)
+let confirmCallback = null;
+
+/* ══════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════ */
+function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function el(id) { return document.getElementById(id); }
+function catOf(t, k) { return TOOLS[t].cats.find(c => c.key === k); }
+function fechaHoy() { return new Date().toLocaleDateString('es-CR', { year:'numeric', month:'long', day:'numeric' }); }
+
+let toastT;
+function showToast(msg, type = 'ok') {
+  const tt = el('toast');
+  tt.textContent = msg;
+  tt.className = `toast ${type} show`;
+  clearTimeout(toastT);
+  toastT = setTimeout(() => tt.classList.remove('show'), 2800);
+}
+
+function closeModal(id) { el(id).classList.remove('open'); }
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') ['saveModal','loadModal','confirmModal'].forEach(closeModal);
+});
+
+function askConfirm(title, text, cb) {
+  el('confirmTitle').textContent = title;
+  el('confirmText').textContent = text;
+  confirmCallback = cb;
+  el('confirmModal').classList.add('open');
+}
+function runConfirm() {
+  closeModal('confirmModal');
+  if (confirmCallback) { confirmCallback(); confirmCallback = null; }
+}
+
+/* ══════════════════════════════════════
+   NAVEGACIÓN
 ══════════════════════════════════════ */
 function showView(name) {
   document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-  document.getElementById('view-' + name).classList.add('active');
-  document.body.className = name === 'home' ? 'home' : name + '-view';
+  el('view-' + name).classList.add('active');
   window.scrollTo(0, 0);
-  if (name === 'foda') { fRenderAll(); fAutoLoad(); fUpdateStats(); }
-  if (name === 'pestel') { pRenderAll(); pAutoLoad(); pUpdateStats(); }
-}
-
-/* ══════════════════════════════════════
-   SHARED UTILITIES
-══════════════════════════════════════ */
-function esc(str) { return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
-let toastT;
-function showToast(msg, type='ok') {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.className = `toast ${type} show`;
-  clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('show'), 2800);
-}
-function el(id) { return document.getElementById(id); }
-function setText(id, v) { const e = el(id); if(e) e.textContent = v; }
-
-document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') {
-    ['fSaveModal','fLoadModal','pSaveModal','pLoadModal'].forEach(id => {
-      const m = el(id); if(m) m.classList.remove('open');
-    });
+  if (name !== 'home') {
+    currentTool = name;
+    buildToolView(name);
+    autoLoad(name);
+    updateStats(name);
   }
-});
+}
 
 /* ══════════════════════════════════════
-   FODA LOGIC
+   CONSTRUCCIÓN DE VISTAS DE HERRAMIENTA
 ══════════════════════════════════════ */
-const F_CATS = [
-  {key:'F', label:'Fortalezas',    sub:'Capacidades internas que dan ventaja competitiva',       color:'#5a8a48', light:'#edf5e9', mid:'#c8e0be', dark:'#3d6030'},
-  {key:'O', label:'Oportunidades', sub:'Factores externos que la organización puede aprovechar', color:'#4a7aaa', light:'#e8f2fc', mid:'#b8d4f0', dark:'#2d5580'},
-  {key:'D', label:'Debilidades',   sub:'Aspectos internos que limitan el desempeño',             color:'#c06060', light:'#fdf0f0', mid:'#f0c8c8', dark:'#8a3030'},
-  {key:'A', label:'Amenazas',      sub:'Factores externos que pueden afectar negativamente',     color:'#c07840', light:'#fdf4ec', mid:'#f0d8b8', dark:'#8a5020'},
-];
-const F_ROW_POS = ['F','O'], F_ROW_NEG = ['D','A'];
-let fData = {F:[],O:[],D:[],A:[]};
-const F_LS = 'foda_v1';
-
-function fAddFactor(k, text) {
-  if (!text.trim()) return;
-  fData[k].push({id: Date.now()+Math.random(), text: text.trim()});
-  fRenderCard(k); fUpdateStats(); fAutoSave();
-}
-function fDeleteFactor(k, id) {
-  fData[k] = fData[k].filter(f => f.id !== id);
-  fRenderCard(k); fUpdateStats(); fAutoSave();
-}
-function fUpdateFactorText(k, id, text) {
-  const f = fData[k].find(x => x.id === id);
-  if (f && text.trim()) f.text = text.trim();
-  fAutoSave();
-}
-function fUpdateStats() {
-  const total = Object.values(fData).flat().length;
-  setText('fStatTotal', total); setText('fPNum0', total);
-  ['F','O','D','A'].forEach((k,i) => { setText('fStat'+k, fData[k].length); setText('fPNum'+(i+1), fData[k].length); });
-}
-function fRenderCard(catKey) {
-  const cat = F_CATS.find(c => c.key === catKey);
-  const card = el('fCard-'+catKey);
-  if (!card) return;
-  const factors = fData[catKey];
-  card.querySelector('.factor-count').textContent = factors.length;
-  card.querySelector('.factors-list').innerHTML = factors.length === 0
-    ? `<p class="empty-hint">Sin factores — añade el primero abajo</p>`
-    : factors.map((f,i) => `
-      <div class="factor-item" style="background:${cat.light}">
-        <span class="factor-num" style="background:${cat.mid};color:${cat.dark}">${i+1}</span>
-        <span class="factor-text" contenteditable="true"
-          onblur="fUpdateFactorText('${catKey}',${f.id},this.textContent)"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-        >${esc(f.text)}</span>
-        <button class="delete-btn" onclick="fDeleteFactor('${catKey}',${f.id})" title="Eliminar">×</button>
-      </div>`).join('');
-}
-function fBuildCard(cat) {
+function buildCard(t, cat) {
   return `
-  <div class="foda-card" id="fCard-${cat.key}" style="border-color:${cat.mid}">
-    <div class="card-header" style="background:${cat.light};border-bottom-color:${cat.mid}">
-      <div class="card-badge" style="background:${cat.mid};color:${cat.dark}">${cat.key}</div>
+  <div class="cat-card" id="card-${t}-${cat.key}" style="--cc:${cat.c}; --cl:${cat.l}">
+    <div class="card-header">
+      <div class="card-badge">${cat.key}</div>
       <div class="card-title-wrap">
-        <div class="card-title" style="color:${cat.color}">${cat.label}</div>
-        <div class="card-sub" style="color:#8fa082">${cat.sub}</div>
+        <div class="card-title" style="color:${cat.c}">${cat.label}</div>
+        <div class="card-sub">${cat.sub}</div>
       </div>
-      <span class="factor-count" style="background:${cat.mid};color:${cat.dark}">0</span>
+      <span class="factor-count">0</span>
     </div>
-    <div class="factors-list"><p class="empty-hint">Sin factores — añade el primero abajo</p></div>
+    <div class="factors-list"><p class="empty-hint">Sin factores — añada el primero abajo</p></div>
     <div class="add-area">
       <div class="add-row">
-        <input class="add-input" id="fInput-${cat.key}" placeholder="Agregar factor…"
-          onkeydown="if(event.key==='Enter') fAddFromInput('${cat.key}')"/>
-        <button class="add-btn" style="background:${cat.color}" onclick="fAddFromInput('${cat.key}')">+</button>
+        <input class="add-input" id="inp-${t}-${cat.key}" placeholder="Agregar factor…"
+          onkeydown="if(event.key==='Enter') addFromInput('${t}','${cat.key}')"/>
+        <button class="add-btn" onclick="addFromInput('${t}','${cat.key}')">+</button>
       </div>
     </div>
   </div>`;
 }
-function fRenderAll() {
-  el('fRowPos').innerHTML = F_ROW_POS.map(k => fBuildCard(F_CATS.find(c=>c.key===k))).join('');
-  el('fRowNeg').innerHTML = F_ROW_NEG.map(k => fBuildCard(F_CATS.find(c=>c.key===k))).join('');
-  ['F','O','D','A'].forEach(k => fRenderCard(k));
-}
-function fAddFromInput(k) {
-  const inp = el('fInput-'+k);
-  if (inp.value.trim()) { fAddFactor(k, inp.value); inp.value=''; inp.focus(); }
-}
-function fClearAll() {
-  if (!confirm('¿Eliminar todos los factores?\nEsta acción no se puede deshacer.')) return;
-  ['F','O','D','A'].forEach(k => { fData[k]=[]; fRenderCard(k); });
-  el('fProjectName').value='';
-  fUpdateStats(); fAutoSave(); showToast('Análisis limpiado','ok');
-}
-function fAutoSave() {
-  try { localStorage.setItem(F_LS, JSON.stringify({version:1, project:el('fProjectName').value, savedAt:new Date().toISOString(), data:fData})); } catch(e){}
-}
-function fAutoLoad() {
-  try {
-    const raw = localStorage.getItem(F_LS); if (!raw) return;
-    const snap = JSON.parse(raw); if (!snap.data) return;
-    fData = {F:[],O:[],D:[],A:[]};
-    ['F','O','D','A'].forEach(k => { fData[k]=(snap.data[k]||[]).map(f=>({id:f.id||Date.now()+Math.random(),text:f.text||''})); });
-    el('fProjectName').value = snap.project||'';
-    ['F','O','D','A'].forEach(k => fRenderCard(k)); fUpdateStats();
-    if (Object.values(fData).flat().length > 0) showToast('✓ Progreso restaurado','ok');
-  } catch(e){}
-}
-function fBuildSnap() { return {version:1,appName:'Análisis FODA',project:el('fProjectName').value||'Sin título',savedAt:new Date().toISOString(),data:fData}; }
-function fOpenSaveModal() { el('fJsonPreview').textContent = JSON.stringify(fBuildSnap(),null,2); el('fSaveModal').classList.add('open'); }
-function fDownloadJSON() {
-  const snap = fBuildSnap();
-  const slug = snap.project.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'')||'foda';
-  const blob = new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=`FODA_${slug}_${new Date().toISOString().slice(0,10)}.json`; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  fCloseModal('fSaveModal'); showToast('✓ Archivo JSON descargado','ok');
-}
-function fOpenLoadModal() { el('fLoadModal').classList.add('open'); }
-function fLoadJSON(str) {
-  try {
-    const snap = JSON.parse(str); if (!snap.data) throw 0;
-    fData = {F:[],O:[],D:[],A:[]};
-    ['F','O','D','A'].forEach(k => { fData[k]=(snap.data[k]||[]).map(f=>({id:f.id||Date.now()+Math.random(),text:f.text||''})); });
-    el('fProjectName').value = snap.project||'';
-    ['F','O','D','A'].forEach(k => fRenderCard(k)); fUpdateStats(); fAutoSave();
-    fCloseModal('fLoadModal'); showToast('✓ Análisis cargado','ok');
-  } catch(e) { showToast('✗ Archivo JSON inválido','err'); }
-}
-function fLoadFileInput(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>fLoadJSON(ev.target.result); r.readAsText(f); e.target.value=''; }
-function fDragOver(e) { e.preventDefault(); el('fDropZone').classList.add('dragover'); }
-function fDragLeave() { el('fDropZone').classList.remove('dragover'); }
-function fDropFile(e) { e.preventDefault(); fDragLeave(); const f=e.dataTransfer.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>fLoadJSON(ev.target.result); r.readAsText(f); }
-function fCloseModal(id) { el(id).classList.remove('open'); }
-function fExportPDF() {
-  el('fPrintProject').textContent = el('fProjectName').value||'Análisis FODA';
-  el('fPrintDate').textContent = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
-  setTimeout(()=>window.print(),100);
+
+function buildToolView(t) {
+  const cfg = TOOLS[t];
+  const view = el('view-' + t);
+  if (view.dataset.built) { cfg.cats.forEach(c => renderCard(t, c.key)); return; }
+
+  let statsHTML = '';
+  const statDefs = getStatDefs(t);
+  statDefs.forEach((s, i) => {
+    statsHTML += `<div class="stat-chip" style="--sc:${s.color}"><div class="stat-num" id="st-${t}-${i}">0</div><div class="stat-label">${s.label}</div></div>`;
+  });
+
+  let legendHTML = '';
+  if (cfg.hasImpact) {
+    legendHTML = `
+    <div class="legend-bar">
+      <span style="font-weight:800; color:var(--muted); text-transform:uppercase; font-size:.66rem; letter-spacing:.08em">Impacto:</span>
+      <span><span class="legend-dot" style="background:#059669"></span>Positivo (+)</span>
+      <span><span class="legend-dot" style="background:#dc2626"></span>Negativo (−)</span>
+      <span><span class="legend-dot" style="background:#d97706"></span>Neutro (≈)</span>
+      <span class="legend-hint">Clic en un texto para editarlo · Auto-guardado activo</span>
+    </div>`;
+  } else {
+    legendHTML = `
+    <div class="legend-bar">
+      ${cfg.cats.map(c => `<span><span class="legend-dot" style="background:${c.c}"></span>${c.label}</span>`).join('')}
+      <span class="legend-hint">Clic en un texto para editarlo · Auto-guardado activo</span>
+    </div>`;
+  }
+
+  let gridHTML = '';
+  if (cfg.layout === 'quad') {
+    const topAxis = cfg.axisTop
+      ? `<div class="axis-top"><div class="axis-lbl">${cfg.axisTop[0]}</div><div class="axis-lbl">${cfg.axisTop[1]}</div></div>`
+      : `<div></div>`;
+    gridHTML = `
+    <div class="axis-wrap">
+      <div></div>
+      ${topAxis}
+      <div class="axis-lbl axis-side">${cfg.axisSides[0]}</div>
+      <div class="grid-2">${cfg.rows[0].map(k => buildCard(t, catOf(t, k))).join('')}</div>
+      <div class="axis-lbl axis-side" style="grid-row:3">${cfg.axisSides[1]}</div>
+      <div class="grid-2" style="grid-row:3; margin-top:16px">${cfg.rows[1].map(k => buildCard(t, catOf(t, k))).join('')}</div>
+    </div>`;
+  } else {
+    gridHTML = `<div class="grid-3">${cfg.cats.map(c => buildCard(t, c)).join('')}</div>`;
+  }
+
+  view.innerHTML = `
+  <div class="tool-app">
+    <div class="back-bar">
+      <button class="back-btn" onclick="showView('home')">
+        <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver al menú principal
+      </button>
+    </div>
+
+    <header class="tool-header" style="--ta:${cfg.accent}">
+      <div class="logo-area">
+        <h1>${cfg.name} <span class="dot">·</span></h1>
+        <p>${cfg.tagline}</p>
+      </div>
+      <div class="header-actions">
+        <button class="btn" style="--bs:${cfg.accent}" onclick="openSaveModal('${t}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+          Guardar
+        </button>
+        <button class="btn" style="--bs:${cfg.accent}" onclick="openLoadModal('${t}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+          Cargar
+        </button>
+        <button class="btn btn-fill" id="btnPng-${t}" style="--bf:#7c3aed; --bs:#16203a" onclick="exportTool('${t}','png')">
+          <span class="btn-icon"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+          <span class="btn-txt">PNG</span>
+        </button>
+        <button class="btn btn-fill" id="btnPdf-${t}" style="--bf:#059669; --bs:#16203a" onclick="exportTool('${t}','pdf')">
+          <span class="btn-icon"><svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+          <span class="btn-txt">PDF</span>
+        </button>
+        <button class="btn btn-danger" onclick="clearAll('${t}')">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24"><path d="M3 6h18M19 6l-1 14H6L5 6M8 6V4h8v2"/></svg>
+          Limpiar
+        </button>
+      </div>
+    </header>
+
+    <div class="project-bar" style="--ta:${cfg.accent}">
+      <span class="project-label">Proyecto</span>
+      <input type="text" id="project-${t}" class="project-input" placeholder="Nombre de la empresa u organización…" oninput="autoSave('${t}')"/>
+    </div>
+
+    <div class="stats-bar">${statsHTML}</div>
+    ${legendHTML}
+    ${gridHTML}
+  </div>`;
+
+  view.dataset.built = '1';
+  cfg.cats.forEach(c => renderCard(t, c.key));
 }
 
 /* ══════════════════════════════════════
-   PESTEL LOGIC
+   ESTADÍSTICAS
 ══════════════════════════════════════ */
-const P_CATS = [
-  {key:'P',  label:'Político',    sub:'Regulaciones, gobiernos, políticas', color:'#c26060', light:'#fdf0f0', mid:'#f5d0d0'},
-  {key:'E',  label:'Económico',   sub:'Mercados, ciclos, finanzas',          color:'#b88a30', light:'#fdf7ec', mid:'#f5e2b0'},
-  {key:'S',  label:'Social',      sub:'Demografía, cultura, tendencias',     color:'#4a9460', light:'#eef8f1', mid:'#c2e8cc'},
-  {key:'T',  label:'Tecnológico', sub:'Innovación, automatización, I+D',     color:'#3a7aaa', light:'#eaf4fc', mid:'#b8d8f0'},
-  {key:'Ec', label:'Ecológico',   sub:'Medio ambiente, sostenibilidad',      color:'#6a52b0', light:'#f2eff9', mid:'#d4c8f4'},
-  {key:'L',  label:'Legal',       sub:'Legislación, derechos, cumplimiento', color:'#b8508a', light:'#fdf0f6', mid:'#f4c8dc'},
-];
-let pData = {};
-P_CATS.forEach(c => { pData[c.key] = []; });
-const P_LS = 'pestel_v1';
+function getStatDefs(t) {
+  const cfg = TOOLS[t];
+  if (cfg.hasImpact) {
+    return [
+      { label:'Total',     color:'#16203a', fn: d => Object.values(d).flat().length },
+      { label:'Positivos', color:'#059669', fn: d => Object.values(d).flat().filter(f=>f.impact==='pos').length },
+      { label:'Negativos', color:'#dc2626', fn: d => Object.values(d).flat().filter(f=>f.impact==='neg').length },
+      { label:'Neutros',   color:'#d97706', fn: d => Object.values(d).flat().filter(f=>f.impact==='neu').length }
+    ];
+  }
+  return [
+    { label:'Total', color:'#16203a', fn: d => Object.values(d).flat().length },
+    ...cfg.cats.map(c => ({ label:c.label, color:c.c, fn: d => d[c.key].length }))
+  ];
+}
 
-function pAddFactor(k, text, impact='neu') {
-  if (!text.trim()) return;
-  pData[k].push({id:Date.now()+Math.random(), text:text.trim(), impact});
-  pRenderCard(k); pUpdateStats(); pAutoSave();
+function updateStats(t) {
+  getStatDefs(t).forEach((s, i) => {
+    const e = el(`st-${t}-${i}`);
+    if (e) e.textContent = s.fn(data[t]);
+  });
 }
-function pDeleteFactor(k, id) {
-  pData[k] = pData[k].filter(f => f.id !== id);
-  pRenderCard(k); pUpdateStats(); pAutoSave();
+
+/* ══════════════════════════════════════
+   CRUD DE FACTORES
+══════════════════════════════════════ */
+function addFromInput(t, k) {
+  const inp = el(`inp-${t}-${k}`);
+  const text = inp.value.trim();
+  if (!text) return;
+  const item = { id: Date.now() + Math.random(), text };
+  if (TOOLS[t].hasImpact) item.impact = 'neu';
+  data[t][k].push(item);
+  inp.value = ''; inp.focus();
+  renderCard(t, k); updateStats(t); autoSave(t);
 }
-function pSetImpact(k, id, impact) {
-  const f = pData[k].find(x => x.id === id);
+
+function deleteFactor(t, k, id) {
+  data[t][k] = data[t][k].filter(f => f.id !== id);
+  renderCard(t, k); updateStats(t); autoSave(t);
+}
+
+function setImpact(t, k, id, impact) {
+  const f = data[t][k].find(x => x.id === id);
   if (f) f.impact = (f.impact === impact) ? 'neu' : impact;
-  pRenderCard(k); pUpdateStats(); pAutoSave();
+  renderCard(t, k); updateStats(t); autoSave(t);
 }
-function pUpdateFactorText(k, id, text) {
-  const f = pData[k].find(x => x.id === id);
+
+function updateFactorText(t, k, id, text) {
+  const f = data[t][k].find(x => x.id === id);
   if (f && text.trim()) f.text = text.trim();
-  pAutoSave();
+  autoSave(t);
 }
-function pIc(i) { return i==='pos'?'#8ec9a0':i==='neg'?'#e8a0a0':'#e8c07a'; }
-function pUpdateStats() {
-  const all = Object.values(pData).flat();
-  const pos = all.filter(f=>f.impact==='pos').length;
-  const neg = all.filter(f=>f.impact==='neg').length;
-  const neu = all.filter(f=>f.impact==='neu').length;
-  ['pStatTotal','pPNum0'].forEach(id => setText(id, all.length));
-  ['pStatPos','pPNum1'].forEach(id => setText(id, pos));
-  ['pStatNeg','pPNum2'].forEach(id => setText(id, neg));
-  ['pStatNeu','pPNum3'].forEach(id => setText(id, neu));
-}
-function pRenderCard(catKey) {
-  const cat = P_CATS.find(c => c.key === catKey);
-  const card = el('pCard-'+catKey);
+
+function impactColor(i) { return i === 'pos' ? '#059669' : i === 'neg' ? '#dc2626' : '#d97706'; }
+
+function renderCard(t, k) {
+  const cat = catOf(t, k);
+  const card = el(`card-${t}-${k}`);
   if (!card) return;
-  const factors = pData[catKey];
+  const factors = data[t][k];
   card.querySelector('.factor-count').textContent = factors.length;
-  card.querySelector('.factors-list').innerHTML = factors.length===0
-    ? `<p class="empty-hint">Sin factores — añade el primero abajo</p>`
-    : factors.map(f=>`
-      <div class="factor-item" style="background:${cat.light}">
-        <span class="factor-dot" style="background:${pIc(f.impact)}"></span>
-        <span class="factor-text" contenteditable="true"
-          onblur="pUpdateFactorText('${catKey}',${f.id},this.textContent)"
-          onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
-        >${esc(f.text)}</span>
-        <div class="factor-impact">
-          <button class="impact-btn ${f.impact==='pos'?'active-pos':''}" title="Positivo" onclick="pSetImpact('${catKey}',${f.id},'pos')">+</button>
-          <button class="impact-btn ${f.impact==='neg'?'active-neg':''}" title="Negativo" onclick="pSetImpact('${catKey}',${f.id},'neg')">−</button>
-          <button class="impact-btn ${f.impact==='neu'?'active-neu':''}" title="Neutro"   onclick="pSetImpact('${catKey}',${f.id},'neu')">≈</button>
-        </div>
-        <button class="delete-btn" onclick="pDeleteFactor('${catKey}',${f.id})" title="Eliminar">×</button>
-      </div>`).join('');
+
+  card.querySelector('.factors-list').innerHTML = factors.length === 0
+    ? `<p class="empty-hint">Sin factores — añada el primero abajo</p>`
+    : factors.map((f, i) => {
+        const marker = TOOLS[t].hasImpact
+          ? `<span class="factor-dot" style="background:${impactColor(f.impact)}"></span>`
+          : `<span class="factor-num">${i + 1}</span>`;
+        const impactBtns = TOOLS[t].hasImpact
+          ? `<div class="factor-impact">
+               <button class="impact-btn ${f.impact==='pos'?'on-pos':''}" title="Positivo" onclick="setImpact('${t}','${k}',${f.id},'pos')">+</button>
+               <button class="impact-btn ${f.impact==='neg'?'on-neg':''}" title="Negativo" onclick="setImpact('${t}','${k}',${f.id},'neg')">−</button>
+               <button class="impact-btn ${f.impact==='neu'?'on-neu':''}" title="Neutro"   onclick="setImpact('${t}','${k}',${f.id},'neu')">≈</button>
+             </div>`
+          : '';
+        return `
+        <div class="factor-item">
+          ${marker}
+          <span class="factor-text" contenteditable="true"
+            onblur="updateFactorText('${t}','${k}',${f.id},this.textContent)"
+            onkeydown="if(event.key==='Enter'){event.preventDefault();this.blur()}"
+          >${esc(f.text)}</span>
+          ${impactBtns}
+          <button class="delete-btn" onclick="deleteFactor('${t}','${k}',${f.id})" title="Eliminar">×</button>
+        </div>`;
+      }).join('');
 }
-function pRenderAll() {
-  el('pGrid').innerHTML = P_CATS.map(cat=>`
-    <div class="category-card" id="pCard-${cat.key}" style="border-color:${cat.mid}">
-      <div class="card-header" style="background:${cat.light};border-bottom-color:${cat.mid}">
-        <div class="card-letter" style="background:${cat.mid};color:${cat.color}">${cat.key}</div>
-        <div class="card-title-wrap">
-          <div class="card-title" style="color:${cat.color}">${cat.label}</div>
-          <div class="card-sub" style="color:#a09284">${cat.sub}</div>
-        </div>
-        <span class="factor-count" style="background:${cat.mid};color:${cat.color}">0</span>
-      </div>
-      <div class="factors-list"><p class="empty-hint">Sin factores — añade el primero abajo</p></div>
-      <div class="add-area">
-        <div class="add-row">
-          <input class="add-input" id="pInput-${cat.key}" placeholder="Agregar factor…"
-            onkeydown="if(event.key==='Enter') pAddFromInput('${cat.key}')"/>
-          <button class="add-btn" style="background:${cat.color}" onclick="pAddFromInput('${cat.key}')">+</button>
-        </div>
-      </div>
-    </div>`).join('');
+
+function clearAll(t) {
+  askConfirm('¿Eliminar todos los factores?', 'Se borrarán todos los factores del análisis ' + TOOLS[t].name + '. Esta acción no se puede deshacer.', () => {
+    TOOLS[t].cats.forEach(c => { data[t][c.key] = []; renderCard(t, c.key); });
+    el('project-' + t).value = '';
+    updateStats(t); autoSave(t);
+    showToast('Análisis limpiado', 'ok');
+  });
 }
-function pAddFromInput(k) {
-  const inp = el('pInput-'+k);
-  if (inp.value.trim()) { pAddFactor(k, inp.value); inp.value=''; inp.focus(); }
+
+/* ══════════════════════════════════════
+   PERSISTENCIA (localStorage + JSON)
+══════════════════════════════════════ */
+function buildSnap(t) {
+  return { version: 1, appName: TOOLS[t].app, project: el('project-' + t).value || 'Sin título', savedAt: new Date().toISOString(), data: data[t] };
 }
-function pClearAll() {
-  if (!confirm('¿Eliminar todos los factores?\nEsta acción no se puede deshacer.')) return;
-  P_CATS.forEach(c => { pData[c.key]=[]; pRenderCard(c.key); });
-  el('pProjectName').value='';
-  pUpdateStats(); pAutoSave(); showToast('Análisis limpiado','ok');
+
+function autoSave(t) {
+  try { localStorage.setItem(TOOLS[t].ls, JSON.stringify(buildSnap(t))); } catch (e) {}
 }
-function pAutoSave() {
-  try { localStorage.setItem(P_LS, JSON.stringify({version:1, project:el('pProjectName').value, savedAt:new Date().toISOString(), data:pData})); } catch(e){}
+
+function applySnap(t, snap) {
+  TOOLS[t].cats.forEach(c => {
+    data[t][c.key] = (snap.data[c.key] || []).map(f => {
+      const item = { id: f.id || Date.now() + Math.random(), text: f.text || '' };
+      if (TOOLS[t].hasImpact) item.impact = f.impact || 'neu';
+      return item;
+    });
+  });
+  el('project-' + t).value = (snap.project && snap.project !== 'Sin título') ? snap.project : '';
+  TOOLS[t].cats.forEach(c => renderCard(t, c.key));
+  updateStats(t);
 }
-function pAutoLoad() {
+
+function autoLoad(t) {
   try {
-    const raw = localStorage.getItem(P_LS); if (!raw) return;
-    const snap = JSON.parse(raw); if (!snap.data) return;
-    pData = {};
-    P_CATS.forEach(c => { pData[c.key]=(snap.data[c.key]||[]).map(f=>({id:f.id||Date.now()+Math.random(),text:f.text||'',impact:f.impact||'neu'})); });
-    el('pProjectName').value = snap.project||'';
-    P_CATS.forEach(c => pRenderCard(c.key)); pUpdateStats();
-    if (Object.values(pData).flat().length > 0) showToast('✓ Progreso restaurado','ok');
-  } catch(e){}
+    const raw = localStorage.getItem(TOOLS[t].ls);
+    if (!raw) return;
+    const snap = JSON.parse(raw);
+    if (!snap.data) return;
+    applySnap(t, snap);
+    if (Object.values(data[t]).flat().length > 0) showToast('✓ Progreso restaurado', 'ok');
+  } catch (e) {}
 }
-function pBuildSnap() { return {version:1,appName:'Análisis PESTEL',project:el('pProjectName').value||'Sin título',savedAt:new Date().toISOString(),data:pData}; }
-function pOpenSaveModal() { el('pJsonPreview').textContent = JSON.stringify(pBuildSnap(),null,2); el('pSaveModal').classList.add('open'); }
-function pDownloadJSON() {
-  const snap = pBuildSnap();
-  const slug = snap.project.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'')||'pestel';
-  const blob = new Blob([JSON.stringify(snap,null,2)],{type:'application/json'});
+
+function openSaveModal(t) {
+  currentTool = t;
+  el('jsonPreview').textContent = JSON.stringify(buildSnap(t), null, 2);
+  el('saveModal').classList.add('open');
+}
+
+function downloadJSON() {
+  const t = currentTool;
+  const snap = buildSnap(t);
+  const slug = snap.project.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '') || t;
+  const blob = new Blob([JSON.stringify(snap, null, 2)], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a'); a.href=url; a.download=`PESTEL_${slug}_${new Date().toISOString().slice(0,10)}.json`; a.click();
-  setTimeout(()=>URL.revokeObjectURL(url),1000);
-  pCloseModal('pSaveModal'); showToast('✓ Archivo JSON descargado','ok');
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${TOOLS[t].name}_${slug}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  closeModal('saveModal');
+  showToast('✓ Archivo JSON descargado', 'ok');
 }
-function pOpenLoadModal() { el('pLoadModal').classList.add('open'); }
-function pLoadJSON(str) {
+
+function openLoadModal(t) {
+  currentTool = t;
+  el('loadModal').classList.add('open');
+}
+
+function loadJSONText(str) {
+  const t = currentTool;
   try {
-    const snap = JSON.parse(str); if (!snap.data) throw 0;
-    pData = {};
-    P_CATS.forEach(c => { pData[c.key]=(snap.data[c.key]||[]).map(f=>({id:f.id||Date.now()+Math.random(),text:f.text||'',impact:f.impact||'neu'})); });
-    el('pProjectName').value = snap.project||'';
-    P_CATS.forEach(c => pRenderCard(c.key)); pUpdateStats(); pAutoSave();
-    pCloseModal('pLoadModal'); showToast('✓ Análisis cargado','ok');
-  } catch(e) { showToast('✗ Archivo JSON inválido','err'); }
+    const snap = JSON.parse(str);
+    if (!snap.data) throw 0;
+    applySnap(t, snap);
+    autoSave(t);
+    closeModal('loadModal');
+    showToast('✓ Análisis cargado', 'ok');
+  } catch (e) {
+    showToast('✗ Archivo JSON inválido', 'err');
+  }
 }
-function pLoadFileInput(e) { const f=e.target.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>pLoadJSON(ev.target.result); r.readAsText(f); e.target.value=''; }
-function pDragOver(e) { e.preventDefault(); el('pDropZone').classList.add('dragover'); }
-function pDragLeave() { el('pDropZone').classList.remove('dragover'); }
-function pDropFile(e) { e.preventDefault(); pDragLeave(); const f=e.dataTransfer.files[0]; if(!f)return; const r=new FileReader(); r.onload=ev=>pLoadJSON(ev.target.result); r.readAsText(f); }
-function pCloseModal(id) { el(id).classList.remove('open'); }
-function pExportPDF() {
-  el('pPrintProject').textContent = el('pProjectName').value||'Análisis PESTEL';
-  el('pPrintDate').textContent = new Date().toLocaleDateString('es-MX',{year:'numeric',month:'long',day:'numeric'});
-  setTimeout(()=>window.print(),100);
+
+function loadFileInput(e) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+function dropFile(e) {
+  e.preventDefault();
+  el('dropZone').classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+}
+
+/* ══════════════════════════════════════
+   EXPORTACIÓN PNG / PDF
+   Carta horizontal: 11 × 8.5 pulgadas
+══════════════════════════════════════ */
+function buildExportDoc(t) {
+  const cfg = TOOLS[t];
+  const project = el('project-' + t).value.trim() || cfg.app;
+  const statDefs = getStatDefs(t);
+
+  const statsHTML = statDefs.map(s =>
+    `<div class="xp-stat"><div class="xp-stat-num" style="color:${s.color}">${s.fn(data[t])}</div><div class="xp-stat-lbl">${s.label}</div></div>`
+  ).join('');
+
+  const cardHTML = (cat) => {
+    const factors = data[t][cat.key];
+    const items = factors.length === 0
+      ? `<p class="xp-empty">Sin factores registrados</p>`
+      : factors.map((f, i) => {
+          const marker = cfg.hasImpact
+            ? `<span class="xp-item-dot" style="background:${impactColor(f.impact)}"></span>`
+            : `<span class="xp-item-num" style="background:${cat.c}">${i + 1}</span>`;
+          return `<div class="xp-item">${marker}<span>${esc(f.text)}</span></div>`;
+        }).join('');
+    return `
+    <div class="xp-card">
+      <div class="xp-card-head" style="background:${cat.l}">
+        <div class="xp-badge" style="background:${cat.c}">${cat.key}</div>
+        <div class="xp-card-title" style="color:${cat.c}">${cat.label}</div>
+        <div class="xp-count" style="border:2px solid ${cat.c}; color:${cat.c}">${factors.length}</div>
+      </div>
+      <div class="xp-list">${items}</div>
+    </div>`;
+  };
+
+  const gridCols = cfg.layout === 'grid3' ? 'grid-template-columns:repeat(3,1fr); grid-template-rows:repeat(2,1fr)' : 'grid-template-columns:repeat(2,1fr); grid-template-rows:repeat(2,1fr)';
+  const orderedCats = cfg.layout === 'quad' ? [...cfg.rows[0], ...cfg.rows[1]].map(k => catOf(t, k)) : cfg.cats;
+
+  el('exportDoc').innerHTML = `
+    <div class="xp-head">
+      <div>
+        <div class="xp-title">${cfg.name}</div>
+        <div class="xp-subtitle">${cfg.tagline}</div>
+      </div>
+      <div class="xp-meta">
+        <div class="xp-project">${esc(project)}</div>
+        <div class="xp-date">${fechaHoy()}</div>
+      </div>
+    </div>
+    <div class="xp-rule" style="background:repeating-linear-gradient(-45deg, ${cfg.accent} 0 12px, #ffffff 12px 24px)"></div>
+    <div class="xp-stats">${statsHTML}</div>
+    <div class="xp-grid" style="${gridCols}">${orderedCats.map(cardHTML).join('')}</div>
+    <div class="xp-foot">
+      <span>${cfg.app} · Suite de Análisis Estratégico</span>
+      <span>Formato carta horizontal (11" × 8.5")</span>
+    </div>`;
+}
+
+function setBtnLoading(btn, loading, defaultText) {
+  if (!btn) return;
+  const txt = btn.querySelector('.btn-txt');
+  const icon = btn.querySelector('.btn-icon');
+  btn.disabled = loading;
+  if (txt) txt.textContent = loading ? 'Generando…' : defaultText;
+  if (icon) {
+    if (!icon.dataset.original) icon.dataset.original = icon.innerHTML;
+    icon.innerHTML = loading
+      ? '<svg class="spin" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+      : icon.dataset.original;
+  }
+}
+
+async function exportTool(t, fmt) {
+  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined') {
+    showToast('Las librerías aún no cargan. Intente en un segundo.', 'err');
+    return;
+  }
+  const btn = el(fmt === 'png' ? `btnPng-${t}` : `btnPdf-${t}`);
+  setBtnLoading(btn, true, fmt.toUpperCase());
+
+  try {
+    buildExportDoc(t);
+    // Pequeña espera para que el navegador aplique el layout de la plantilla
+    await new Promise(r => setTimeout(r, 120));
+
+    const canvas = await html2canvas(el('exportDoc'), {
+      scale: 2,               // 1320×1020 → 2640×2040 px (240 ppp en carta)
+      useCORS: true,
+      backgroundColor: '#ffffff'
+    });
+
+    const project = el('project-' + t).value.trim();
+    const slug = project ? '_' + project.replace(/\s+/g, '_').replace(/[^a-zA-Z0-9_\-]/g, '') : '';
+    const base = `${TOOLS[t].name}${slug}_${new Date().toISOString().slice(0,10)}`;
+
+    if (fmt === 'png') {
+      const link = document.createElement('a');
+      link.download = base + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✓ PNG descargado (11" × 8.5")', 'ok');
+    } else {
+      const { jsPDF } = window.jspdf;
+      // Carta horizontal: 11 pulgadas de ancho × 8.5 de alto
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'in', format: 'letter' });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 11, 8.5);
+      pdf.save(base + '.pdf');
+      showToast('✓ PDF descargado (carta horizontal)', 'ok');
+    }
+  } catch (error) {
+    console.error('Error en la exportación:', error);
+    showToast('✗ Ocurrió un error al exportar', 'err');
+  } finally {
+    el('exportDoc').innerHTML = '';
+    setBtnLoading(btn, false, fmt.toUpperCase());
+  }
 }
 </script>
 </body>
