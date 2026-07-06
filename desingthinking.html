@@ -1,702 +1,1426 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Design Thinking Hub</title>
-    
-    <!-- Carga de Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Configuración personalizada de Tailwind y estilos -->
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Inter', 'sans-serif'],
-                        handwriting: ['"Caveat"', '"Comic Sans MS"', 'cursive', 'sans-serif'],
-                    },
-                    animation: {
-                        'spin-slow': 'spin 3s linear infinite',
-                    },
-                    boxShadow: {
-                        'postit': '2px 4px 6px rgba(0,0,0,0.1), 0 1px 3px rgba(0,0,0,0.08)',
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap');
-        
-        body { background-color: #f8fafc; overflow-x: hidden; }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-fadeIn { animation: fadeIn 0.4s ease-out forwards; }
-        
-        /* Estilos estrictos para forzar el PDF perfecto sin recortes */
-        .pdf-exporting .no-print { display: none !important; }
-        
-        .pdf-exporting, .pdf-exporting body {
-            overflow: hidden !important; /* Congela la pantalla durante la exportación */
-        }
-        
-        /* Sacamos la pizarra de la pantalla temporalmente para que ignore los límites de los celulares/monitores */
-        .pdf-exporting #board-container { 
-            position: absolute !important;
-            top: 0 !important;
-            left: 0 !important;
-            width: 1600px !important; 
-            max-width: 1600px !important; 
-            height: max-content !important;
-            min-height: 100vh !important;
-            overflow: visible !important; 
-            padding: 40px !important; 
-            background-color: #f8fafc !important; 
-            display: block !important;
-            z-index: 9999 !important;
-            transform: none !important;
-            scroll-snap-type: none !important;
-        }
-        
-        /* Flex estricto en fila, sin saltos de línea y con anchos fijos */
-        .pdf-exporting #board-columns { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            flex-wrap: nowrap !important; 
-            width: 1520px !important; 
-            gap: 20px !important; 
-            justify-content: flex-start !important;
-            height: auto !important;
-            align-items: flex-start !important;
-        }
-        
-        .pdf-exporting .board-column { 
-            flex: 0 0 288px !important; 
-            width: 288px !important; 
-            min-width: 288px !important; 
-            max-width: 288px !important; 
-            height: auto !important; 
-            overflow: visible !important;
-            padding-bottom: 20px !important;
-        }
-        
-        .pdf-exporting .overflow-y-auto { 
-            overflow: visible !important; 
-            max-height: none !important; 
-            height: auto !important;
-        }
-        
-        /* Mostrar el texto dinámico y ocultar el textarea para evitar cortes de texto en PDF */
-        .pdf-exporting textarea { display: none !important; }
-        .pdf-exporting .print-text { visibility: visible !important; display: block !important; }
-        textarea { resize: none; overflow: hidden; }
-        
-        /* Scrollbar personalizada */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
-        ::-webkit-scrollbar-track { background: #f1f5f9; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Design Thinking Hub</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&family=Caveat:wght@500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
-    <!-- Librerías -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<style>
+/* IMPORTANTE: no usar color-mix() ni oklch() en este archivo.
+   html2canvas 1.4.1 no los soporta y rompe la exportación PNG/PDF. */
+:root {
+  --bg: #f6f4ff;
+  --surface: #ffffff;
+  --ink: #2d2a45;
+  --soft: #6d6a8a;
+  --muted: #a09dbd;
+  --border: #e6e2f5;
+
+  --violet: #7c3aed;  --violet-d: #5b21b6;  --violet-l: #f1eaff;
+  --pink:   #ec4899;  --pink-d:   #be185d;  --pink-l:   #ffe9f4;
+  --blue:   #3b82f6;  --blue-d:   #1d4ed8;  --blue-l:   #eaf2ff;
+  --yellow: #eab308;  --yellow-d: #a16207;  --yellow-l: #fdf7dc;
+  --orange: #f97316;  --orange-d: #c2410c;  --orange-l: #fef0e6;
+  --green:  #22c55e;  --green-d:  #15803d;  --green-l:  #e9fbef;
+  --red:    #ef4444;  --red-d:    #b91c1c;  --red-l:    #ffecec;
+  --teal:   #06b6d4;  --teal-d:   #0e7490;  --teal-l:   #e4f9fd;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(124,58,237,0.07) 0, transparent 30%),
+    radial-gradient(circle at 88% 20%, rgba(236,72,153,0.07) 0, transparent 30%),
+    radial-gradient(circle at 70% 90%, rgba(6,182,212,0.06) 0, transparent 32%);
+  color: var(--ink);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+}
+
+button { font-family: inherit; cursor: pointer; }
+svg { display: block; flex-shrink: 0; }
+h1, h2, h3, h4 { font-family: 'Baloo 2', sans-serif; }
+
+.view { display: none; animation: fadeIn .35s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════ BOTONES 3D ═══════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: .84rem; font-weight: 800;
+  padding: .6rem 1.1rem;
+  border-radius: 14px; border: none; color: #fff;
+  transition: transform .1s, box-shadow .1s, filter .15s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.06); }
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent !important; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-white  { background: #fff; color: var(--soft); border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+.btn-white:hover:not(:disabled) { color: var(--ink); }
+.btn-danger { background: #fff; color: var(--soft); border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+.btn-danger:hover:not(:disabled) { color: var(--red); border-color: #ffc9c9; box-shadow: 0 4px 0 #ffc9c9; }
+.btn-violet { background: var(--violet); box-shadow: 0 4px 0 var(--violet-d); }
+.btn-green  { background: var(--green);  box-shadow: 0 4px 0 var(--green-d); }
+.btn-pink   { background: var(--pink);   box-shadow: 0 4px 0 var(--pink-d); }
+.btn-blue   { background: var(--blue);   box-shadow: 0 4px 0 var(--blue-d); }
+.btn-ink    { background: var(--ink);    box-shadow: 0 4px 0 #17152b; }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════ CABECERA COMPARTIDA DE HERRAMIENTA ═══════ */
+.tool-head {
+  background: rgba(255,255,255,0.9);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--border);
+  padding: .9rem 1.5rem;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .8rem 1rem;
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: .8rem; }
+.back-circle {
+  width: 40px; height: 40px; border-radius: 12px;
+  background: #fff; border: 2px solid var(--border);
+  box-shadow: 0 3px 0 var(--border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--soft); transition: all .12s;
+}
+.back-circle:hover { color: var(--ink); transform: translate(-1px,-1px); }
+.back-circle:active { transform: translateY(3px); box-shadow: none; }
+.brand-icon {
+  width: 44px; height: 44px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.25rem; color: #fff;
+}
+.brand h1 { font-weight: 800; font-size: 1.35rem; line-height: 1.1; }
+.brand .sub { font-size: .64rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+.head-actions { display: flex; align-items: center; gap: .55rem; flex-wrap: wrap; }
+
+/* ═══════ HOME ═══════ */
+.home-wrap { max-width: 1060px; margin: 0 auto; padding: 3.2rem 1.6rem 4rem; text-align: center; }
+.home-eyebrow {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-size: .68rem; font-weight: 800; letter-spacing: .18em; text-transform: uppercase;
+  color: var(--violet);
+  background: #fff; border: 2px solid var(--border); border-radius: 999px;
+  padding: .45rem 1.1rem; box-shadow: 0 4px 0 var(--border);
+  margin-bottom: 1.5rem;
+}
+.home-wrap h1 {
+  font-weight: 800;
+  font-size: clamp(2.6rem, 6.5vw, 4.6rem);
+  line-height: 1.05; letter-spacing: -.02em;
+  background: linear-gradient(90deg, var(--blue), var(--violet) 35%, var(--pink) 70%, var(--orange));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+  margin-bottom: 1.6rem;
+}
+.home-intro {
+  background: #fff; border: 2px solid var(--border); border-radius: 22px;
+  box-shadow: 0 7px 0 var(--border);
+  padding: 1.8rem 2rem;
+  font-size: 1.02rem; font-weight: 600; color: var(--soft); line-height: 1.75;
+  max-width: 820px; margin: 0 auto 2.8rem;
+  text-align: left;
+}
+.home-intro strong { color: var(--ink); }
+.ph-word { font-weight: 800; }
+
+.home-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.3rem; }
+@media (max-width: 860px) { .home-cards { grid-template-columns: 1fr; } }
+.home-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 22px;
+  box-shadow: 0 7px 0 var(--hc);
+  padding: 2rem 1.6rem;
+  display: flex; flex-direction: column; align-items: center; gap: .8rem;
+  transition: transform .15s, box-shadow .15s;
+  cursor: pointer; text-align: center;
+}
+.home-card:hover { transform: translateY(-5px); box-shadow: 0 12px 0 var(--hc); }
+.home-card:active { transform: translateY(2px); box-shadow: 0 3px 0 var(--hc); }
+.home-card-icon {
+  width: 64px; height: 64px; border-radius: 20px;
+  background: var(--hc); color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 0 var(--hcd);
+  margin-bottom: .3rem;
+}
+.home-card h3 { font-weight: 800; font-size: 1.35rem; }
+.home-card p { font-size: .85rem; font-weight: 600; color: var(--soft); line-height: 1.6; }
+.home-card .pill {
+  margin-top: .4rem;
+  font-size: .64rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  background: var(--hcl); color: var(--hcd);
+  padding: .3rem .9rem; border-radius: 999px;
+}
+
+/* ═══════ SIMULADOR ═══════ */
+.tut-wrap { max-width: 1060px; margin: 0 auto; padding: 1.6rem 1.4rem 4rem; }
+.tut-progress {
+  background: #fff; border: 2px solid var(--border); border-radius: 20px;
+  box-shadow: 0 6px 0 var(--border);
+  padding: 1rem 1.3rem; margin-bottom: 1.4rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+}
+.tut-progress-label { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .92rem; }
+.tut-progress-track { flex: 1; min-width: 160px; height: 14px; background: var(--bg); border: 2px solid var(--border); border-radius: 999px; overflow: hidden; }
+.tut-progress-fill { height: 100%; background: linear-gradient(90deg, var(--blue), var(--violet), var(--pink)); border-radius: 999px; transition: width .4s ease; }
+.tut-progress-num { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .95rem; color: var(--violet); }
+
+.tut-panel {
+  background: #fff; border: 2px solid var(--border); border-radius: 24px;
+  box-shadow: 0 8px 0 var(--border);
+  overflow: hidden;
+  display: flex; flex-direction: column;
+}
+.tut-body { display: flex; min-height: 520px; }
+@media (max-width: 800px) { .tut-body { flex-direction: column; } }
+
+.tut-sidebar {
+  width: 250px; flex-shrink: 0;
+  background: var(--bg);
+  border-right: 2px dashed var(--border);
+  padding: 1.3rem 1rem;
+  display: flex; flex-direction: column; gap: .55rem;
+}
+@media (max-width: 800px) {
+  .tut-sidebar { width: 100%; flex-direction: row; overflow-x: auto; border-right: none; border-bottom: 2px dashed var(--border); }
+}
+.stage-btn {
+  display: flex; align-items: center; gap: .7rem;
+  padding: .65rem .8rem;
+  border-radius: 16px; border: 2px solid transparent;
+  background: transparent;
+  transition: all .15s;
+  text-align: left; flex-shrink: 0;
+}
+.stage-btn:hover { background: #fff; }
+.stage-btn.active { background: #fff; border-color: var(--sc); box-shadow: 0 4px 0 var(--sc); }
+.stage-dot {
+  width: 42px; height: 42px; border-radius: 13px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--sl); color: var(--sc);
+  position: relative; flex-shrink: 0;
+}
+.stage-btn.active .stage-dot { background: var(--sc); color: #fff; }
+.stage-check {
+  position: absolute; top: -6px; right: -6px;
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--green); color: #fff;
+  border: 2px solid #fff;
+  display: none; align-items: center; justify-content: center;
+}
+.stage-btn.done .stage-check { display: flex; }
+.stage-name { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .88rem; color: var(--soft); }
+.stage-btn.active .stage-name { color: var(--ink); }
+@media (max-width: 800px) { .stage-name { display: none; } }
+
+.tut-content { flex: 1; padding: 1.8rem 2rem; display: flex; flex-direction: column; min-width: 0; }
+@media (max-width: 640px) { .tut-content { padding: 1.3rem 1.1rem; } }
+
+.stage-chip {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-size: .68rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  background: var(--sl); color: var(--sc);
+  padding: .35rem .9rem; border-radius: 999px;
+  margin-bottom: .9rem; align-self: flex-start;
+}
+.tut-content h2 { font-weight: 800; font-size: 1.5rem; line-height: 1.25; margin-bottom: .5rem; }
+.tut-desc { font-size: .9rem; font-weight: 600; color: var(--soft); line-height: 1.65; margin-bottom: 1.3rem; }
+
+.tab-row { display: flex; gap: .5rem; margin-bottom: 1.3rem; }
+.tab-btn {
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .85rem;
+  padding: .5rem 1.1rem; border-radius: 999px;
+  border: 2px solid var(--border); background: #fff; color: var(--soft);
+  transition: all .15s;
+}
+.tab-btn.active { background: var(--sc); border-color: var(--sc); color: #fff; box-shadow: 0 3px 0 var(--scd); }
+
+.theory-box {
+  background: var(--bg); border: 2px solid var(--border); border-radius: 16px;
+  padding: 1.1rem 1.2rem; margin-bottom: 1.1rem;
+}
+.theory-box h4 { font-weight: 700; font-size: .95rem; margin-bottom: .5rem; display: flex; align-items: center; gap: .5rem; }
+.theory-box p { font-size: .87rem; font-weight: 600; color: var(--soft); line-height: 1.7; }
+.tips-list { display: flex; flex-direction: column; gap: .5rem; }
+.tips-list li {
+  list-style: none; display: flex; align-items: flex-start; gap: .6rem;
+  font-size: .86rem; font-weight: 600; color: var(--soft); line-height: 1.55;
+}
+.tips-list li::before {
+  content: ''; width: 9px; height: 9px; border-radius: 3px;
+  background: var(--sc); flex-shrink: 0; margin-top: .38em;
+}
+
+/* retos */
+.chal-title { font-weight: 800; font-size: 1.08rem; margin-bottom: .35rem; }
+.chal-desc { font-size: .86rem; font-weight: 600; color: var(--soft); line-height: 1.6; margin-bottom: 1rem; }
+.chal-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; }
+@media (max-width: 700px) { .chal-grid { grid-template-columns: 1fr; } }
+.chal-option {
+  background: #fff; border: 2px solid var(--border); border-radius: 16px;
+  padding: 1rem; text-align: left;
+  transition: all .15s; font-family: inherit;
+}
+.chal-option:hover { border-color: var(--sc); transform: translateY(-2px); }
+.chal-option.picked { border-color: var(--sc); background: var(--sl); box-shadow: 0 4px 0 var(--sc); }
+.chal-option .co-emoji { font-size: 1.7rem; display: block; margin-bottom: .4rem; }
+.chal-option .co-title { font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .9rem; margin-bottom: .2rem; }
+.chal-option .co-text { font-size: .8rem; font-weight: 600; color: var(--soft); line-height: 1.55; font-style: italic; }
+.chal-feedback {
+  margin-top: 1rem; padding: .9rem 1.1rem; border-radius: 14px;
+  display: flex; align-items: flex-start; gap: .6rem;
+  font-size: .85rem; font-weight: 700; line-height: 1.55;
+  animation: fadeIn .3s ease;
+}
+.chal-feedback.good { background: var(--green-l); color: var(--green-d); border: 2px solid #a7e8c0; }
+.chal-feedback.bad  { background: var(--red-l); color: var(--red-d); border: 2px solid #f5b5b5; }
+
+.pov-box {
+  background: #fff; border: 2px solid var(--violet-l); border-radius: 18px;
+  box-shadow: 0 5px 0 var(--violet-l);
+  padding: 1.4rem; font-size: 1.02rem; font-weight: 600; line-height: 2.3;
+}
+.pov-box select {
+  font-family: 'Nunito', sans-serif; font-weight: 800; font-size: .92rem;
+  background: var(--violet-l); color: var(--violet-d);
+  border: none; border-bottom: 3px solid var(--violet);
+  border-radius: 8px 8px 0 0; padding: .3rem .5rem;
+  outline: none; cursor: pointer; max-width: 100%;
+}
+
+.idea-form { display: flex; gap: .6rem; margin-bottom: 1.1rem; flex-wrap: wrap; }
+.idea-form input {
+  flex: 1; min-width: 200px;
+  border: 2px solid var(--border); border-radius: 12px;
+  background: var(--bg); padding: .65rem .9rem;
+  font-family: 'Nunito', sans-serif; font-size: .88rem; font-weight: 600;
+  outline: none; transition: border-color .15s;
+}
+.idea-form input:focus { border-color: var(--yellow); background: #fff; }
+.mini-postits { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: .8rem; }
+.mini-postit {
+  position: relative; background: #fff3a3;
+  border-radius: 4px 4px 4px 16px;
+  padding: .8rem .8rem 1.6rem;
+  box-shadow: 0 4px 8px rgba(45,42,69,.14);
+  transform: rotate(-1.2deg);
+  border: 1px solid rgba(0,0,0,.06);
+}
+.mini-postit:nth-child(even) { transform: rotate(1.1deg); background: #ffd6e8; }
+.mini-postit:nth-child(3n) { background: #cfe6ff; }
+.mini-postit p { font-family: 'Caveat', cursive; font-size: 1.15rem; font-weight: 600; line-height: 1.3; color: #3b3760; word-break: break-word; }
+.mini-del {
+  position: absolute; bottom: 6px; right: 8px;
+  background: none; border: none; color: rgba(45,42,69,.4);
+  transition: color .15s;
+}
+.mini-del:hover { color: var(--red); }
+
+.tut-footer {
+  border-top: 2px dashed var(--border);
+  padding: 1.1rem 2rem;
+  display: flex; justify-content: space-between; align-items: center; gap: .8rem;
+  background: #faf9ff;
+}
+@media (max-width: 640px) { .tut-footer { padding: 1rem 1.1rem; } }
+
+/* ═══════ PIZARRA ═══════ */
+.board-wrap { max-width: 1560px; margin: 0 auto; padding: 1.3rem 1.4rem 4rem; }
+.board-toolbar {
+  display: flex; align-items: center; gap: .8rem; flex-wrap: wrap;
+  margin-bottom: 1.2rem;
+}
+.project-input {
+  flex: 1; min-width: 220px; max-width: 420px;
+  border: 2px solid var(--border); border-radius: 14px;
+  background: #fff; padding: .65rem 1rem;
+  font-family: 'Baloo 2', sans-serif; font-size: .95rem; font-weight: 700;
+  color: var(--ink); outline: none;
+  box-shadow: 0 4px 0 var(--border);
+  transition: box-shadow .15s, border-color .15s;
+}
+.project-input:focus { border-color: var(--violet); box-shadow: 0 4px 0 var(--violet); }
+.save-badge { font-size: .72rem; font-weight: 800; color: var(--muted); }
+
+.board-scroll { overflow-x: auto; padding-bottom: 1rem; }
+.board-cols { display: flex; gap: 1rem; min-width: max-content; }
+@media (max-width: 760px) { .board-cols { flex-direction: column; min-width: 0; } }
+
+.bcol {
+  width: 272px; flex-shrink: 0;
+  background: #fff; border: 2px solid var(--border); border-radius: 20px;
+  box-shadow: 0 6px 0 var(--pl);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+}
+@media (max-width: 760px) { .bcol { width: 100%; } }
+.bcol-head {
+  background: var(--pc); color: #fff;
+  padding: .8rem 1rem;
+  display: flex; align-items: center; justify-content: space-between; gap: .5rem;
+}
+.bcol-head h3 { font-weight: 800; font-size: 1.02rem; }
+.bcol-count {
+  font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: .8rem;
+  background: rgba(255,255,255,.25); padding: .1rem .6rem; border-radius: 999px;
+}
+.bcol-add {
+  margin: .8rem .8rem 0;
+  padding: .6rem;
+  border: 2px dashed var(--border); border-radius: 12px;
+  background: transparent; color: var(--muted);
+  font-weight: 800; font-size: .8rem;
+  display: flex; align-items: center; justify-content: center; gap: .4rem;
+  transition: all .15s;
+}
+.bcol-add:hover { border-color: var(--pc); color: var(--pc); background: var(--pl); }
+.bcol-notes { padding: .8rem; display: flex; flex-direction: column; gap: .8rem; min-height: 90px; }
+
+.postit {
+  position: relative;
+  border-radius: 4px 4px 4px 16px;
+  padding: .75rem .8rem 2rem;
+  box-shadow: 0 4px 8px rgba(45,42,69,.14);
+  border: 1px solid rgba(0,0,0,.06);
+  transition: transform .15s;
+}
+.postit:hover { transform: translateY(-2px); }
+.postit textarea {
+  width: 100%;
+  background: transparent; border: none; outline: none;
+  font-family: 'Caveat', cursive; font-size: 1.3rem; font-weight: 600;
+  color: #3b3760; line-height: 1.25;
+  resize: none; overflow: hidden;
+  min-height: 58px;
+}
+.postit textarea::placeholder { color: rgba(59,55,96,.4); }
+.postit-tools {
+  position: absolute; bottom: 6px; left: 8px; right: 8px;
+  display: flex; justify-content: space-between; align-items: center;
+  opacity: 0; transition: opacity .15s;
+}
+.postit:hover .postit-tools, .postit:focus-within .postit-tools { opacity: 1; }
+.pcolors { display: flex; gap: 4px; background: rgba(255,255,255,.6); padding: 3px 6px; border-radius: 999px; }
+.pcolor { width: 15px; height: 15px; border-radius: 50%; border: 1.5px solid rgba(0,0,0,.12); transition: transform .12s; }
+.pcolor:hover { transform: scale(1.25); }
+.pcolor.sel { box-shadow: 0 0 0 2px var(--ink); }
+.pdel {
+  background: rgba(255,255,255,.6); border: none;
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--soft); transition: all .12s;
+}
+.pdel:hover { background: var(--red); color: #fff; }
+
+/* colores de post-it (claves compatibles con datos guardados) */
+.bg-yellow-200 { background: #fff3a3; }
+.bg-pink-200   { background: #ffd6e8; }
+.bg-blue-200   { background: #cfe6ff; }
+.bg-green-200  { background: #c1f0d1; }
+.bg-purple-200 { background: #ddd0ff; }
+
+/* ═══════ CASOS DE USO ═══════ */
+.casos-wrap { max-width: 1060px; margin: 0 auto; padding: 1.8rem 1.4rem 4rem; }
+.casos-intro { text-align: center; margin-bottom: 2rem; }
+.casos-intro h2 { font-weight: 800; font-size: 2rem; margin-bottom: .4rem; }
+.casos-intro p { font-size: .95rem; font-weight: 600; color: var(--soft); max-width: 620px; margin: 0 auto; line-height: 1.7; }
+.caso-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 22px;
+  box-shadow: 0 7px 0 var(--kc);
+  margin-bottom: 1.6rem; overflow: hidden;
+}
+.caso-head {
+  padding: 1.3rem 1.5rem;
+  display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;
+  border-bottom: 2px dashed var(--border);
+}
+.caso-emoji {
+  width: 54px; height: 54px; border-radius: 16px;
+  background: var(--kl); font-size: 1.6rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.caso-head h3 { font-weight: 800; font-size: 1.25rem; color: var(--kc); }
+.caso-head .caso-sub { font-size: .82rem; font-weight: 600; color: var(--soft); margin-top: .15rem; line-height: 1.5; }
+.caso-load { margin-left: auto; }
+.caso-body { padding: 1.2rem 1.5rem 1.5rem; }
+.caso-phases { display: grid; grid-template-columns: repeat(5, 1fr); gap: .7rem; }
+@media (max-width: 900px) { .caso-phases { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 560px) { .caso-phases { grid-template-columns: 1fr; } }
+.caso-phase-tag {
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .72rem;
+  text-transform: uppercase; letter-spacing: .06em;
+  color: #fff; background: var(--fpc);
+  padding: .3rem .7rem; border-radius: 999px;
+  display: inline-block; margin-bottom: .5rem;
+}
+.caso-notes { display: flex; flex-direction: column; gap: .45rem; }
+.caso-note {
+  font-size: .76rem; font-weight: 600; color: #4a4668; line-height: 1.5;
+  background: var(--fpl); border-radius: 10px; padding: .5rem .65rem;
+}
+
+/* ═══════ MODALES / TOAST ═══════ */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(45,42,69,.5); backdrop-filter: blur(3px);
+  z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem;
+  opacity: 0; transition: opacity .25s;
+}
+.modal-backdrop.open { display: flex; }
+.modal-backdrop.visible { opacity: 1; }
+.modal-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 22px;
+  box-shadow: 0 8px 0 var(--border);
+  padding: 1.5rem; width: 100%; max-width: 420px;
+  transform: scale(.94); transition: transform .25s;
+}
+.modal-backdrop.visible .modal-card { transform: scale(1); }
+.modal-card h3 { font-weight: 800; font-size: 1.2rem; margin-bottom: .4rem; }
+.modal-card p { font-size: .87rem; font-weight: 600; color: var(--soft); line-height: 1.6; margin-bottom: 1.2rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .6rem; flex-wrap: wrap; }
+.btn-ghost {
+  font-size: .83rem; font-weight: 800; padding: .55rem 1rem;
+  border-radius: 12px; border: none; background: transparent; color: var(--soft);
+  transition: background .15s;
+}
+.btn-ghost:hover { background: var(--bg); }
+.btn-confirm {
+  font-size: .83rem; font-weight: 800; padding: .55rem 1rem;
+  border-radius: 12px; border: none;
+  background: var(--red); color: #fff; box-shadow: 0 4px 0 var(--red-d);
+  transition: transform .1s, box-shadow .1s;
+}
+.btn-confirm.ok { background: var(--green); box-shadow: 0 4px 0 var(--green-d); }
+.btn-confirm:active { transform: translateY(4px); box-shadow: none; }
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 1.6rem 1.2rem; text-align: center; cursor: pointer;
+  background: var(--bg); color: var(--soft);
+  font-size: .84rem; font-weight: 600; line-height: 1.7;
+  transition: all .18s;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--violet); background: var(--violet-l); }
+.drop-zone input { display: none; }
+.drop-zone .dz-icon { font-size: 1.8rem; display: block; margin-bottom: .4rem; }
+
+#toastContainer { position: fixed; top: 84px; right: 1.4rem; z-index: 200; display: flex; flex-direction: column; gap: .5rem; }
+.toast {
+  background: var(--ink); color: #fff;
+  font-size: .82rem; font-weight: 700;
+  padding: .7rem 1.1rem; border-radius: 14px;
+  box-shadow: 0 5px 0 rgba(45,42,69,.25);
+  transform: translateX(30px); opacity: 0; transition: all .3s;
+}
+.toast.error { background: var(--red); box-shadow: 0 5px 0 var(--red-d); }
+.toast.show { transform: translateX(0); opacity: 1; }
+
+/* ═══════ PLANTILLA DE EXPORTACIÓN (carta horizontal 11 × 8.5) ═══════ */
+#exportDoc {
+  position: fixed; left: -20000px; top: 0;
+  width: 1320px; height: 1020px; /* proporción exacta 11:8.5 */
+  background: #f6f4ff;
+  font-family: 'Nunito', sans-serif;
+  color: #2d2a45;
+  padding: 42px 46px;
+  display: flex; flex-direction: column;
+  z-index: -1;
+}
+.xp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 16px; }
+.xp-title { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 42px; line-height: 1; }
+.xp-subtitle { font-size: 13px; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: #a09dbd; margin-top: 6px; }
+.xp-meta { text-align: right; }
+.xp-project { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 22px; }
+.xp-date { font-size: 13px; font-weight: 700; color: #a09dbd; margin-top: 3px; }
+.xp-rule { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #3b82f6, #7c3aed, #eab308, #f97316, #22c55e); margin-bottom: 16px; }
+.xp-grid { flex: 1; display: grid; grid-template-columns: repeat(5, 1fr); gap: 13px; min-height: 0; }
+.xp-col { background: #fff; border: 2px solid #e6e2f5; border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; min-height: 0; }
+.xp-col-head { padding: 9px 12px; color: #fff; display: flex; align-items: center; justify-content: space-between; }
+.xp-col-head h4 { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px; }
+.xp-col-count { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 12px; background: rgba(255,255,255,.28); padding: 1px 9px; border-radius: 999px; }
+.xp-notes { padding: 10px; display: flex; flex-direction: column; gap: 8px; overflow: hidden; flex: 1; }
+.xp-note {
+  border-radius: 4px 4px 4px 12px;
+  padding: 8px 9px;
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 2px 4px rgba(45,42,69,.1);
+  font-family: 'Caveat', cursive; font-size: 17px; font-weight: 600;
+  color: #3b3760; line-height: 1.2; word-break: break-word;
+}
+.xp-empty { font-size: 12px; font-weight: 600; font-style: italic; color: #a09dbd; padding: 4px 2px; }
+.xp-foot { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #a09dbd; margin-top: 13px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
 </head>
 <body>
-    <div id="root"></div>
 
-    <script type="text/babel">
-        const { useState, useRef, useEffect } = React;
+<!-- ═══════ HOME ═══════ -->
+<div id="view-home" class="view active">
+  <div class="home-wrap">
+    <span class="home-eyebrow">✦ Plataforma interactiva · PEI</span>
+    <h1>Design Thinking Hub</h1>
+    <div class="home-intro">
+      El <strong>Design Thinking</strong> es un método iterativo de resolución de problemas centrado en el ser humano, diseñado para crear soluciones innovadoras mediante la empatía, la creatividad y la racionalidad. Sigue cinco fases principales: <span class="ph-word" style="color:#1d4ed8">Empatizar</span>, <span class="ph-word" style="color:#5b21b6">Definir</span>, <span class="ph-word" style="color:#a16207">Idear</span>, <span class="ph-word" style="color:#c2410c">Prototipar</span> y <span class="ph-word" style="color:#15803d">Evaluar</span>, buscando el equilibrio entre las necesidades del usuario, la viabilidad tecnológica y la viabilidad de negocio.
+    </div>
+    <div class="home-cards">
+      <div class="home-card" style="--hc:#3b82f6; --hcd:#1d4ed8; --hcl:#eaf2ff" onclick="showView('tutorial')">
+        <div class="home-card-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>
+        </div>
+        <h3>Aprender</h3>
+        <p>Simulador interactivo paso a paso: teoría, consejos y un reto práctico en cada una de las 5 fases.</p>
+        <span class="pill">Con progreso guardado</span>
+      </div>
+      <div class="home-card" style="--hc:#ec4899; --hcd:#be185d; --hcl:#ffe9f4" onclick="showView('board')">
+        <div class="home-card-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+        </div>
+        <h3>Practicar</h3>
+        <p>Pizarra de post-its por fase para trabajar su propio proyecto, con exportación a PDF y PNG en carta horizontal.</p>
+        <span class="pill">Exportable 11" × 8.5"</span>
+      </div>
+      <div class="home-card" style="--hc:#7c3aed; --hcd:#5b21b6; --hcl:#f1eaff" onclick="showView('casos')">
+        <div class="home-card-icon">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/></svg>
+        </div>
+        <h3>Casos de uso</h3>
+        <p>Tres ejemplos completos resueltos con contexto costarricense, listos para cargar en la pizarra y modificar.</p>
+        <span class="pill">Ejemplos guiados</span>
+      </div>
+    </div>
+  </div>
+</div>
 
-        // --- ICONOS COMPARTIDOS ---
-        const Users = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>;
-        const Target = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>;
-        const Lightbulb = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M15 14c.2-1 .7-1.7 1.5-2.5 1-.9 1.5-2.2 1.5-3.5A6 6 0 0 0 6 8c0 1 .2 2.2 1.5 3.5.7.9 1.2 1.5 1.5 2.5"/><path d="M9 18h6"/><path d="M10 22h4"/></svg>;
-        const Wrench = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>;
-        const ClipboardCheck = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>;
-        const ChevronRight = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m9 18 6-6-6-6"/></svg>;
-        const ChevronLeft = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="m15 18-6-6 6-6"/></svg>;
-        const MessageSquare = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>;
-        const CheckCircle2 = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/></svg>;
-        const Plus = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M5 12h14"/><path d="M12 5v14"/></svg>;
-        const Trash2 = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>;
-        const RefreshCw = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>;
-        const Download = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>;
-        const ArrowLeft = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>;
-        const PlayCircle = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><circle cx="12" cy="12" r="10"/><polygon points="10 8 16 12 10 16 10 8"/></svg>;
-        const LayoutDashboard = ({ className }) => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>;
+<!-- ═══════ SIMULADOR ═══════ -->
+<div id="view-tutorial" class="view">
+  <header class="tool-head">
+    <div class="brand">
+      <button class="back-circle" onclick="showView('home')" title="Volver al inicio">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="brand-icon" style="background:linear-gradient(135deg,#3b82f6,#7c3aed); box-shadow:0 4px 0 #1d4ed8">🎓</div>
+      <div>
+        <h1>Simulador de Aprendizaje</h1>
+        <p class="sub">Design Thinking · 5 fases</p>
+      </div>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-danger" onclick="resetProgress()">Reiniciar progreso</button>
+    </div>
+  </header>
 
-        // ==========================================
-        // COMPONENTE: VISTA DEL SIMULADOR (TUTORIAL)
-        // ==========================================
-        const STAGES = [
-            { id: 'empatizar', name: 'Empatizar', icon: Users, color: 'bg-blue-500', textColor: 'text-blue-500', lightBg: 'bg-blue-50', borderColor: 'border-blue-500', 
-              description: 'Ponte en los zapatos del usuario. Comprende sus necesidades, frustraciones y el contexto en el que viven sin juzgar.', 
-              question: '¿Qué siente y piensa realmente nuestro usuario?',
-              theory: 'La empatía es la base del diseño centrado en el ser humano. Consiste en observar, involucrarse y escuchar a las personas para comprender sus experiencias y motivaciones. Consiste en dejar de lado nuestras propias suposiciones para ver el mundo a través de los ojos de los demás.',
-              tips: ['Haz preguntas abiertas (Por qué, Cómo).', 'Observa el lenguaje corporal y las emociones ocultas.', 'Evita sugerir soluciones en esta etapa, solo escucha.'] },
-            
-            { id: 'definir', name: 'Definir', icon: Target, color: 'bg-purple-500', textColor: 'text-purple-500', lightBg: 'bg-purple-50', borderColor: 'border-purple-500', 
-              description: 'Analiza la información recopilada y define el problema central (Core Problem) desde la perspectiva del usuario.', 
-              question: '¿Cuál es el problema real que debemos resolver?',
-              theory: 'En la fase de definición, acumulas la información creada durante la fase de Empatía y extraes "Insights" (hallazgos profundos). El objetivo es redactar una declaración del problema clara y procesable, a menudo llamada Punto de Vista (POV).',
-              tips: ['Utiliza la fórmula: Usuario + Necesidad + Insight.', 'Asegúrate de que el problema no sea ni muy amplio ni muy específico.', 'Enfócate en la raíz del problema, no en los síntomas.'] },
-            
-            { id: 'idear', name: 'Idear', icon: Lightbulb, color: 'bg-yellow-500', textColor: 'text-yellow-600', lightBg: 'bg-yellow-50', borderColor: 'border-yellow-500', 
-              description: 'Genera la mayor cantidad de ideas posibles. No hay ideas malas. Fomenta el pensamiento "fuera de la caja".', 
-              question: '¿Cómo podríamos resolver este problema?',
-              theory: 'Es el momento de la creatividad libre. La ideación es el proceso de generar un conjunto amplio de ideas sobre un tema determinado sin juzgarlas. Aquí pasamos de identificar el problema a explorar soluciones.',
-              tips: ['Fomenta las ideas locas o absurdas, expanden la imaginación.', 'La cantidad es más importante que la calidad inicial.', 'Construye sobre las ideas de los demás (usa "Sí, y..." en lugar de "Pero...").'] },
-            
-            { id: 'prototipar', name: 'Prototipar', icon: Wrench, color: 'bg-orange-500', textColor: 'text-orange-500', lightBg: 'bg-orange-50', borderColor: 'border-orange-500', 
-              description: 'Construye versiones rápidas y baratas de tus ideas para hacerlas tangibles y poder interactuar con ellas.', 
-              question: '¿Cómo podemos mostrar nuestra idea de forma rápida y barata?',
-              theory: 'Un prototipo es una versión reducida de un producto o función que simula cómo funcionaría en la realidad. El objetivo no es crear un producto terminado, sino una herramienta para aprender rápido y fallar barato.',
-              tips: ['No inviertas demasiado tiempo; un dibujo en papel es un prototipo válido.', 'Prototipa para resolver dudas específicas.', 'Si estás diseñando un servicio, puedes prototiparlo mediante un "juego de roles" (Roleplay).'] },
-            
-            { id: 'evaluar', name: 'Evaluar', icon: ClipboardCheck, color: 'bg-green-500', textColor: 'text-green-500', lightBg: 'bg-green-50', borderColor: 'border-green-500', 
-              description: 'Prueba los prototipos con usuarios reales. Recibe feedback, aprende qué funciona y qué no, e itera.', 
-              question: '¿Qué funcionó, qué falló y qué podemos mejorar?',
-              theory: 'Esta fase consiste en poner el prototipo frente a los usuarios, recoger sus reacciones y aprender. Rara vez se acierta a la primera; el Design Thinking es iterativo, lo que significa que el feedback te enviará de vuelta a rediseñar, re-idear o incluso re-empatizar.',
-              tips: ['Pide al usuario que piense en voz alta mientras usa el prototipo.', 'No defiendas tu idea; si falla, es un aprendizaje valioso.', 'Utiliza una malla receptora: anota cosas positivas, críticas constructivas, dudas y nuevas ideas.'] }
-        ];
+  <div class="tut-wrap">
+    <div class="tut-progress">
+      <span class="tut-progress-label">🏁 Retos completados</span>
+      <div class="tut-progress-track"><div class="tut-progress-fill" id="progressFill" style="width:0%"></div></div>
+      <span class="tut-progress-num" id="progressNum">0 / 5</span>
+    </div>
 
-        function TutorialView({ goHome }) {
-            const [activeStage, setActiveStage] = useState(0);
-            const [activeTab, setActiveTab] = useState('theory'); // Pestañas: theory o practice
-            const [selectedInsight, setSelectedInsight] = useState(null);
-            const [povSelected, setPovSelected] = useState({ user: '', need: '', insight: '' });
-            const [ideas, setIdeas] = useState([
-                { id: 1, text: 'Una app que bloquea redes sociales mientras estudias' },
-                { id: 2, text: 'Gafas de realidad virtual para inmersión total' }
-            ]);
-            const [newIdea, setNewIdea] = useState('');
-            const [selectedPrototype, setSelectedPrototype] = useState(null);
-            const [testResult, setTestResult] = useState(null);
+    <div class="tut-panel">
+      <div class="tut-body">
+        <div class="tut-sidebar" id="stageSidebar"></div>
+        <div class="tut-content" id="stageContent"></div>
+      </div>
+      <div class="tut-footer">
+        <button class="btn btn-white" id="btnPrevStage" onclick="moveStage(-1)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          Anterior
+        </button>
+        <button class="btn btn-ink" id="btnNextStage" onclick="moveStage(1)">
+          Siguiente
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
-            const nextStage = () => { if (activeStage < STAGES.length - 1) setActiveStage(prev => prev + 1); };
-            const prevStage = () => { if (activeStage > 0) setActiveStage(prev => prev - 1); };
+<!-- ═══════ PIZARRA ═══════ -->
+<div id="view-board" class="view">
+  <header class="tool-head">
+    <div class="brand">
+      <button class="back-circle" onclick="showView('home')" title="Volver al inicio">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="brand-icon" style="background:linear-gradient(135deg,#ec4899,#f97316); box-shadow:0 4px 0 #be185d">📌</div>
+      <div>
+        <h1>Pizarra de Proyecto</h1>
+        <p class="sub">Design Thinking · <span id="saveBadge" class="save-badge">—</span></p>
+      </div>
+    </div>
+    <div class="head-actions">
+      <button class="btn btn-white" onclick="openSaveModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar
+      </button>
+      <button class="btn btn-white" onclick="openLoadModal()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Cargar
+      </button>
+      <button class="btn btn-violet" id="btnPng" onclick="exportBoard('png')">
+        <span class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+        <span class="btn-txt">PNG</span>
+      </button>
+      <button class="btn btn-green" id="btnPdf" onclick="exportBoard('pdf')">
+        <span class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        <span class="btn-txt">PDF</span>
+      </button>
+      <button class="btn btn-danger" onclick="clearBoard()">Limpiar</button>
+    </div>
+  </header>
 
-            const currentStageData = STAGES[activeStage];
-            const Icon = currentStageData.icon;
+  <div class="board-wrap">
+    <div class="board-toolbar">
+      <input type="text" id="projectName" class="project-input" placeholder="Nombre del proyecto o reto…" oninput="saveBoard()">
+    </div>
+    <div class="board-scroll">
+      <div class="board-cols" id="boardCols"></div>
+    </div>
+  </div>
+</div>
 
-            const handleAddIdea = (e) => {
-                e.preventDefault();
-                if (newIdea.trim()) {
-                    setIdeas([...ideas, { id: Date.now(), text: newIdea }]);
-                    setNewIdea('');
-                }
-            };
-            const removeIdea = (id) => setIdeas(ideas.filter(idea => idea.id !== id));
+<!-- ═══════ CASOS DE USO ═══════ -->
+<div id="view-casos" class="view">
+  <header class="tool-head">
+    <div class="brand">
+      <button class="back-circle" onclick="showView('home')" title="Volver al inicio">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+      </button>
+      <div class="brand-icon" style="background:linear-gradient(135deg,#7c3aed,#ec4899); box-shadow:0 4px 0 #5b21b6">🗂️</div>
+      <div>
+        <h1>Casos de Uso</h1>
+        <p class="sub">Ejemplos resueltos · contexto CR</p>
+      </div>
+    </div>
+  </header>
+  <div class="casos-wrap">
+    <div class="casos-intro">
+      <h2>Aprenda con ejemplos reales</h2>
+      <p>Tres retos resueltos con las 5 fases del Design Thinking. Puede estudiarlos como referencia o <strong>cargarlos en la pizarra</strong> para modificarlos y hacerlos suyos.</p>
+    </div>
+    <div id="casosContainer"></div>
+  </div>
+</div>
 
-            const renderInteractiveChallenge = () => {
-                switch(activeStage) {
-                case 0:
-                    return (
-                    <div className="space-y-4 animate-fadeIn">
-                        <h3 className="font-bold text-lg text-slate-800">Reto: Lee las entrevistas</h3>
-                        <p className="text-slate-600 text-sm mb-4">Estamos diseñando para estudiantes universitarios. Selecciona la cita que revele el problema más profundo.</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[
-                            { id: 1, text: '"Los libros físicos son muy pesados para llevarlos todos los días."' },
-                            { id: 2, text: '"Intento estudiar en mi laptop, pero me distraigo a los 5 minutos con notificaciones y pierdo el hilo."' },
-                            { id: 3, text: '"La biblioteca de la universidad cierra muy temprano los fines de semana."' }
-                        ].map(quote => (
-                            <button key={quote.id} onClick={() => setSelectedInsight(quote.id)}
-                            className={`p-4 rounded-xl border-2 text-left transition-all duration-300 ${selectedInsight === quote.id ? 'border-blue-500 bg-blue-50 shadow-md transform scale-105' : 'border-slate-200 hover:border-blue-300 hover:bg-slate-50'}`}>
-                            <MessageSquare className={`w-6 h-6 mb-2 ${selectedInsight === quote.id ? 'text-blue-500' : 'text-slate-400'}`} />
-                            <p className="italic text-slate-700 text-sm">{quote.text}</p>
-                            </button>
-                        ))}
-                        </div>
-                        {selectedInsight === 2 && (
-                        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
-                            <CheckCircle2 className="w-5 h-5" />
-                            <p className="text-sm font-medium">¡Excelente! Has encontrado un <strong>Insight</strong>. El problema real no es estudiar, es la <em>gestión de la atención</em>.</p>
-                        </div>
-                        )}
-                    </div>
-                    );
-                case 1:
-                    return (
-                    <div className="space-y-6 animate-fadeIn">
-                        <h3 className="font-bold text-lg text-slate-800">Reto: Crea el Punto de Vista (POV)</h3>
-                        <p className="text-slate-600 text-sm">Completa la oración para definir exactamente qué vamos a resolver.</p>
-                        <div className="p-6 bg-white border-2 border-purple-100 rounded-xl shadow-sm text-lg leading-loose">
-                        El <select className="bg-purple-50 border-b-2 border-purple-500 outline-none px-2 py-1 text-purple-700 font-semibold rounded" value={povSelected.user} onChange={e => setPovSelected({...povSelected, user: e.target.value})}>
-                            <option value="">[Usuario]</option><option value="estudiante">estudiante universitario</option><option value="profesor">profesor</option>
-                        </select> necesita una forma de <select className="bg-purple-50 border-b-2 border-purple-500 outline-none px-2 py-1 text-purple-700 font-semibold rounded mx-1" value={povSelected.need} onChange={e => setPovSelected({...povSelected, need: e.target.value})}>
-                            <option value="">[Necesidad]</option><option value="libros">comprar libros más baratos</option><option value="concentrarse">bloquear distracciones digitales</option>
-                        </select> porque <select className="bg-purple-50 border-b-2 border-purple-500 outline-none px-2 py-1 text-purple-700 font-semibold rounded" value={povSelected.insight} onChange={e => setPovSelected({...povSelected, insight: e.target.value})}>
-                            <option value="">[Insight/Descubrimiento]</option><option value="atencion">su entorno actual fragmenta su atención y le impide aprender.</option><option value="dinero">no tiene suficiente dinero.</option>
-                        </select>.
-                        </div>
-                        {povSelected.user === 'estudiante' && povSelected.need === 'concentrarse' && povSelected.insight === 'atencion' && (
-                        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg flex items-center gap-2">
-                            <CheckCircle2 className="w-5 h-5" />
-                            <p className="text-sm font-medium">¡Perfecto! Has enmarcado el problema de forma humana y procesable.</p>
-                        </div>
-                        )}
-                    </div>
-                    );
-                case 2:
-                    return (
-                    <div className="space-y-4 animate-fadeIn">
-                        <h3 className="font-bold text-lg text-slate-800">Reto: Lluvia de Ideas</h3>
-                        <p className="text-slate-600 text-sm">Problema: <em>"¿Cómo podríamos ayudar al estudiante a bloquear distracciones?"</em> Añade una idea a la pizarra.</p>
-                        <form onSubmit={handleAddIdea} className="flex gap-2 mb-6">
-                        <input type="text" value={newIdea} onChange={(e) => setNewIdea(e.target.value)} placeholder="Escribe una idea innovadora..." className="flex-1 px-4 py-2 border-2 border-yellow-200 rounded-lg focus:outline-none focus:border-yellow-500"/>
-                        <button type="submit" className="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg flex items-center gap-1 transition-colors"><Plus className="w-5 h-5" /> Añadir</button>
-                        </form>
-                        <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                        {ideas.map((idea) => (
-                            <div key={idea.id} className="relative bg-yellow-100 p-4 pb-8 rounded-sm shadow-md transform rotate-1 hover:rotate-0 transition-transform">
-                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-3 bg-yellow-200/50 -mt-1 shadow-sm"></div>
-                            <p className="text-slate-800 font-medium font-handwriting">{idea.text}</p>
-                            <button onClick={() => removeIdea(idea.id)} className="absolute bottom-2 right-2 text-yellow-600 hover:text-red-500 transition-colors"><Trash2 className="w-4 h-4" /></button>
-                            </div>
-                        ))}
-                        </div>
-                    </div>
-                    );
-                case 3:
-                    return (
-                    <div className="space-y-4 animate-fadeIn">
-                        <h3 className="font-bold text-lg text-slate-800">Reto: Elige tu Prototipo</h3>
-                        <p className="text-slate-600 text-sm">¿Cuál es la forma más rápida y barata de probar la App bloqueadora mañana mismo?</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {[
-                            { id: 'code', title: 'Programar la App real', desc: 'Tomará 2 meses.', icon: '💻' },
-                            { id: 'paper', title: 'Prototipo en Papel', desc: 'Dibujar pantallas y simular.', icon: '📝' },
-                            { id: '3d', title: 'Impresión 3D', desc: 'Crear un modelo físico.', icon: '🧊' }
-                        ].map(proto => (
-                            <button key={proto.id} onClick={() => setSelectedPrototype(proto.id)} className={`p-4 rounded-xl border-2 text-left transition-all duration-300 flex flex-col items-center text-center ${selectedPrototype === proto.id ? 'border-orange-500 bg-orange-50 shadow-md transform scale-105' : 'border-slate-200 hover:border-orange-300 hover:bg-slate-50'}`}>
-                            <span className="text-4xl mb-2">{proto.icon}</span>
-                            <h4 className="font-bold text-slate-800 mb-1">{proto.title}</h4>
-                            <p className="text-slate-500 text-xs">{proto.desc}</p>
-                            </button>
-                        ))}
-                        </div>
-                        {selectedPrototype === 'paper' && (
-                        <div className="mt-4 p-4 bg-green-100 text-green-800 rounded-lg flex items-center gap-2"><CheckCircle2 className="w-5 h-5" /><p className="text-sm font-medium">¡Exacto! El papel es ideal para fallar rápido y barato.</p></div>
-                        )}
-                    </div>
-                    );
-                case 4:
-                    return (
-                    <div className="space-y-4 animate-fadeIn">
-                        <h3 className="font-bold text-lg text-slate-800">Reto: Sesión de Pruebas</h3>
-                        <p className="text-slate-600 text-sm">Feedback de 5 estudiantes:</p>
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 space-y-3 mb-6">
-                        <div className="flex gap-2"><span className="text-green-500 font-bold">👍</span><p className="text-sm text-slate-700">"Me encanta el 'Modo Focus' que planta un árbol."</p></div>
-                        <div className="flex gap-2"><span className="text-red-500 font-bold">👎</span><p className="text-sm text-slate-700">"El botón de 'Emergencia' está muy escondido, dio ansiedad."</p></div>
-                        </div>
-                        <p className="text-slate-700 font-medium mb-2">¿Qué hacemos ahora?</p>
-                        <div className="flex flex-col gap-2">
-                        <button onClick={() => setTestResult('ignore')} className={`p-3 rounded-lg border-2 text-left transition-colors ${testResult === 'ignore' ? 'bg-red-50 border-red-500' : 'hover:bg-slate-50 border-slate-200'}`}>1. Ignorar la ansiedad, se acostumbrarán.</button>
-                        <button onClick={() => setTestResult('iterate')} className={`p-3 rounded-lg border-2 text-left transition-colors flex items-center justify-between ${testResult === 'iterate' ? 'bg-green-50 border-green-500' : 'hover:bg-slate-50 border-slate-200'}`}><span>2. Iterar: Volver a Idear/Prototipar para rediseñar.</span>{testResult === 'iterate' && <RefreshCw className="w-5 h-5 text-green-600 animate-spin-slow" />}</button>
-                        </div>
-                    </div>
-                    );
-                default: return null;
-                }
-            };
+<!-- ═══════ MODALES ═══════ -->
+<div id="confirmModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3 id="confirmTitle">¿Confirmar?</h3>
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn-confirm" id="confirmBtn" onclick="runConfirm()">Sí, continuar</button>
+    </div>
+  </div>
+</div>
 
-            return (
-                <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
-                    <div className="w-full max-w-5xl flex justify-start mb-4">
-                        <button onClick={goHome} className="flex items-center text-slate-600 hover:text-slate-900 font-medium px-4 py-2 bg-white rounded-lg shadow-sm hover:shadow-md transition-all">
-                            <ArrowLeft className="w-5 h-5 mr-2" /> Volver al Inicio
-                        </button>
-                    </div>
+<div id="loadModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3>📂 Cargar progreso</h3>
+    <p>Seleccione o arrastre un archivo <strong>.json</strong> exportado desde esta pizarra. El contenido actual será <strong>reemplazado</strong>.</p>
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault(); this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="dropFile(event)">
+      <input type="file" id="fileInput" accept=".json,application/json" onchange="loadFileInput(event)">
+      <span class="dz-icon">🗂️</span>
+      <strong>Haga clic aquí</strong> o arrastre su archivo
+    </div>
+    <div class="modal-actions" style="margin-top:1.2rem"><button class="btn-ghost" onclick="closeModal('loadModal')">Cancelar</button></div>
+  </div>
+</div>
 
-                    <div className="max-w-5xl w-full bg-white rounded-3xl shadow-xl overflow-hidden flex flex-col">
-                        <div className="bg-slate-900 text-white p-6 text-center relative overflow-hidden">
-                            <div className="absolute top-0 left-0 w-full h-full opacity-10 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '24px 24px' }}></div>
-                            <h1 className="text-3xl font-extrabold relative z-10">
-                                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Design Thinking</span>
-                            </h1>
-                            <p className="text-slate-300 text-sm mt-2 relative z-10">Simulador de Aprendizaje Interactivo</p>
-                        </div>
+<div id="toastContainer"></div>
 
-                        <div className="flex flex-col md:flex-row flex-1 min-h-[500px]">
-                            <div className="w-full md:w-1/3 border-b md:border-b-0 md:border-r border-slate-100 p-6 bg-slate-50/50">
-                                <div className="flex md:flex-col justify-between md:justify-start space-x-2 md:space-x-0 md:space-y-4 relative">
-                                    <div className="hidden md:block absolute left-6 top-6 bottom-6 w-0.5 bg-slate-200 z-0"></div>
-                                    {STAGES.map((stage, index) => {
-                                        const isActive = index === activeStage;
-                                        const isPassed = index < activeStage;
-                                        const StageIcon = stage.icon;
-                                        return (
-                                            <button key={stage.id} onClick={() => setActiveStage(index)} className={`relative z-10 flex items-center md:w-full p-2 md:p-3 rounded-xl transition-all duration-300 ${isActive ? 'bg-white shadow-md scale-105' : 'hover:bg-white hover:shadow-sm'}`}>
-                                                <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center transition-colors ${isActive ? stage.color + ' text-white shadow-lg shadow-' + stage.color.replace('bg-', '') + '/30' : isPassed ? stage.color + ' text-white opacity-60' : 'bg-slate-200 text-slate-400'}`}>
-                                                    <StageIcon className="w-5 h-5 md:w-6 md:h-6" />
-                                                </div>
-                                                <div className="hidden md:block ml-4 text-left">
-                                                    <p className={`font-bold ${isActive ? stage.textColor : 'text-slate-600'}`}>{index + 1}. {stage.name}</p>
-                                                </div>
-                                            </button>
-                                        );
-                                    })}
-                                </div>
-                            </div>
+<!-- Plantilla oculta para exportación en carta horizontal -->
+<div id="exportDoc" aria-hidden="true"></div>
 
-                            <div className="w-full md:w-2/3 p-6 md:p-10 flex flex-col bg-white">
-                                <div className={`inline-flex items-center w-max px-3 py-1 rounded-full ${currentStageData.lightBg} ${currentStageData.textColor} text-sm font-bold mb-4`}>
-                                    <Icon className="w-4 h-4 mr-2" /> Fase {activeStage + 1}: {currentStageData.name}
-                                </div>
-                                <h2 className="text-2xl font-extrabold text-slate-800 mb-4">{currentStageData.question}</h2>
-                                <p className="text-slate-600 mb-6">{currentStageData.description}</p>
-                                
-                                {/* Sistema de Pestañas */}
-                                <div className="flex gap-4 border-b border-slate-200 mb-6">
-                                    <button 
-                                        onClick={() => setActiveTab('theory')} 
-                                        className={`pb-2 font-bold transition-colors border-b-2 ${activeTab === 'theory' ? currentStageData.borderColor + ' text-slate-800' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        Teoría y Conceptos
-                                    </button>
-                                    <button 
-                                        onClick={() => setActiveTab('practice')} 
-                                        className={`pb-2 font-bold transition-colors border-b-2 ${activeTab === 'practice' ? currentStageData.borderColor + ' text-slate-800' : 'border-transparent text-slate-400 hover:text-slate-600'}`}
-                                    >
-                                        Reto Práctico
-                                    </button>
-                                </div>
+<script>
+/* ══════════════════════════════════════
+   DATOS: FASES
+══════════════════════════════════════ */
+const PHASES = [
+  { id:'empatizar',  name:'Empatizar',  emoji:'💙', c:'#3b82f6', d:'#1d4ed8', l:'#eaf2ff',
+    question:'¿Qué siente y piensa realmente nuestro usuario?',
+    description:'Póngase en los zapatos del usuario. Comprenda sus necesidades, frustraciones y el contexto en el que vive, sin juzgar.',
+    theory:'La empatía es la base del diseño centrado en el ser humano. Consiste en observar, involucrarse y escuchar a las personas para comprender sus experiencias y motivaciones, dejando de lado nuestras propias suposiciones para ver el mundo a través de los ojos de los demás.',
+    tips:['Haga preguntas abiertas (¿Por qué?, ¿Cómo?).','Observe el lenguaje corporal y las emociones ocultas.','Evite sugerir soluciones en esta etapa: solo escuche.'] },
+  { id:'definir',    name:'Definir',    emoji:'🎯', c:'#7c3aed', d:'#5b21b6', l:'#f1eaff',
+    question:'¿Cuál es el problema real que debemos resolver?',
+    description:'Analice la información recopilada y defina el problema central desde la perspectiva del usuario.',
+    theory:'En la fase de definición se acumula la información de la fase de Empatía y se extraen "insights" (hallazgos profundos). El objetivo es redactar una declaración del problema clara y procesable, a menudo llamada Punto de Vista (POV).',
+    tips:['Use la fórmula: Usuario + Necesidad + Insight.','El problema no debe ser ni muy amplio ni muy específico.','Enfóquese en la raíz del problema, no en los síntomas.'] },
+  { id:'idear',      name:'Idear',      emoji:'💡', c:'#eab308', d:'#a16207', l:'#fdf7dc',
+    question:'¿Cómo podríamos resolver este problema?',
+    description:'Genere la mayor cantidad de ideas posibles. No hay ideas malas: fomente el pensamiento "fuera de la caja".',
+    theory:'Es el momento de la creatividad libre. La ideación es el proceso de generar un conjunto amplio de ideas sobre un tema sin juzgarlas. Aquí se pasa de identificar el problema a explorar soluciones.',
+    tips:['Fomente las ideas locas o absurdas: expanden la imaginación.','La cantidad importa más que la calidad inicial.','Construya sobre las ideas de otros: use "Sí, y…" en lugar de "Pero…".'] },
+  { id:'prototipar', name:'Prototipar', emoji:'🔧', c:'#f97316', d:'#c2410c', l:'#fef0e6',
+    question:'¿Cómo podemos mostrar nuestra idea de forma rápida y barata?',
+    description:'Construya versiones rápidas y baratas de sus ideas para hacerlas tangibles y poder interactuar con ellas.',
+    theory:'Un prototipo es una versión reducida de un producto o función que simula cómo funcionaría en la realidad. El objetivo no es crear un producto terminado, sino una herramienta para aprender rápido y fallar barato.',
+    tips:['No invierta demasiado tiempo: un dibujo en papel es un prototipo válido.','Prototipe para resolver dudas específicas.','Un servicio se puede prototipar mediante un juego de roles (roleplay).'] },
+  { id:'evaluar',    name:'Evaluar',    emoji:'✅', c:'#22c55e', d:'#15803d', l:'#e9fbef',
+    question:'¿Qué funcionó, qué falló y qué podemos mejorar?',
+    description:'Pruebe los prototipos con usuarios reales. Reciba feedback, aprenda qué funciona y qué no, e itere.',
+    theory:'Esta fase consiste en poner el prototipo frente a los usuarios, recoger sus reacciones y aprender. Rara vez se acierta a la primera: el Design Thinking es iterativo, y el feedback puede enviarlo de vuelta a rediseñar, re-idear o incluso re-empatizar.',
+    tips:['Pida al usuario que piense en voz alta mientras usa el prototipo.','No defienda su idea: si falla, es un aprendizaje valioso.','Use una malla receptora: anote lo positivo, las críticas, las dudas y las nuevas ideas.'] }
+];
 
-                                <div className="flex-1 pt-2">
-                                    {activeTab === 'theory' ? (
-                                        <div className="space-y-6 animate-fadeIn">
-                                            <div className="bg-slate-50 p-5 rounded-xl border border-slate-100">
-                                                <h4 className="font-bold text-slate-700 mb-2 flex items-center gap-2">
-                                                    <Lightbulb className="w-5 h-5 text-yellow-500" /> Fundamentos
-                                                </h4>
-                                                <p className="text-slate-600 text-[15px] leading-relaxed">
-                                                    {currentStageData.theory}
-                                                </p>
-                                            </div>
-                                            <div>
-                                                <h4 className="font-bold text-slate-700 mb-3 flex items-center gap-2">
-                                                    <ClipboardCheck className="w-5 h-5 text-green-500" /> Consejos Clave
-                                                </h4>
-                                                <ul className="space-y-2">
-                                                    {currentStageData.tips.map((tip, idx) => (
-                                                        <li key={idx} className="flex items-start text-[15px] text-slate-600">
-                                                            <div className={`mt-1.5 mr-3 w-1.5 h-1.5 rounded-full flex-shrink-0 ${currentStageData.color}`}></div>
-                                                            <span>{tip}</span>
-                                                        </li>
-                                                    ))}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        renderInteractiveChallenge()
-                                    )}
-                                </div>
+const POSTIT_COLORS = [
+  { class:'bg-yellow-200', hex:'#fff3a3', name:'Amarillo' },
+  { class:'bg-pink-200',   hex:'#ffd6e8', name:'Rosa' },
+  { class:'bg-blue-200',   hex:'#cfe6ff', name:'Azul' },
+  { class:'bg-green-200',  hex:'#c1f0d1', name:'Verde' },
+  { class:'bg-purple-200', hex:'#ddd0ff', name:'Morado' }
+];
 
-                                <div className="flex justify-between items-center mt-10 pt-4 border-t border-slate-100">
-                                    <button onClick={prevStage} disabled={activeStage === 0} className={`flex items-center px-4 py-2 rounded-lg font-medium transition-colors ${activeStage === 0 ? 'text-slate-300 cursor-not-allowed' : 'text-slate-600 hover:bg-slate-100'}`}><ChevronLeft className="w-5 h-5 mr-1" /> Anterior</button>
-                                    <button onClick={nextStage} disabled={activeStage === STAGES.length - 1} className={`flex items-center px-6 py-2 rounded-lg font-bold transition-all ${activeStage === STAGES.length - 1 ? 'text-slate-300 cursor-not-allowed' : `${currentStageData.color} text-white hover:opacity-90 shadow-md hover:shadow-lg transform hover:-translate-y-0.5`}`}>Siguiente <ChevronRight className="w-5 h-5 ml-1" /></button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            );
-        }
+/* ══════════════════════════════════════
+   DATOS: CASOS DE USO (contexto CR)
+══════════════════════════════════════ */
+const CASOS = [
+  {
+    id:'soda', emoji:'🍛', c:'#f97316', l:'#fef0e6',
+    title:'La fila de la soda del colegio',
+    sub:'Los estudiantes pierden casi todo el recreo haciendo fila para comprar el almuerzo.',
+    project:'Soda sin filas',
+    notes:{
+      empatizar:['"Cuando por fin llego a la caja, ya sonó el timbre." — estudiante de 10.°','Los de séptimo llegan de último porque su aula queda más lejos.','Muchos llevan solo sencillo y el vuelto atrasa la fila.'],
+      definir:['El estudiante necesita comprar su almuerzo en menos de 10 minutos porque el recreo es su único tiempo de descanso y socialización.'],
+      idear:['Pedidos anticipados por WhatsApp en la primera lección.','Combo fijo del día con precio exacto (sin vueltos).','Segunda ventanilla exprés solo para pedidos pagados.'],
+      prototipar:['Piloto de 1 semana: lista de pedidos en papel que recoge un delegado por sección.','Cartel con el combo del día y código QR de SINPE.'],
+      evaluar:['El 70% del grupo piloto recogió su almuerzo en menos de 5 minutos.','Feedback: quieren poder cancelar el pedido si faltan a clases → iterar.']
+    }
+  },
+  {
+    id:'expo', emoji:'🧴', c:'#7c3aed', l:'#f1eaff',
+    title:'Emprendimiento para ExpoTécnica',
+    sub:'Un equipo vende champú artesanal, pero en la feria nadie se detiene en su stand.',
+    project:'Champú artesanal · stand',
+    notes:{
+      empatizar:['Los visitantes pasan de largo: "parece un producto casero más".','"No sé si sirve para mi tipo de cabello" — visitante frecuente.','Los jueces preguntan por el costo unitario y el margen.'],
+      definir:['El visitante de la feria necesita entender en 10 segundos qué hace especial al producto porque hay más de 20 stands compitiendo por su atención.'],
+      idear:['Estación de prueba: oler y sentir la textura en la mano.','Tabla comparativa visual: nuestro champú vs. uno comercial.','Etiqueta con historia del ingrediente local (sábila de la zona).'],
+      prototipar:['Maqueta del stand en cartulina con el recorrido del visitante.','Tres etiquetas impresas distintas para votar la favorita.'],
+      evaluar:['La etiqueta con la historia local ganó 8 de 10 votos.','La estación de prueba triplicó el tiempo de permanencia en el stand.']
+    }
+  },
+  {
+    id:'buses', emoji:'🚌', c:'#3b82f6', l:'#eaf2ff',
+    title:'¿A qué hora pasa el bus?',
+    sub:'En la comunidad nadie sabe con certeza el horario real de los buses rurales.',
+    project:'Horarios de bus confiables',
+    notes:{
+      empatizar:['"Salgo 40 minutos antes por si acaso, y a veces igual lo pierdo." — vecina que trabaja en San José.','Los horarios pegados en la parada están desactualizados desde hace años.','Los choferes sí saben los horarios reales, pero nadie los recopila.'],
+      definir:['El vecino que viaja a diario necesita saber la hora real de paso del bus porque cada viaje perdido le cuesta llegar tarde al trabajo o al colegio.'],
+      idear:['Grupo de WhatsApp comunitario donde el primer pasajero reporta el paso.','Pizarra en la pulpería junto a la parada, actualizada por el pulpero.','Acuerdo con la empresa de buses para publicar cambios de horario.'],
+      prototipar:['Piloto de 2 semanas con el grupo de WhatsApp en una sola ruta.','Formato simple de reporte: ruta + hora + sentido.'],
+      evaluar:['El grupo llegó a 120 miembros en la primera semana.','Problema detectado: mensajes fuera de tema tapan los reportes → iterar con reglas y horarios de silencio.']
+    }
+  }
+];
 
+/* ══════════════════════════════════════
+   ESTADO
+══════════════════════════════════════ */
+const LS_NOTES = 'design_thinking_notes';      // compatible con la versión anterior
+const LS_PROJECT = 'design_thinking_project';
+const LS_PROGRESS = 'dt_progress_v1';
 
-        // ==========================================
-        // COMPONENTE: VISTA DE PIZARRA (BOARD)
-        // ==========================================
-        const PHASES = [
-            { id: 'empatizar', name: 'Empatizar', headerColor: 'bg-blue-500', bgColor: 'bg-blue-50/50' },
-            { id: 'definir', name: 'Definir', headerColor: 'bg-purple-500', bgColor: 'bg-purple-50/50' },
-            { id: 'idear', name: 'Idear', headerColor: 'bg-yellow-500', bgColor: 'bg-yellow-50/50' },
-            { id: 'prototipar', name: 'Prototipar', headerColor: 'bg-orange-500', bgColor: 'bg-orange-50/50' },
-            { id: 'evaluar', name: 'Evaluar', headerColor: 'bg-green-500', bgColor: 'bg-green-50/50' }
-        ];
-        const POSTIT_COLORS = ['bg-yellow-200', 'bg-pink-200', 'bg-blue-200', 'bg-green-200', 'bg-purple-200'];
+let notes = [];
+let activeStage = 0;
+let activeTab = 'theory';
+let completed = [false, false, false, false, false];
+let confirmCallback = null;
 
-        function BoardView({ goHome }) {
-            const defaultNotes = [
-                { id: 1, phase: 'empatizar', text: 'Los usuarios sienten que falta tiempo...', color: 'bg-yellow-200' },
-                { id: 2, phase: 'idear', text: '¡Crear una app móvil interactiva!', color: 'bg-pink-200' }
-            ];
-            
-            const [notes, setNotes] = useState([]); // Inicia vacío temporalmente
-            const [isExporting, setIsExporting] = useState(false);
-            const [saveStatus, setSaveStatus] = useState('');
-            const boardRef = useRef(null);
+// estado de los retos
+const chal = {
+  insight: null,
+  pov: { user:'', need:'', insight:'' },
+  ideas: [
+    { id:1, text:'Una app que bloquea redes sociales mientras estudiás' },
+    { id:2, text:'Estudiar con audífonos de cancelación de ruido' }
+  ],
+  prototype: null,
+  test: null
+};
 
-            // 1. Cargar notas desde el Local Storage al abrir la herramienta
-            useEffect(() => {
-                const savedNotes = localStorage.getItem('design_thinking_notes');
-                if (savedNotes) {
-                    try {
-                        setNotes(JSON.parse(savedNotes));
-                        setSaveStatus('Guardado en navegador ✅');
-                    } catch (e) {
-                        console.error("Error al leer datos locales", e);
-                        setNotes(defaultNotes);
-                    }
-                } else {
-                    setNotes(defaultNotes);
-                }
-            }, []);
+/* ══════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function el(id){ return document.getElementById(id); }
+function fechaHoy(){ return new Date().toLocaleDateString('es-CR',{year:'numeric',month:'long',day:'numeric'}); }
 
-            // 2. Función para guardar en el Local Storage
-            const saveToLocal = (newNotes) => {
-                setSaveStatus('Guardando...');
-                try {
-                    localStorage.setItem('design_thinking_notes', JSON.stringify(newNotes));
-                    // Pequeño retraso visual para que el usuario note que se guardó
-                    setTimeout(() => setSaveStatus('Guardado en navegador ✅'), 300);
-                } catch (error) {
-                    console.error("Error guardando localmente:", error);
-                    setSaveStatus('Error al guardar ⚠️');
-                }
-            };
+function showToast(msg, isError=false){
+  const c = el('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.innerText = msg;
+  c.appendChild(t);
+  requestAnimationFrame(()=>t.classList.add('show'));
+  setTimeout(()=>{ t.classList.remove('show'); setTimeout(()=>t.remove(),300); }, 3000);
+}
 
-            const addNote = (phaseId) => {
-                const newNotes = [...notes, { id: Date.now(), phase: phaseId, text: '', color: POSTIT_COLORS[Math.floor(Math.random() * POSTIT_COLORS.length)] }];
-                setNotes(newNotes);
-                saveToLocal(newNotes);
-            };
-            const updateNoteText = (id, newText) => {
-                const newNotes = notes.map(n => n.id === id ? { ...n, text: newText } : n);
-                setNotes(newNotes);
-                saveToLocal(newNotes);
-            };
-            const changeNoteColor = (id, newColor) => {
-                const newNotes = notes.map(n => n.id === id ? { ...n, color: newColor } : n);
-                setNotes(newNotes);
-                saveToLocal(newNotes);
-            };
-            const deleteNote = (id) => {
-                const newNotes = notes.filter(n => n.id !== id);
-                setNotes(newNotes);
-                saveToLocal(newNotes);
-            };
+function openModal(id){ const m=el(id); m.classList.add('open'); requestAnimationFrame(()=>m.classList.add('visible')); }
+function closeModal(id){ const m=el(id); m.classList.remove('visible'); setTimeout(()=>m.classList.remove('open'),250); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if(e.target===m) closeModal(m.id); }));
+document.addEventListener('keydown', e => { if(e.key==='Escape') ['confirmModal','loadModal'].forEach(closeModal); });
 
-            const handleExportPDF = () => {
-                setIsExporting(true);
-                
-                const container = document.getElementById('board-container');
-                const originalScrollLeft = container.scrollLeft;
-                const originalScrollTop = container.scrollTop;
-                
-                // 1. Aplicar las clases que transforman la pizarra en un elemento absoluto gigante
-                document.documentElement.classList.add('pdf-exporting');
-                document.body.classList.add('pdf-exporting');
-                
-                // 2. Darle tiempo al navegador para repintar completamente sin límites de altura
-                setTimeout(() => {
-                    // Forzar cálculo de diseño del navegador
-                    void container.offsetHeight; 
+function askConfirm(title, text, cb, okStyle=false){
+  el('confirmTitle').textContent = title;
+  el('confirmText').textContent = text;
+  el('confirmBtn').className = 'btn-confirm' + (okStyle ? ' ok' : '');
+  confirmCallback = cb;
+  openModal('confirmModal');
+}
+function runConfirm(){ closeModal('confirmModal'); if(confirmCallback){ confirmCallback(); confirmCallback=null; } }
 
-                    // Obtener la altura real del contenedor ya expandido con todos los post-its
-                    const contentWidth = 1600;
-                    const contentHeight = container.scrollHeight + 50; 
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  el('view-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
 
-                    const opt = {
-                        margin: 0, 
-                        filename: 'Pizarra_Design_Thinking.pdf', 
-                        image: { type: 'jpeg', quality: 1 },
-                        html2canvas: { 
-                            scale: 2, 
-                            useCORS: true, 
-                            logging: false,
-                            scrollX: 0,
-                            scrollY: 0,
-                            windowWidth: contentWidth, 
-                            width: contentWidth,
-                            windowHeight: contentHeight, 
-                            height: contentHeight,
-                            x: 0,
-                            y: 0
-                        }, 
-                        // Formato de una sola hoja personalizada (magia para evitar cortes o saltos de página)
-                        jsPDF: { 
-                            unit: 'px', 
-                            format: [contentWidth, contentHeight], 
-                            orientation: contentWidth > contentHeight ? 'landscape' : 'portrait',
-                            hotfixes: ["px_scaling"]
-                        }
-                    };
-                    
-                    html2pdf().set(opt).from(container).save().then(() => {
-                        // 3. Restaurar todo a la normalidad para el usuario
-                        document.documentElement.classList.remove('pdf-exporting');
-                        document.body.classList.remove('pdf-exporting');
-                        container.scrollLeft = originalScrollLeft;
-                        container.scrollTop = originalScrollTop;
-                        setIsExporting(false);
-                    }).catch(err => {
-                        console.error('Error exportando PDF:', err);
-                        document.documentElement.classList.remove('pdf-exporting');
-                        document.body.classList.remove('pdf-exporting');
-                        setIsExporting(false);
-                    });
-                }, 1000); // 1 segundo de espera para asegurar que todo el CSS se aplicó antes de tomar la captura
-            };
+/* ══════════════════════════════════════
+   SIMULADOR
+══════════════════════════════════════ */
+function loadProgress(){
+  try {
+    const raw = localStorage.getItem(LS_PROGRESS);
+    if(raw){ const p = JSON.parse(raw); if(Array.isArray(p) && p.length===5) completed = p; }
+  } catch(e){}
+}
+function saveProgress(){ try{ localStorage.setItem(LS_PROGRESS, JSON.stringify(completed)); }catch(e){} }
 
-            return (
-                <div className="min-h-screen flex flex-col font-sans bg-slate-50">
-                    <header className="bg-slate-900 text-white p-4 shadow-md flex flex-col sm:flex-row justify-between items-center z-10 sticky top-0">
-                        <div className="flex items-center gap-4 mb-4 sm:mb-0">
-                            <button onClick={goHome} className="p-2 hover:bg-slate-800 rounded-full transition-colors" title="Volver al inicio">
-                                <ArrowLeft className="w-6 h-6" />
-                            </button>
-                            <div>
-                                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-pink-400">Pizarra Colaborativa</h1>
-                                <p className="text-slate-400 text-sm flex items-center gap-2 mt-0.5">
-                                    Design Thinking
-                                    {saveStatus && <span className="bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full text-xs font-medium border border-slate-700">{saveStatus}</span>}
-                                </p>
-                            </div>
-                        </div>
-                        <button onClick={handleExportPDF} disabled={isExporting} className={`flex items-center gap-2 px-6 py-2.5 rounded-lg font-semibold transition-all shadow-sm ${isExporting ? 'bg-slate-700 text-slate-300 cursor-not-allowed' : 'bg-white text-slate-900 hover:bg-slate-100 hover:-translate-y-0.5'}`}>
-                            <Download className="w-5 h-5" /> {isExporting ? 'Generando PDF...' : 'Exportar a PDF'}
-                        </button>
-                    </header>
+function markComplete(i){
+  if(!completed[i]){
+    completed[i] = true;
+    saveProgress();
+    renderSidebar();
+    renderProgressBar();
+    if(completed.every(Boolean)) showToast('🏆 ¡Completó los 5 retos del Design Thinking!');
+    else showToast('✓ Reto de ' + PHASES[i].name + ' completado');
+  }
+}
 
-                    <main ref={boardRef} id="board-container" className="flex-1 p-4 md:p-6 overflow-x-hidden md:overflow-x-auto">
-                        <div className="hidden pdf-exporting:block text-center mb-8 w-full">
-                            <h1 className="text-4xl font-bold text-slate-800">Mapeo de Design Thinking</h1>
-                            <p className="text-slate-500">Documento generado desde la pizarra interactiva.</p>
-                        </div>
-                        <div id="board-columns" className="flex flex-col md:flex-row gap-6 pb-10">
-                            {PHASES.map((phase) => (
-                                <div key={phase.id} className={`board-column w-full md:w-80 flex-shrink-0 flex flex-col rounded-xl shadow-sm border border-slate-200 overflow-hidden ${phase.bgColor}`}>
-                                    <div className={`${phase.headerColor} text-white p-4 flex justify-between items-center shadow-sm`}>
-                                        <h2 className="font-bold text-lg tracking-wide">{phase.name}</h2>
-                                        <div className="bg-white/20 px-2 py-0.5 rounded text-sm font-semibold">{notes.filter(n => n.phase === phase.id).length}</div>
-                                    </div>
-                                    <button onClick={() => addNote(phase.id)} className="no-print m-4 flex items-center justify-center gap-2 py-3 border-2 border-dashed border-slate-300 text-slate-500 rounded-lg hover:border-slate-400 hover:text-slate-700 hover:bg-slate-100/50 transition-colors font-medium">
-                                        <Plus className="w-5 h-5" /> Agregar Post-it
-                                    </button>
-                                    <div className="flex-1 p-4 pt-0 space-y-4 overflow-y-auto">
-                                        {notes.filter(n => n.phase === phase.id).map(note => (
-                                            <div key={note.id} className={`relative p-4 rounded-sm shadow-postit ${note.color} transition-transform hover:-translate-y-1`} style={{ minHeight: '140px' }}>
-                                                <div className="absolute top-0 right-0 w-0 h-0 border-t-[16px] border-r-[16px] border-t-black/5 border-r-transparent"></div>
-                                                
-                                                {/* Contenedor que adapta su altura al texto escrito */}
-                                                <div className="relative w-full h-full min-h-[80px]">
-                                                    <div className="print-text invisible whitespace-pre-wrap font-handwriting text-xl text-slate-800 leading-tight break-words pb-8">
-                                                        {note.text || ' '}
-                                                    </div>
-                                                    <textarea 
-                                                        className="absolute top-0 left-0 w-full h-full bg-transparent border-none outline-none font-handwriting text-xl text-slate-800 leading-tight resize-none overflow-hidden" 
-                                                        value={note.text} 
-                                                        onChange={(e) => updateNoteText(note.id, e.target.value)} 
-                                                        placeholder="Escribe una idea..." 
-                                                    />
-                                                </div>
+function resetProgress(){
+  askConfirm('¿Reiniciar progreso?', 'Se borrarán los retos completados del simulador. Sus datos de la pizarra no se tocan.', ()=>{
+    completed = [false,false,false,false,false];
+    chal.insight=null; chal.pov={user:'',need:'',insight:''}; chal.prototype=null; chal.test=null;
+    saveProgress();
+    renderSidebar(); renderProgressBar(); renderStage();
+    showToast('Progreso reiniciado');
+  });
+}
 
-                                                <div className="no-print mt-3 flex justify-between items-center opacity-0 hover:opacity-100 focus-within:opacity-100 transition-opacity absolute bottom-2 left-3 right-3">
-                                                    <div className="flex gap-1.5 bg-white/50 px-2 py-1 rounded-full backdrop-blur-sm">
-                                                        {POSTIT_COLORS.map(color => (
-                                                            <button key={color} onClick={() => changeNoteColor(note.id, color)} className={`w-4 h-4 rounded-full border border-black/10 ${color} hover:scale-110 transition-transform ${note.color === color ? 'ring-2 ring-black/30' : ''}`} title="Cambiar color" />
-                                                        ))}
-                                                    </div>
-                                                    <button onClick={() => deleteNote(note.id)} className="p-1.5 bg-white/50 text-red-600 rounded-full hover:bg-red-500 hover:text-white transition-colors backdrop-blur-sm" title="Eliminar post-it"><Trash2 className="w-4 h-4" /></button>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    </main>
-                </div>
-            );
-        }
+function renderProgressBar(){
+  const done = completed.filter(Boolean).length;
+  el('progressFill').style.width = (done/5*100) + '%';
+  el('progressNum').textContent = done + ' / 5';
+}
 
+function renderSidebar(){
+  el('stageSidebar').innerHTML = PHASES.map((p,i)=>`
+    <button class="stage-btn ${i===activeStage?'active':''} ${completed[i]?'done':''}"
+      style="--sc:${p.c}; --sl:${p.l}" onclick="goStage(${i})">
+      <span class="stage-dot">
+        <span style="font-size:1.15rem">${p.emoji}</span>
+        <span class="stage-check">
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      </span>
+      <span class="stage-name">${i+1}. ${p.name}</span>
+    </button>`).join('');
+}
 
-        // ==========================================
-        // COMPONENTE: MENÚ PRINCIPAL (HOME)
-        // ==========================================
-        function HomeView({ setView }) {
-            return (
-                <div className="min-h-screen bg-slate-900 text-white flex flex-col justify-center items-center p-6 relative overflow-hidden animate-fadeIn">
-                    
-                    {/* Fondo decorativo */}
-                    <div className="absolute top-0 left-0 w-full h-full opacity-5 pointer-events-none" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '30px 30px' }}></div>
-                    <div className="absolute top-[-20%] left-[-10%] w-96 h-96 bg-blue-500 rounded-full blur-[120px] opacity-30"></div>
-                    <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-pink-500 rounded-full blur-[120px] opacity-30"></div>
+function goStage(i){ activeStage = i; activeTab = 'theory'; renderSidebar(); renderStage(); }
+function moveStage(dir){
+  const n = activeStage + dir;
+  if(n>=0 && n<PHASES.length) goStage(n);
+}
 
-                    <div className="max-w-4xl w-full z-10 flex flex-col items-center text-center">
-                        <div className="inline-block bg-white/10 px-4 py-1.5 rounded-full text-sm font-semibold tracking-widest uppercase mb-6 backdrop-blur-sm border border-white/10">
-                            Plataforma Interactiva
-                        </div>
-                        
-                        <h1 className="text-5xl md:text-7xl font-extrabold mb-8 tracking-tight leading-tight">
-                            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400">Design Thinking</span>
-                        </h1>
-                        
-                        <div className="bg-slate-800/50 p-8 rounded-2xl border border-slate-700/50 backdrop-blur-md mb-12 shadow-2xl">
-                            <p className="text-lg md:text-xl text-slate-300 leading-relaxed text-justify md:text-center">
-                                El <strong className="text-white">Design Thinking</strong> es un método iterativo de resolución de problemas centrado en el ser humano, diseñado para crear soluciones innovadoras mediante la empatía, la creatividad y la racionalidad. Aplicable a diversos sectores, sigue cinco fases principales: <span className="text-blue-400 font-semibold">Empatizar</span>, <span className="text-purple-400 font-semibold">Definir</span>, <span className="text-yellow-400 font-semibold">Idear</span>, <span className="text-orange-400 font-semibold">Prototipar</span> y <span className="text-green-400 font-semibold">Testear</span>, buscando un equilibrio entre las necesidades del usuario, la viabilidad tecnológica y la viabilidad de negocio.
-                            </p>
-                        </div>
+function setTab(tab){ activeTab = tab; renderStage(); }
 
-                        <h2 className="text-2xl font-bold mb-6 text-slate-200">Elige tu herramienta:</h2>
-                        
-                        <div className="flex flex-col md:flex-row gap-6 w-full max-w-2xl justify-center">
-                            
-                            <button 
-                                onClick={() => setView('tutorial')}
-                                className="group flex-1 flex flex-col items-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-blue-400/50 p-8 rounded-2xl transition-all hover:-translate-y-2 cursor-pointer backdrop-blur-sm"
-                            >
-                                <div className="w-16 h-16 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <PlayCircle className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Aprender</h3>
-                                <p className="text-slate-400 text-sm">Simulador interactivo paso a paso</p>
-                            </button>
+function renderStage(){
+  const p = PHASES[activeStage];
+  el('btnPrevStage').disabled = activeStage===0;
+  el('btnNextStage').disabled = activeStage===PHASES.length-1;
 
-                            <button 
-                                onClick={() => setView('board')}
-                                className="group flex-1 flex flex-col items-center bg-white/5 hover:bg-white/10 border border-white/10 hover:border-pink-400/50 p-8 rounded-2xl transition-all hover:-translate-y-2 cursor-pointer backdrop-blur-sm"
-                            >
-                                <div className="w-16 h-16 bg-pink-500/20 text-pink-400 rounded-full flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                                    <LayoutDashboard className="w-8 h-8" />
-                                </div>
-                                <h3 className="text-xl font-bold text-white mb-2">Practicar</h3>
-                                <p className="text-slate-400 text-sm">Pizarra colaborativa exportable a PDF</p>
-                            </button>
+  const theoryHTML = `
+    <div class="theory-box">
+      <h4>💡 Fundamentos</h4>
+      <p>${p.theory}</p>
+    </div>
+    <div class="theory-box" style="background:#fff">
+      <h4>📋 Consejos clave</h4>
+      <ul class="tips-list" style="--sc:${p.c}">${p.tips.map(t=>`<li>${t}</li>`).join('')}</ul>
+    </div>`;
 
-                        </div>
-                    </div>
-                </div>
-            );
-        }
+  el('stageContent').innerHTML = `
+    <span class="stage-chip" style="--sl:${p.l}; --sc:${p.c}">${p.emoji} Fase ${activeStage+1} · ${p.name}</span>
+    <h2>${p.question}</h2>
+    <p class="tut-desc">${p.description}</p>
+    <div class="tab-row" style="--sc:${p.c}; --scd:${p.d}">
+      <button class="tab-btn ${activeTab==='theory'?'active':''}" onclick="setTab('theory')">Teoría</button>
+      <button class="tab-btn ${activeTab==='practice'?'active':''}" onclick="setTab('practice')">Reto práctico ${completed[activeStage]?'✓':''}</button>
+    </div>
+    <div style="flex:1; --sc:${p.c}; --sl:${p.l}; --scd:${p.d}" id="stageInner">
+      ${activeTab==='theory' ? theoryHTML : ''}
+    </div>`;
 
-        // ==========================================
-        // COMPONENTE PRINCIPAL (ENRUTADOR SIMPLE)
-        // ==========================================
-        function App() {
-            const [currentView, setCurrentView] = useState('home'); // 'home', 'tutorial', 'board'
+  if(activeTab==='practice') renderChallenge();
+}
 
-            return (
-                <div className="w-full h-full">
-                    {currentView === 'home' && <HomeView setView={setCurrentView} />}
-                    {currentView === 'tutorial' && <TutorialView goHome={() => setCurrentView('home')} />}
-                    {currentView === 'board' && <BoardView goHome={() => setCurrentView('home')} />}
-                </div>
-            );
-        }
+function renderChallenge(){
+  const inner = el('stageInner');
+  const p = PHASES[activeStage];
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
+  if(activeStage===0){
+    const quotes = [
+      { id:1, text:'"Los libros físicos son muy pesados para llevarlos todos los días."' },
+      { id:2, text:'"Intento estudiar en la compu, pero me distraigo a los 5 minutos con notificaciones y pierdo el hilo."' },
+      { id:3, text:'"La biblioteca cierra muy temprano los fines de semana."' }
+    ];
+    inner.innerHTML = `
+      <h3 class="chal-title">Reto: lea las entrevistas</h3>
+      <p class="chal-desc">Estamos diseñando para estudiantes. Seleccione la cita que revele el problema <strong>más profundo</strong>.</p>
+      <div class="chal-grid">
+        ${quotes.map(q=>`
+        <button class="chal-option ${chal.insight===q.id?'picked':''}" onclick="pickInsight(${q.id})">
+          <span class="co-emoji">💬</span>
+          <span class="co-text">${q.text}</span>
+        </button>`).join('')}
+      </div>
+      ${chal.insight===2 ? `<div class="chal-feedback good">✓ ¡Excelente! Encontró un <strong>insight</strong>: el problema real no es estudiar, es la <em>gestión de la atención</em>.</div>` : ''}
+      ${chal.insight && chal.insight!==2 ? `<div class="chal-feedback bad">Esa cita describe un problema superficial. Busque la que revele una emoción o un patrón de comportamiento más profundo.</div>` : ''}`;
+  }
+
+  else if(activeStage===1){
+    const ok = chal.pov.user==='estudiante' && chal.pov.need==='concentrarse' && chal.pov.insight==='atencion';
+    inner.innerHTML = `
+      <h3 class="chal-title">Reto: cree el Punto de Vista (POV)</h3>
+      <p class="chal-desc">Complete la oración para definir exactamente qué vamos a resolver.</p>
+      <div class="pov-box">
+        El <select onchange="setPov('user',this.value)">
+          <option value="" ${chal.pov.user===''?'selected':''}>[Usuario]</option>
+          <option value="estudiante" ${chal.pov.user==='estudiante'?'selected':''}>estudiante de colegio</option>
+          <option value="profesor" ${chal.pov.user==='profesor'?'selected':''}>profesor</option>
+        </select> necesita una forma de <select onchange="setPov('need',this.value)">
+          <option value="" ${chal.pov.need===''?'selected':''}>[Necesidad]</option>
+          <option value="libros" ${chal.pov.need==='libros'?'selected':''}>comprar libros más baratos</option>
+          <option value="concentrarse" ${chal.pov.need==='concentrarse'?'selected':''}>bloquear distracciones digitales</option>
+        </select> porque <select onchange="setPov('insight',this.value)">
+          <option value="" ${chal.pov.insight===''?'selected':''}>[Insight]</option>
+          <option value="atencion" ${chal.pov.insight==='atencion'?'selected':''}>su entorno fragmenta su atención y le impide aprender</option>
+          <option value="dinero" ${chal.pov.insight==='dinero'?'selected':''}>no tiene suficiente dinero</option>
+        </select>.
+      </div>
+      ${ok ? `<div class="chal-feedback good">✓ ¡Perfecto! Enmarcó el problema de forma humana y procesable.</div>` : ''}`;
+  }
+
+  else if(activeStage===2){
+    inner.innerHTML = `
+      <h3 class="chal-title">Reto: lluvia de ideas</h3>
+      <p class="chal-desc">Problema: <em>"¿Cómo podríamos ayudar al estudiante a bloquear distracciones?"</em> Añada al menos <strong>4 ideas</strong> a la pizarra (hay ${chal.ideas.length}).</p>
+      <form class="idea-form" onsubmit="addChalIdea(event)">
+        <input type="text" id="newIdeaInput" placeholder="Escriba una idea innovadora…">
+        <button type="submit" class="btn" style="background:${p.c}; box-shadow:0 4px 0 ${p.d}">+ Añadir</button>
+      </form>
+      <div class="mini-postits">
+        ${chal.ideas.map(i=>`
+          <div class="mini-postit">
+            <p>${esc(i.text)}</p>
+            <button class="mini-del" onclick="removeChalIdea(${i.id})" title="Eliminar">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            </button>
+          </div>`).join('')}
+      </div>
+      ${chal.ideas.length>=4 ? `<div class="chal-feedback good">✓ ¡Eso es ideación! La cantidad abre el camino a la calidad.</div>` : ''}`;
+  }
+
+  else if(activeStage===3){
+    const protos = [
+      { id:'code',  emoji:'💻', title:'Programar la app real', desc:'Tomará 2 meses.' },
+      { id:'paper', emoji:'📝', title:'Prototipo en papel', desc:'Dibujar las pantallas y simular.' },
+      { id:'3d',    emoji:'🧊', title:'Impresión 3D', desc:'Crear un modelo físico.' }
+    ];
+    inner.innerHTML = `
+      <h3 class="chal-title">Reto: elija su prototipo</h3>
+      <p class="chal-desc">¿Cuál es la forma más <strong>rápida y barata</strong> de probar la app bloqueadora mañana mismo?</p>
+      <div class="chal-grid">
+        ${protos.map(pr=>`
+        <button class="chal-option ${chal.prototype===pr.id?'picked':''}" style="text-align:center" onclick="pickProto('${pr.id}')">
+          <span class="co-emoji">${pr.emoji}</span>
+          <span class="co-title" style="display:block">${pr.title}</span>
+          <span class="co-text" style="font-style:normal">${pr.desc}</span>
+        </button>`).join('')}
+      </div>
+      ${chal.prototype==='paper' ? `<div class="chal-feedback good">✓ ¡Exacto! El papel es ideal para fallar rápido y barato.</div>` : ''}
+      ${chal.prototype && chal.prototype!=='paper' ? `<div class="chal-feedback bad">Demasiado costoso o lento para una primera validación. Recuerde: aprender rápido, fallar barato.</div>` : ''}`;
+  }
+
+  else {
+    inner.innerHTML = `
+      <h3 class="chal-title">Reto: sesión de pruebas</h3>
+      <p class="chal-desc">Feedback de 5 estudiantes que usaron el prototipo:</p>
+      <div class="theory-box" style="background:#fff">
+        <p style="margin-bottom:.5rem">👍 <em>"Me encanta el 'Modo Focus' que planta un árbol."</em></p>
+        <p>👎 <em>"El botón de 'Emergencia' está muy escondido, me dio ansiedad."</em></p>
+      </div>
+      <p class="chal-desc" style="margin-top:1rem"><strong>¿Qué hacemos ahora?</strong></p>
+      <div style="display:flex; flex-direction:column; gap:.6rem">
+        <button class="chal-option ${chal.test==='ignore'?'picked':''}" style="--sc:#ef4444; --sl:#ffecec" onclick="pickTest('ignore')">
+          <span class="co-title">1. Ignorar la ansiedad, se acostumbrarán.</span>
+        </button>
+        <button class="chal-option ${chal.test==='iterate'?'picked':''}" onclick="pickTest('iterate')">
+          <span class="co-title">2. Iterar: volver a Idear y Prototipar para rediseñar el botón. 🔄</span>
+        </button>
+      </div>
+      ${chal.test==='iterate' ? `<div class="chal-feedback good">✓ ¡Así funciona! El Design Thinking es un ciclo: el feedback lo devuelve a fases anteriores para mejorar.</div>` : ''}
+      ${chal.test==='ignore' ? `<div class="chal-feedback bad">Ignorar el feedback del usuario rompe todo el proceso. La ansiedad detectada es un hallazgo valioso.</div>` : ''}`;
+  }
+}
+
+function pickInsight(id){ chal.insight = id; if(id===2) markComplete(0); renderChallenge(); }
+function setPov(k,v){
+  chal.pov[k]=v;
+  if(chal.pov.user==='estudiante' && chal.pov.need==='concentrarse' && chal.pov.insight==='atencion') markComplete(1);
+  renderChallenge();
+}
+function addChalIdea(e){
+  e.preventDefault();
+  const inp = el('newIdeaInput');
+  const t = inp.value.trim();
+  if(!t) return;
+  chal.ideas.push({ id:Date.now(), text:t });
+  if(chal.ideas.length>=4) markComplete(2);
+  renderChallenge();
+}
+function removeChalIdea(id){ chal.ideas = chal.ideas.filter(i=>i.id!==id); renderChallenge(); }
+function pickProto(id){ chal.prototype=id; if(id==='paper') markComplete(3); renderChallenge(); }
+function pickTest(id){ chal.test=id; if(id==='iterate') markComplete(4); renderChallenge(); }
+
+/* ══════════════════════════════════════
+   PIZARRA
+══════════════════════════════════════ */
+const defaultNotes = [
+  { id:1, phase:'empatizar', text:'Los usuarios sienten que les falta tiempo…', color:'bg-yellow-200' },
+  { id:2, phase:'idear', text:'¡Crear una app móvil interactiva!', color:'bg-pink-200' }
+];
+
+function loadBoard(){
+  try {
+    const saved = localStorage.getItem(LS_NOTES);
+    notes = saved ? JSON.parse(saved) : [...defaultNotes];
+    if(!Array.isArray(notes)) notes = [...defaultNotes];
+  } catch(e){ notes = [...defaultNotes]; }
+  el('projectName').value = localStorage.getItem(LS_PROJECT) || '';
+}
+
+function saveBoard(){
+  try {
+    localStorage.setItem(LS_NOTES, JSON.stringify(notes));
+    localStorage.setItem(LS_PROJECT, el('projectName').value);
+    el('saveBadge').textContent = 'Guardado ✓';
+  } catch(e){ el('saveBadge').textContent = 'Error al guardar'; }
+}
+
+function renderBoard(){
+  el('boardCols').innerHTML = PHASES.map(p=>{
+    const phaseNotes = notes.filter(n=>n.phase===p.id);
+    return `
+    <div class="bcol" style="--pc:${p.c}; --pl:${p.l}">
+      <div class="bcol-head">
+        <h3>${p.emoji} ${p.name}</h3>
+        <span class="bcol-count">${phaseNotes.length}</span>
+      </div>
+      <button class="bcol-add" onclick="addBoardNote('${p.id}')">＋ Agregar post-it</button>
+      <div class="bcol-notes">
+        ${phaseNotes.map(n=>`
+        <div class="postit ${n.color}" id="note-${n.id}">
+          <textarea placeholder="Escriba una idea…" oninput="onNoteInput(${n.id}, this)">${esc(n.text)}</textarea>
+          <div class="postit-tools">
+            <div class="pcolors">
+              ${POSTIT_COLORS.map(c=>`<button class="pcolor ${n.color===c.class?'sel':''}" style="background:${c.hex}" title="${c.name}" onclick="setNoteColor(${n.id},'${c.class}')"></button>`).join('')}
+            </div>
+            <button class="pdel" onclick="deleteBoardNote(${n.id})" title="Eliminar">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>
+            </button>
+          </div>
+        </div>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+  document.querySelectorAll('.postit textarea').forEach(autoGrow);
+}
+
+function autoGrow(ta){ ta.style.height='auto'; ta.style.height = (ta.scrollHeight)+'px'; }
+
+function onNoteInput(id, ta){
+  const n = notes.find(x=>x.id===id);
+  if(n){ n.text = ta.value; saveBoard(); }
+  autoGrow(ta);
+  // actualizar contador sin re-render completo no es necesario: el texto no cambia el conteo
+}
+
+function addBoardNote(phaseId){
+  const color = POSTIT_COLORS[Math.floor(Math.random()*POSTIT_COLORS.length)].class;
+  notes.push({ id:Date.now(), phase:phaseId, text:'', color });
+  saveBoard();
+  renderBoard();
+  const last = notes[notes.length-1];
+  const elNote = el('note-'+last.id);
+  if(elNote){ const ta = elNote.querySelector('textarea'); if(ta) ta.focus(); }
+}
+
+function setNoteColor(id, color){
+  const n = notes.find(x=>x.id===id);
+  if(n){ n.color = color; saveBoard(); renderBoard(); }
+}
+
+function deleteBoardNote(id){
+  notes = notes.filter(n=>n.id!==id);
+  saveBoard();
+  renderBoard();
+}
+
+function clearBoard(){
+  askConfirm('¿Limpiar la pizarra?', 'Se eliminarán todos los post-its y el nombre del proyecto. Esta acción no se puede deshacer.', ()=>{
+    notes = [];
+    el('projectName').value = '';
+    saveBoard();
+    renderBoard();
+    showToast('Pizarra limpiada');
+  });
+}
+
+/* ── JSON guardar / cargar ── */
+function buildSnap(){
+  return { version:1, appName:'Pizarra Design Thinking', project: el('projectName').value || 'Sin título', savedAt: new Date().toISOString(), notes };
+}
+
+function openSaveModal(){
+  const snap = buildSnap();
+  const slug = (snap.project !== 'Sin título' ? snap.project : 'design_thinking').replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'') || 'design_thinking';
+  const blob = new Blob([JSON.stringify(snap,null,2)], { type:'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `DesignThinking_${slug}_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+  showToast('✓ Archivo JSON descargado');
+}
+
+function openLoadModal(){ openModal('loadModal'); }
+
+function loadJSONText(str){
+  try {
+    const snap = JSON.parse(str);
+    if(!Array.isArray(snap.notes)) throw 0;
+    notes = snap.notes.map(n=>({
+      id: n.id || Date.now()+Math.random(),
+      phase: PHASES.some(p=>p.id===n.phase) ? n.phase : 'empatizar',
+      text: n.text || '',
+      color: POSTIT_COLORS.some(c=>c.class===n.color) ? n.color : 'bg-yellow-200'
+    }));
+    el('projectName').value = (snap.project && snap.project!=='Sin título') ? snap.project : '';
+    saveBoard();
+    renderBoard();
+    closeModal('loadModal');
+    showToast('✓ Pizarra cargada');
+  } catch(e){ showToast('✗ Archivo JSON inválido', true); }
+}
+
+function loadFileInput(e){
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+function dropFile(e){
+  e.preventDefault();
+  el('dropZone').classList.remove('dragover');
+  const f = e.dataTransfer.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+}
+
+/* ══════════════════════════════════════
+   CASOS DE USO
+══════════════════════════════════════ */
+function renderCasos(){
+  el('casosContainer').innerHTML = CASOS.map(c=>`
+    <div class="caso-card" style="--kc:${c.c}; --kl:${c.l}">
+      <div class="caso-head">
+        <div class="caso-emoji">${c.emoji}</div>
+        <div style="flex:1; min-width:200px">
+          <h3>${c.title}</h3>
+          <p class="caso-sub">${c.sub}</p>
+        </div>
+        <button class="btn caso-load" style="background:${c.c}; box-shadow:0 4px 0 rgba(0,0,0,.25)" onclick="loadCaso('${c.id}')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          Cargar en la pizarra
+        </button>
+      </div>
+      <div class="caso-body">
+        <div class="caso-phases">
+          ${PHASES.map(p=>`
+          <div>
+            <span class="caso-phase-tag" style="--fpc:${p.c}">${p.name}</span>
+            <div class="caso-notes" style="--fpl:${p.l}">
+              ${(c.notes[p.id]||[]).map(n=>`<div class="caso-note">${n}</div>`).join('')}
+            </div>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>`).join('');
+}
+
+function loadCaso(id){
+  const c = CASOS.find(x=>x.id===id);
+  if(!c) return;
+  askConfirm('¿Cargar "' + c.title + '"?', 'Los post-its del caso se cargarán en la pizarra REEMPLAZANDO el contenido actual. Podrá editarlos, agregar y eliminar lo que quiera.', ()=>{
+    notes = [];
+    let idc = Date.now();
+    PHASES.forEach(p=>{
+      (c.notes[p.id]||[]).forEach((txt,i)=>{
+        notes.push({ id: idc++, phase: p.id, text: txt, color: POSTIT_COLORS[(i + PHASES.indexOf(p)) % POSTIT_COLORS.length].class });
+      });
+    });
+    el('projectName').value = c.project;
+    saveBoard();
+    renderBoard();
+    showView('board');
+    showToast('✓ Caso cargado en la pizarra');
+  }, true);
+}
+
+/* ══════════════════════════════════════
+   EXPORTACIÓN PNG / PDF
+   Carta horizontal: 11 × 8.5 pulgadas
+══════════════════════════════════════ */
+function buildExportDoc(){
+  const project = el('projectName').value.trim() || 'Pizarra Design Thinking';
+  el('exportDoc').innerHTML = `
+    <div class="xp-head">
+      <div>
+        <div class="xp-title">Design Thinking</div>
+        <div class="xp-subtitle">Pizarra de proyecto · 5 fases</div>
+      </div>
+      <div class="xp-meta">
+        <div class="xp-project">${esc(project)}</div>
+        <div class="xp-date">${fechaHoy()}</div>
+      </div>
+    </div>
+    <div class="xp-rule"></div>
+    <div class="xp-grid">
+      ${PHASES.map(p=>{
+        const phaseNotes = notes.filter(n=>n.phase===p.id && n.text.trim()!=='');
+        const items = phaseNotes.length===0
+          ? `<p class="xp-empty">Sin notas</p>`
+          : phaseNotes.map(n=>{
+              const col = POSTIT_COLORS.find(c=>c.class===n.color) || POSTIT_COLORS[0];
+              return `<div class="xp-note" style="background:${col.hex}">${esc(n.text)}</div>`;
+            }).join('');
+        return `
+        <div class="xp-col">
+          <div class="xp-col-head" style="background:${p.c}">
+            <h4>${p.name}</h4>
+            <span class="xp-col-count">${phaseNotes.length}</span>
+          </div>
+          <div class="xp-notes">${items}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    <div class="xp-foot">
+      <span>Design Thinking Hub · Emprendimiento e Innovación</span>
+      <span>Formato carta horizontal (11" × 8.5")</span>
+    </div>`;
+}
+
+function setBtnLoading(btn, loading, defaultText){
+  if(!btn) return;
+  const txt = btn.querySelector('.btn-txt');
+  const icon = btn.querySelector('.btn-icon');
+  btn.disabled = loading;
+  if(txt) txt.textContent = loading ? 'Generando…' : defaultText;
+  if(icon){
+    if(!icon.dataset.original) icon.dataset.original = icon.innerHTML;
+    icon.innerHTML = loading
+      ? '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+      : icon.dataset.original;
+  }
+}
+
+async function exportBoard(fmt){
+  if(typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+    showToast('Las librerías aún no cargan. Intente en un segundo.', true);
+    return;
+  }
+  const btn = el(fmt==='png' ? 'btnPng' : 'btnPdf');
+  setBtnLoading(btn, true, fmt.toUpperCase());
+
+  try {
+    buildExportDoc();
+    await new Promise(r=>setTimeout(r, 120)); // dejar que el navegador aplique el layout
+
+    const canvas = await html2canvas(el('exportDoc'), {
+      scale: 2,               // 1320×1020 → 2640×2040 px (240 ppp en carta)
+      useCORS: true,
+      backgroundColor: '#f6f4ff'
+    });
+
+    const project = el('projectName').value.trim();
+    const slug = project ? '_' + project.replace(/\s+/g,'_').replace(/[^a-zA-Z0-9_\-]/g,'') : '';
+    const base = `DesignThinking${slug}_${new Date().toISOString().slice(0,10)}`;
+
+    if(fmt==='png'){
+      const link = document.createElement('a');
+      link.download = base + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✓ PNG descargado (11" × 8.5")');
+    } else {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation:'landscape', unit:'in', format:'letter' });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 11, 8.5);
+      pdf.save(base + '.pdf');
+      showToast('✓ PDF descargado (carta horizontal)');
+    }
+  } catch(error){
+    console.error('Error en la exportación:', error);
+    showToast('✗ Ocurrió un error al exportar', true);
+  } finally {
+    el('exportDoc').innerHTML = '';
+    setBtnLoading(btn, false, fmt.toUpperCase());
+  }
+}
+
+/* ══════════════════════════════════════
+   ARRANQUE
+══════════════════════════════════════ */
+loadProgress();
+renderSidebar();
+renderProgressBar();
+renderStage();
+loadBoard();
+renderBoard();
+renderCasos();
+</script>
 </body>
 </html>
