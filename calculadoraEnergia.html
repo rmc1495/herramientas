@@ -1,778 +1,1324 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Guía y Calculadora de Eficiencia Energética CR</title>
-    
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <!-- Google Fonts (Inter) -->
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    
-    <!-- FontAwesome para Íconos -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <!-- Librerías para el Gráfico -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
-    <style>
-        body {
-            font-family: 'Inter', sans-serif;
-            background-color: #f8fafc;
-        }
-        .fade-in {
-            animation: fadeIn 0.4s ease-in-out;
-        }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        /* Custom scrollbar para la lista */
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EcoCalcula CR · Eficiencia Energética</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:ital,wght@0,400;0,600;0,700;0,800;1,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+
+<style>
+/* IMPORTANTE: no usar color-mix() ni oklch() en este archivo.
+   html2canvas 1.4.1 no los soporta y rompe la exportación PNG/PDF. */
+:root {
+  --bg: #f4faf6;
+  --surface: #ffffff;
+  --ink: #24343a;
+  --soft: #5c7069;
+  --muted: #93a8a0;
+  --border: #dcebe2;
+
+  --green:  #10b981;  --green-d:  #047857;  --green-l:  #e2f8ef;
+  --teal:   #06b6d4;  --teal-d:   #0e7490;  --teal-l:   #e4f9fd;
+  --blue:   #3b82f6;  --blue-d:   #1d4ed8;  --blue-l:   #eaf2ff;
+  --amber:  #f59e0b;  --amber-d:  #b45309;  --amber-l:  #fdf3dc;
+  --violet: #7c3aed;  --violet-d: #5b21b6;  --violet-l: #f1eaff;
+  --red:    #ef4444;  --red-d:    #b91c1c;  --red-l:    #ffecec;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: var(--bg);
+  background-image:
+    radial-gradient(circle at 12% 8%, rgba(16,185,129,0.09) 0, transparent 30%),
+    radial-gradient(circle at 88% 20%, rgba(6,182,212,0.08) 0, transparent 30%),
+    radial-gradient(circle at 70% 90%, rgba(245,158,11,0.06) 0, transparent 32%);
+  color: var(--ink);
+  font-family: 'Nunito', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 4rem;
+}
+
+button { font-family: inherit; cursor: pointer; }
+svg { display: block; flex-shrink: 0; }
+h1, h2, h3, h4 { font-family: 'Baloo 2', sans-serif; }
+
+/* ═══════ BOTONES ═══════ */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+  font-size: .82rem; font-weight: 800;
+  padding: .58rem 1rem;
+  border-radius: 14px; border: none; color: #fff;
+  transition: transform .1s, box-shadow .1s, filter .15s;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { filter: brightness(1.06); }
+.btn:active:not(:disabled) { transform: translateY(4px); box-shadow: 0 0 0 transparent !important; }
+.btn:disabled { opacity: .55; cursor: not-allowed; }
+.btn-white  { background: #fff; color: var(--soft); border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+.btn-white:hover:not(:disabled) { color: var(--ink); }
+.btn-danger { background: #fff; color: var(--soft); border: 2px solid var(--border); box-shadow: 0 4px 0 var(--border); }
+.btn-danger:hover:not(:disabled) { color: var(--red); border-color: #ffc9c9; box-shadow: 0 4px 0 #ffc9c9; }
+.btn-green  { background: var(--green);  box-shadow: 0 4px 0 var(--green-d); }
+.btn-violet { background: var(--violet); box-shadow: 0 4px 0 var(--violet-d); }
+.btn-blue   { background: var(--blue);   box-shadow: 0 4px 0 var(--blue-d); }
+.btn-ink    { background: var(--ink);    box-shadow: 0 4px 0 #131d20; }
+.spin { animation: spin .9s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════ TOPBAR ═══════ */
+.topbar {
+  background: rgba(255,255,255,0.92);
+  backdrop-filter: blur(8px);
+  border-bottom: 2px solid var(--border);
+  padding: .85rem 1.5rem;
+  display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+  gap: .8rem 1rem;
+  position: sticky; top: 0; z-index: 30;
+}
+.brand { display: flex; align-items: center; gap: .8rem; }
+.brand-icon {
+  width: 46px; height: 46px; border-radius: 14px;
+  background: linear-gradient(135deg, var(--green), var(--teal));
+  box-shadow: 0 4px 0 var(--green-d);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.3rem;
+}
+.brand h1 {
+  font-weight: 800; font-size: 1.45rem; line-height: 1.1;
+  background: linear-gradient(90deg, var(--green-d), var(--teal));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
+.brand .sub { font-size: .62rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); }
+
+.tabs { display: flex; gap: .5rem; }
+.tab-btn {
+  display: inline-flex; align-items: center; gap: .45rem;
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .9rem;
+  padding: .55rem 1.15rem;
+  border-radius: 999px;
+  border: 2px solid var(--border);
+  background: #fff; color: var(--soft);
+  transition: all .15s;
+}
+.tab-btn.active {
+  background: var(--green); border-color: var(--green);
+  color: #fff; box-shadow: 0 3px 0 var(--green-d);
+}
+
+.wrap { max-width: 1240px; margin: 0 auto; padding: 1.6rem 1.4rem 0; }
+.view { display: none; animation: fadeIn .35s ease; }
+.view.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ═══════ APRENDE ═══════ */
+.hero {
+  background: linear-gradient(120deg, #047857, #0e9f6e 55%, #0e7490);
+  border-radius: 24px;
+  padding: 2.4rem 2.2rem;
+  color: #fff;
+  box-shadow: 0 8px 0 rgba(4,120,87,.35);
+  position: relative; overflow: hidden;
+  margin-bottom: 1.6rem;
+}
+.hero::after {
+  content: '🍃';
+  position: absolute; right: -18px; bottom: -28px;
+  font-size: 9rem; opacity: .18; transform: rotate(-14deg);
+}
+.hero-badge {
+  display: inline-block;
+  font-size: .64rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase;
+  background: rgba(255,255,255,.18);
+  padding: .35rem .9rem; border-radius: 999px;
+  margin-bottom: .9rem;
+}
+.hero h2 { font-weight: 800; font-size: clamp(1.7rem, 4vw, 2.5rem); line-height: 1.15; margin-bottom: .7rem; max-width: 640px; }
+.hero p { font-size: .95rem; font-weight: 600; line-height: 1.7; opacity: .92; max-width: 580px; margin-bottom: 1.3rem; }
+.hero .btn { background: #fff; color: var(--green-d); box-shadow: 0 4px 0 rgba(0,0,0,.25); }
+
+.acc-panel {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 22px;
+  box-shadow: 0 6px 0 var(--border);
+  overflow: hidden;
+}
+.acc-head {
+  padding: 1.2rem 1.5rem;
+  border-bottom: 2px dashed var(--border);
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap;
+}
+.acc-head h3 { font-weight: 800; font-size: 1.15rem; }
+.acc-head p { font-size: .8rem; font-weight: 600; color: var(--soft); margin-top: .15rem; }
+.acc-chip {
+  font-size: .64rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  background: var(--green-l); color: var(--green-d);
+  padding: .35rem .8rem; border-radius: 999px;
+}
+
+details.acc { border-bottom: 2px dashed var(--border); }
+details.acc:last-child { border-bottom: none; }
+details.acc summary {
+  list-style: none;
+  padding: 1rem 1.5rem;
+  display: flex; align-items: center; justify-content: space-between; gap: 1rem;
+  cursor: pointer;
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: .95rem;
+  transition: background .15s;
+}
+details.acc summary::-webkit-details-marker { display: none; }
+details.acc summary:hover { background: var(--bg); }
+details.acc summary .chev { color: var(--muted); transition: transform .25s; }
+details.acc[open] summary .chev { transform: rotate(180deg); color: var(--green); }
+details.acc .acc-body {
+  padding: 0 1.5rem 1.4rem;
+  font-size: .87rem; font-weight: 600;
+  color: var(--soft); line-height: 1.75;
+}
+.acc-body h4 { font-size: .95rem; color: var(--ink); margin: 1.1rem 0 .4rem; }
+.acc-body h5 { font-family: 'Nunito', sans-serif; font-size: .84rem; font-weight: 800; color: var(--ink); margin: .8rem 0 .3rem; }
+.acc-body p { margin-bottom: .6rem; }
+.acc-body ul { padding-left: 1.3rem; margin-bottom: .6rem; }
+.acc-body li { margin-bottom: .3rem; }
+.acc-body .note {
+  background: var(--green-l);
+  border: 2px solid #bfebd8;
+  border-radius: 12px;
+  padding: .8rem 1rem;
+  font-size: .8rem; font-style: italic;
+  color: var(--green-d);
+  margin-bottom: .8rem;
+}
+.acc-body strong, .acc-body em { color: var(--ink); }
+.impact-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: .8rem; margin-top: .8rem; }
+@media (max-width: 700px) { .impact-grid { grid-template-columns: 1fr; } }
+.impact-card {
+  background: var(--icl);
+  border: 2px solid var(--icb);
+  border-radius: 14px;
+  padding: .9rem 1rem;
+}
+.impact-card h4 { margin: 0 0 .5rem; font-size: .9rem; color: var(--icd); }
+.impact-card ul { padding-left: 1.1rem; margin: 0; font-size: .78rem; }
+
+/* ═══════ CALCULADORA ═══════ */
+.calc-intro { text-align: center; max-width: 640px; margin: 0 auto 1.6rem; }
+.calc-intro h2 { font-weight: 800; font-size: 1.9rem; margin-bottom: .35rem; }
+.calc-intro p { font-size: .9rem; font-weight: 600; color: var(--soft); line-height: 1.65; }
+
+.calc-toolbar { display: flex; justify-content: center; gap: .55rem; flex-wrap: wrap; margin-bottom: 1.5rem; }
+
+.calc-grid { display: grid; grid-template-columns: 320px 1fr; gap: 1.3rem; align-items: start; }
+@media (max-width: 900px) { .calc-grid { grid-template-columns: 1fr; } }
+
+.panel {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 20px;
+  box-shadow: 0 6px 0 var(--border);
+  padding: 1.2rem 1.3rem;
+}
+.panel-label {
+  font-family: 'Baloo 2', sans-serif; font-weight: 700; font-size: 1rem;
+  display: flex; align-items: center; gap: .5rem;
+  padding-bottom: .8rem; margin-bottom: .95rem;
+  border-bottom: 2px dashed var(--border);
+}
+.panel-label .badge-icon {
+  width: 28px; height: 28px; border-radius: 9px;
+  background: linear-gradient(135deg, var(--green), var(--teal));
+  color: #fff; font-size: .85rem;
+  display: flex; align-items: center; justify-content: center;
+}
+
+.form-side { position: sticky; top: 92px; display: flex; flex-direction: column; gap: 1.2rem; }
+@media (max-width: 900px) { .form-side { position: static; } }
+
+.field { margin-bottom: .9rem; }
+.field label { display: block; font-weight: 800; font-size: .78rem; margin-bottom: .3rem; }
+.field input, .field select {
+  width: 100%;
+  border: 2px solid var(--border);
+  border-radius: 12px;
+  background: var(--bg);
+  padding: .6rem .8rem;
+  font-family: 'Nunito', sans-serif; font-size: .86rem; font-weight: 600;
+  color: var(--ink); outline: none;
+  transition: border-color .15s, background .15s;
+  -webkit-appearance: none;
+}
+.field input:focus, .field select:focus { border-color: var(--green); background: #fff; }
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+
+.tarifa-box {
+  background: var(--green-l);
+  border: 2px solid #bfebd8;
+  border-radius: 14px;
+  padding: .85rem 1rem;
+  font-size: .78rem; font-weight: 700;
+  color: var(--green-d);
+}
+.tarifa-box ul { list-style: none; margin-top: .4rem; }
+.tarifa-box li { display: flex; justify-content: space-between; padding: .12rem 0; color: var(--soft); font-weight: 700; }
+.tarifa-box li b { color: var(--ink); font-weight: 800; }
+.tarifa-box .fineprint { font-size: .64rem; font-weight: 600; color: var(--muted); margin-top: .5rem; font-style: italic; }
+.tarifa-edit-link {
+  margin-top: .6rem; width: 100%;
+  font-size: .74rem; font-weight: 800;
+  padding: .45rem;
+  border-radius: 10px;
+  border: 2px dashed #9fdcc2;
+  background: transparent; color: var(--green-d);
+  transition: all .15s;
+}
+.tarifa-edit-link:hover { background: #fff; border-style: solid; }
+
+/* totales */
+.totals-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+@media (max-width: 560px) { .totals-row { grid-template-columns: 1fr; } }
+.total-card {
+  border-radius: 20px;
+  padding: 1.1rem 1.3rem;
+  color: #fff;
+  position: relative; overflow: hidden;
+}
+.total-card.kwh  { background: linear-gradient(135deg, #10b981, #0e7490); box-shadow: 0 6px 0 #047857; }
+.total-card.cost { background: linear-gradient(135deg, #3b82f6, #7c3aed); box-shadow: 0 6px 0 #1d4ed8; }
+.total-card .tc-label { font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.total-card .tc-value { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 2rem; line-height: 1.15; margin-top: .2rem; }
+.total-card .tc-value small { font-size: 1rem; font-weight: 700; }
+.total-card .tc-emoji { position: absolute; right: 6px; bottom: -12px; font-size: 4rem; opacity: .2; }
+
+/* bloques tarifarios */
+.blocks-bar { display: flex; height: 26px; border-radius: 999px; overflow: hidden; border: 2px solid var(--border); background: var(--bg); }
+.blocks-bar .seg { height: 100%; transition: width .4s ease; }
+.blocks-legend { display: flex; flex-wrap: wrap; gap: .5rem .9rem; margin-top: .7rem; }
+.blocks-legend span { font-size: .72rem; font-weight: 700; color: var(--soft); display: inline-flex; align-items: center; gap: .35rem; }
+.blocks-legend i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+.blocks-legend b { color: var(--ink); }
+
+/* top consumidores */
+.top-list { display: flex; flex-direction: column; gap: .6rem; }
+.top-item .ti-head { display: flex; justify-content: space-between; font-size: .78rem; font-weight: 800; margin-bottom: .25rem; }
+.top-item .ti-head .ti-kwh { color: var(--soft); font-weight: 700; }
+.top-item .ti-track { height: 14px; background: var(--bg); border: 2px solid var(--border); border-radius: 999px; overflow: hidden; }
+.top-item .ti-fill { height: 100%; border-radius: 999px; background: linear-gradient(90deg, var(--green), var(--teal)); transition: width .4s ease; }
+.empty-mini { font-size: .8rem; font-weight: 600; font-style: italic; color: var(--muted); text-align: center; padding: .8rem 0; }
+
+/* lista de dispositivos */
+.dev-head {
+  display: grid; grid-template-columns: 4fr 2fr 2fr 3fr 34px; gap: .5rem;
+  font-size: .62rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase;
+  color: var(--muted);
+  padding: 0 .3rem .55rem;
+  border-bottom: 2px dashed var(--border);
+  margin-bottom: .7rem;
+}
+.dev-list { display: flex; flex-direction: column; gap: .55rem; max-height: 430px; overflow-y: auto; padding-right: 4px; }
+.dev-list::-webkit-scrollbar { width: 5px; }
+.dev-list::-webkit-scrollbar-thumb { background: var(--border); border-radius: 5px; }
+.dev-item {
+  display: grid; grid-template-columns: 4fr 2fr 2fr 3fr 34px; gap: .5rem; align-items: center;
+  background: var(--bg);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: .6rem .7rem;
+  font-size: .82rem;
+  transition: border-color .15s;
+  animation: fadeIn .25s ease;
+}
+.dev-item:hover { border-color: var(--green); }
+.dev-item .d-name { font-weight: 800; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dev-item .d-qty { font-size: .68rem; font-weight: 700; color: var(--muted); }
+.dev-item .d-mid { text-align: center; font-weight: 700; color: var(--soft); font-size: .78rem; }
+.dev-item .d-cost { text-align: right; }
+.dev-item .d-cost .c { font-weight: 800; color: var(--blue-d); display: block; }
+.dev-item .d-cost .k { font-size: .7rem; font-weight: 700; color: var(--green-d); }
+.dev-del {
+  width: 26px; height: 26px; border-radius: 50%;
+  border: none; background: transparent;
+  color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  transition: all .12s;
+}
+.dev-del:hover { background: var(--red-l); color: var(--red); }
+.dev-empty {
+  text-align: center; padding: 2rem 1rem;
+  border: 2px dashed var(--border); border-radius: 14px;
+  color: var(--muted);
+  font-size: .84rem; font-weight: 600; line-height: 1.7;
+}
+.dev-footer {
+  display: flex; justify-content: space-between; align-items: center;
+  padding-top: .8rem; margin-top: .8rem;
+  border-top: 2px dashed var(--border);
+  font-size: .8rem; font-weight: 700; color: var(--soft);
+}
+.dev-footer b { font-family: 'Baloo 2', sans-serif; color: var(--ink); }
+
+/* ═══════ MODALES / TOAST ═══════ */
+.modal-backdrop {
+  position: fixed; inset: 0; background: rgba(36,52,58,.5); backdrop-filter: blur(3px);
+  z-index: 100; display: none; align-items: center; justify-content: center; padding: 1rem;
+  opacity: 0; transition: opacity .25s;
+}
+.modal-backdrop.open { display: flex; }
+.modal-backdrop.visible { opacity: 1; }
+.modal-card {
+  background: #fff; border: 2px solid var(--border); border-radius: 22px;
+  box-shadow: 0 8px 0 var(--border);
+  padding: 1.5rem; width: 100%; max-width: 430px;
+  transform: scale(.94); transition: transform .25s;
+}
+.modal-backdrop.visible .modal-card { transform: scale(1); }
+.modal-card h3 { font-weight: 800; font-size: 1.2rem; margin-bottom: .4rem; }
+.modal-card > p { font-size: .85rem; font-weight: 600; color: var(--soft); line-height: 1.6; margin-bottom: 1.1rem; }
+.modal-actions { display: flex; justify-content: flex-end; gap: .6rem; flex-wrap: wrap; margin-top: 1.2rem; }
+.btn-ghost {
+  font-size: .83rem; font-weight: 800; padding: .55rem 1rem;
+  border-radius: 12px; border: none; background: transparent; color: var(--soft);
+  transition: background .15s;
+}
+.btn-ghost:hover { background: var(--bg); }
+.btn-confirm {
+  font-size: .83rem; font-weight: 800; padding: .55rem 1rem;
+  border-radius: 12px; border: none;
+  background: var(--red); color: #fff; box-shadow: 0 4px 0 var(--red-d);
+  transition: transform .1s, box-shadow .1s;
+}
+.btn-confirm:active { transform: translateY(4px); box-shadow: none; }
+.drop-zone {
+  border: 2px dashed var(--border); border-radius: 14px;
+  padding: 1.5rem 1.2rem; text-align: center; cursor: pointer;
+  background: var(--bg); color: var(--soft);
+  font-size: .84rem; font-weight: 600; line-height: 1.7;
+  transition: all .18s;
+}
+.drop-zone:hover, .drop-zone.dragover { border-color: var(--green); background: var(--green-l); }
+.drop-zone input { display: none; }
+
+#toastContainer { position: fixed; top: 84px; right: 1.4rem; z-index: 200; display: flex; flex-direction: column; gap: .5rem; }
+.toast {
+  background: var(--ink); color: #fff;
+  font-size: .82rem; font-weight: 700;
+  padding: .7rem 1.1rem; border-radius: 14px;
+  box-shadow: 0 5px 0 rgba(36,52,58,.25);
+  transform: translateX(30px); opacity: 0; transition: all .3s;
+}
+.toast.error { background: var(--red); box-shadow: 0 5px 0 var(--red-d); }
+.toast.show { transform: translateX(0); opacity: 1; }
+
+/* ═══════ PLANTILLA DE EXPORTACIÓN (carta horizontal 11 × 8.5) ═══════ */
+#exportDoc {
+  position: fixed; left: -20000px; top: 0;
+  width: 1320px; height: 1020px; /* proporción exacta 11:8.5 */
+  background: #f4faf6;
+  font-family: 'Nunito', sans-serif;
+  color: #24343a;
+  padding: 42px 46px;
+  display: flex; flex-direction: column;
+  z-index: -1;
+}
+.xp-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 14px; }
+.xp-title { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 40px; line-height: 1; }
+.xp-subtitle { font-size: 13px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; color: #93a8a0; margin-top: 6px; }
+.xp-date { font-size: 13px; font-weight: 700; color: #93a8a0; text-align: right; }
+.xp-rule { height: 8px; border-radius: 999px; background: linear-gradient(90deg, #10b981, #06b6d4, #3b82f6); margin-bottom: 16px; }
+.xp-totals { display: flex; gap: 14px; margin-bottom: 16px; }
+.xp-total { flex: 1; border-radius: 16px; padding: 14px 20px; color: #fff; }
+.xp-total .l { font-size: 11px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+.xp-total .v { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 30px; margin-top: 2px; }
+.xp-cols { flex: 1; display: grid; grid-template-columns: 7fr 5fr; gap: 16px; min-height: 0; }
+.xp-card { background: #fff; border: 2px solid #dcebe2; border-radius: 16px; padding: 14px 16px; display: flex; flex-direction: column; min-height: 0; }
+.xp-card h4 { font-family: 'Baloo 2', sans-serif; font-weight: 800; font-size: 15px; margin-bottom: 10px; }
+.xp-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+.xp-table th { font-size: 9.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #93a8a0; text-align: left; padding: 3px 6px; border-bottom: 2px solid #dcebe2; }
+.xp-table th.r, .xp-table td.r { text-align: right; }
+.xp-table th.c, .xp-table td.c { text-align: center; }
+.xp-table td { padding: 4.5px 6px; border-bottom: 1px solid #ecf5f0; font-weight: 600; }
+.xp-table td.name { font-weight: 800; }
+.xp-more { font-size: 11px; font-weight: 700; font-style: italic; color: #93a8a0; padding-top: 6px; }
+.xp-blockbar { display: flex; height: 22px; border-radius: 999px; overflow: hidden; border: 2px solid #dcebe2; background: #f4faf6; margin-bottom: 10px; }
+.xp-blocklist { list-style: none; }
+.xp-blocklist li { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; color: #5c7069; padding: 3.5px 0; }
+.xp-blocklist i { width: 11px; height: 11px; border-radius: 3px; display: inline-block; flex-shrink: 0; }
+.xp-blocklist b { color: #24343a; margin-left: auto; }
+.xp-topitem { margin-bottom: 8px; }
+.xp-topitem .th { display: flex; justify-content: space-between; font-size: 12px; font-weight: 800; margin-bottom: 3px; }
+.xp-topitem .th span:last-child { color: #5c7069; font-weight: 700; }
+.xp-topitem .tt { height: 11px; background: #f4faf6; border: 1.5px solid #dcebe2; border-radius: 999px; overflow: hidden; }
+.xp-topitem .tf { height: 100%; border-radius: 999px; background: linear-gradient(90deg, #10b981, #06b6d4); }
+.xp-tarifa-note { font-size: 10px; font-weight: 600; font-style: italic; color: #93a8a0; margin-top: 8px; }
+.xp-foot { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #93a8a0; margin-top: 13px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; animation: none !important; } }
+</style>
 </head>
-<body class="text-gray-800">
+<body>
 
-    <!-- Navegación Rediseñada (Más formal, moderna y atractiva) -->
-    <nav class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <!-- Logo -->
-                <div class="flex items-center">
-                    <div class="bg-emerald-600 text-white p-2 rounded-lg mr-3 shadow-sm flex items-center justify-center">
-                        <i class="fa-solid fa-bolt text-yellow-300"></i>
-                    </div>
-                    <span class="font-bold text-xl text-gray-800 tracking-tight">EcoCalcula <span class="text-emerald-600">CR</span></span>
-                </div>
-                <!-- Pestañas (Tabs) -->
-                <div class="flex items-center space-x-2">
-                    <button onclick="switchView('tutorial')" id="tab-tutorial" class="relative px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-md bg-emerald-50 text-emerald-700 shadow-sm border border-emerald-100 flex items-center">
-                        <i class="fa-solid fa-book-open mr-1.5"></i> Aprende
-                    </button>
-                    <button onclick="switchView('calculator')" id="tab-calculator" class="relative px-4 py-2 text-sm font-semibold transition-all duration-300 rounded-md text-gray-500 hover:text-emerald-600 hover:bg-gray-50 border border-transparent flex items-center">
-                        <i class="fa-solid fa-calculator mr-1.5"></i> Calculadora
-                    </button>
-                </div>
-            </div>
+<header class="topbar">
+  <div class="brand">
+    <div class="brand-icon">⚡</div>
+    <div>
+      <h1>EcoCalcula CR</h1>
+      <p class="sub">Sostenibilidad · PEI</p>
+    </div>
+  </div>
+  <div class="tabs">
+    <button class="tab-btn active" id="tab-tutorial" onclick="switchView('tutorial')">📖 Aprender</button>
+    <button class="tab-btn" id="tab-calculator" onclick="switchView('calculator')">🧮 Calculadora</button>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- ═══════ VISTA: APRENDER ═══════ -->
+  <div id="view-tutorial" class="view active">
+    <div class="hero">
+      <span class="hero-badge">Módulo educativo</span>
+      <h2>Guía de Eficiencia Energética en Costa Rica</h2>
+      <p>Entienda el impacto social, económico y ambiental de su consumo. Descubra cómo la eficiencia es clave para el desarrollo sostenible de nuestro país.</p>
+      <button class="btn" onclick="switchView('calculator')">Ir a la calculadora →</button>
+    </div>
+
+    <div class="acc-panel">
+      <div class="acc-head">
+        <div>
+          <h3>📚 Temario de aprendizaje</h3>
+          <p>Haga clic en cada sección para expandir la información detallada.</p>
         </div>
-    </nav>
+        <span class="acc-chip">Basado en políticas nacionales</span>
+      </div>
 
-    <!-- CONTENIDO PRINCIPAL -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- VISTA: APRENDE (Guía de Eficiencia) -->
-        <div id="view-tutorial" class="fade-in">
-            
-            <!-- Hero Section -->
-            <div class="bg-gradient-to-r from-emerald-600 to-teal-700 rounded-2xl p-8 md:p-12 text-white shadow-lg relative overflow-hidden mb-8">
-                <div class="relative z-10 md:w-2/3">
-                    <span class="bg-emerald-800 text-emerald-100 text-xs font-bold px-3 py-1 rounded-full uppercase tracking-wider mb-4 inline-block">Módulo Educativo</span>
-                    <h1 class="text-3xl md:text-5xl font-bold mb-4 leading-tight">Guía de Eficiencia Energética en Costa Rica</h1>
-                    <p class="text-emerald-50 text-lg mb-6 leading-relaxed opacity-90">
-                        Entiende el impacto social, económico y ambiental de tu consumo. Descubre cómo la eficiencia es clave para el desarrollo sostenible de nuestro país.
-                    </p>
-                    <button onclick="switchView('calculator')" class="bg-white text-emerald-700 px-6 py-3 rounded-lg font-bold hover:bg-emerald-50 transition shadow-md flex items-center">
-                        Ir a la Calculadora <i class="fa-solid fa-arrow-right ml-2"></i>
-                    </button>
-                </div>
-                <i class="fa-solid fa-leaf absolute -right-10 -bottom-10 text-9xl text-emerald-500 opacity-30 transform -rotate-12"></i>
+      <details class="acc">
+        <summary>1. Introducción y conceptos básicos <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>Introducción</h4>
+          <p>La eficiencia energética consiste en utilizar la energía de manera inteligente, aprovechando mejor los recursos disponibles y reduciendo el desperdicio. En Costa Rica, este tema tiene gran importancia debido al compromiso del país con el desarrollo sostenible, la protección ambiental y el uso responsable de los recursos naturales.</p>
+          <p>El país se ha destacado internacionalmente por el uso de energías renovables y por promover políticas relacionadas con la sostenibilidad ambiental. Sin embargo, el crecimiento de la población, el aumento del consumo eléctrico y las necesidades del sector productivo hacen necesario fortalecer la cultura de eficiencia energética.</p>
+          <p>La eficiencia energética beneficia a las personas, empresas e instituciones públicas porque permite ahorrar dinero, reducir el impacto ambiental y mejorar la calidad de vida.</p>
+          <h4>1. Eficiencia energética</h4>
+          <p>Se refiere al uso adecuado y racional de la energía para realizar las mismas actividades consumiendo menos recursos.</p>
+          <h5>Ejemplos en Costa Rica</h5>
+          <ul>
+            <li>Uso de bombillos LED en hogares y escuelas.</li>
+            <li>Sustitución de electrodomésticos antiguos por equipos eficientes.</li>
+            <li>Instalación de paneles solares en viviendas y empresas.</li>
+            <li>Uso de transporte eléctrico.</li>
+            <li>Campañas de ahorro energético impulsadas por el ICE.</li>
+          </ul>
+          <h5>Importancia</h5>
+          <ul>
+            <li>Reduce el gasto económico.</li>
+            <li>Disminuye la contaminación ambiental.</li>
+            <li>Favorece el desarrollo sostenible.</li>
+            <li>Reduce la dependencia energética.</li>
+            <li>Mejora la competitividad empresarial.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>2. VII Plan Nacional de Energía 2015-2030 (MINAE) <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <div class="note">Elaborado con el apoyo del Programa de Naciones Unidas para el Desarrollo (PNUD), el <strong>VII Plan Nacional de Energía</strong> es la hoja de ruta oficial del país para garantizar un modelo energético sostenible, bajo en emisiones y competitivo.</div>
+          <h4>La realidad energética nacional (el reto)</h4>
+          <p>A menudo pensamos que Costa Rica es 100% verde energéticamente. Sin embargo, aunque la <em>matriz eléctrica</em> es altamente renovable (agua, viento, geotermia), <strong>la matriz energética total no lo es</strong>. Cerca del <strong>60% del consumo energético del país proviene de derivados del petróleo</strong> (hidrocarburos), y el responsable directo es el sector transporte.</p>
+          <h4>Objetivos estratégicos del plan</h4>
+          <ul>
+            <li>🚗 <strong>Sostenibilidad en el transporte:</strong> es el mayor desafío. El plan promueve la modernización del transporte público, la movilidad eléctrica (vehículos cero emisiones) y el uso de biocombustibles para reducir la enorme dependencia del petróleo.</li>
+            <li>🔆 <strong>Generación distribuida:</strong> fomentar que los usuarios puedan generar su propia electricidad (prosumidores) mediante paneles solares, aliviando la carga de la red nacional y aprovechando recursos renovables no convencionales.</li>
+            <li>🏭 <strong>Eficiencia energética integral:</strong> promover el uso racional de la energía no solo en hogares, sino en industrias y comercios (macro consumidores), reduciendo costos operativos y emisiones de Gases de Efecto Invernadero (GEI).</li>
+            <li>🔌 <strong>Mantenimiento de la matriz renovable:</strong> continuar diversificando las fuentes eléctricas (eólica, solar, biomasa) para no depender exclusivamente de la hidroeléctrica, la cual es vulnerable a los cambios climáticos (fenómenos de El Niño).</li>
+          </ul>
+          <p><strong>Conclusión del plan:</strong> la eficiencia energética ya no es solo "apagar la luz", es una transformación estructural que requiere coordinación gubernamental, inversión tecnológica y, sobre todo, educación ciudadana para migrar hacia un futuro carbono neutral.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>3. Planificación, equipos y cultura de uso <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>Planificación y coordinación de la eficiencia energética</h4>
+          <p>La planificación energética permite organizar estrategias para garantizar un uso adecuado de la energía. Aspectos importantes: identificación de necesidades energéticas, uso eficiente de los recursos, educación y sensibilización ciudadana, coordinación entre instituciones públicas y privadas, supervisión de políticas energéticas.</p>
+          <h4>La eficiencia energética de los equipos consumidores</h4>
+          <p>Los equipos eléctricos eficientes consumen menos energía y ofrecen el mismo rendimiento. Ejemplos: refrigeradoras con etiquetado energético, aires acondicionados inverter, bombillos LED, cocinas de inducción, equipos de oficina de bajo consumo.</p>
+          <p><strong>Beneficios:</strong> menor factura eléctrica, menor impacto ambiental, mayor durabilidad, reducción de emisiones. Se recomienda revisar la etiqueta energética antes de comprar, desconectar equipos que no se usan y realizar mantenimiento preventivo.</p>
+          <h4>Cultura de uso de la energía</h4>
+          <p>Consiste en desarrollar hábitos responsables: apagar luces innecesarias, aprovechar la iluminación natural, desconectar cargadores, regular el uso de aire acondicionado y promover campañas educativas.</p>
+          <p><em>Importancia en centros educativos:</em> las escuelas y colegios pueden desarrollar proyectos ambientales y campañas de ahorro energético para crear conciencia en la población estudiantil.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>4. Oferta, consumidores y tarifas <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>La eficiencia energética en la oferta</h4>
+          <p>La oferta energética corresponde a la producción y distribución de energía. En Costa Rica gran parte proviene de fuentes renovables (hidroeléctrica, geotérmica, eólica, solar, biomasa). El objetivo es garantizar energía suficiente utilizando tecnologías limpias y sostenibles.</p>
+          <h4>Eficiencia energética en los macro consumidores</h4>
+          <p>Son empresas o industrias que utilizan grandes cantidades de energía (industrias manufactureras, hoteles, hospitales, centros comerciales). Aplican automatización, iluminación eficiente, uso de paneles solares y control del consumo para reducir costos y mejorar la sostenibilidad.</p>
+          <h4>Eficiencia energética del sector público</h4>
+          <p>Acciones realizadas: sustitución de luminarias, digitalización de procesos, construcciones sostenibles, uso de vehículos eléctricos. Beneficios: ahorro de recursos públicos, reducción del impacto ambiental y ser ejemplo para la ciudadanía.</p>
+          <h4>Tarifas eléctricas y la eficiencia energética</h4>
+          <p>ARESEP regula las tarifas. Cuando las personas utilizan eficientemente la energía: reducen su factura eléctrica, evitan desperdicios y disminuyen el consumo en horas pico.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>5. Generación distribuida <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>Generación distribuida como alternativa</h4>
+          <p>Consiste en producir energía cerca del lugar donde será consumida (ej. paneles solares en viviendas y empresas). Ventajas: reduce pérdidas eléctricas, disminuye costos, favorece la sostenibilidad e impulsa la independencia energética.</p>
+          <h4>La planificación de la generación distribuida</h4>
+          <p>Requiere planificación para garantizar seguridad y eficiencia. Aspectos: capacidad de producción, infraestructura eléctrica, regulación nacional, seguridad del sistema. El Estado establece normas para un funcionamiento adecuado.</p>
+          <h4>Esquema de generación distribuida</h4>
+          <p>La vivienda o empresa genera energía, se utiliza internamente y el excedente puede incorporarse a la red eléctrica. Beneficios: reducción del consumo nacional, menor dependencia de combustibles fósiles y promoción de energías limpias.</p>
+          <h4>Seguridad jurídica</h4>
+          <p>Garantiza respaldo legal para desarrollar proyectos. Genera confianza para invertir, protege derechos de los consumidores y regula el uso de la red eléctrica mediante reglamentos y normativas.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>6. Matriz eléctrica, precios y energías renovables <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>La matriz de generación eléctrica</h4>
+          <p>Costa Rica posee una de las matrices más limpias del mundo (hidroeléctrica, eólica, geotérmica, solar, biomasa). Esto reduce emisiones y mejora la imagen internacional del país.</p>
+          <h4>El abastecimiento eléctrico del país</h4>
+          <p>Retos actuales: crecimiento poblacional, aumento de la demanda, cambio climático y modernización de infraestructura. Soluciones: diversificación energética, eficiencia energética e innovación tecnológica.</p>
+          <h4>Situación de los precios de la electricidad</h4>
+          <p>El costo varía según: producción, clima, inversiones y consumo nacional. Reducir el consumo innecesario ayuda a disminuir gastos familiares y empresariales.</p>
+          <h4>Energías Renovables No Convencionales (ERNC)</h4>
+          <p>Fuentes con menor impacto ambiental: solar, eólica, biomasa, marina. Beneficios: reducción de contaminación, aprovechamiento de recursos e impulso a la innovación.</p>
+          <h4>Planificación y mercado regional</h4>
+          <p>La planificación busca garantizar suministro y promover sostenibilidad con participación social. Además, Costa Rica forma parte del Mercado Eléctrico Regional de Centroamérica para compartir energía, mejorar estabilidad y reducir costos.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>7. Impacto socioambiental y gobernanza <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <h4>Conflicto y conflictividad socioambiental</h4>
+          <p>Los proyectos (ej. represas) pueden generar conflictos sobre ecosistemas y territorio. Involucra comunidades, empresas, gobierno y organizaciones. Soluciones: transparencia, participación ciudadana, estudios ambientales y diálogo.</p>
+          <h4>Normativa ambiental</h4>
+          <p>Instituciones como MINAE, SETENA y las municipalidades establecen reglas para reducir contaminación y proteger recursos naturales regulando proyectos energéticos.</p>
+          <h4>Gobernanza y transparencia</h4>
+          <p>Implica participación, responsabilidad y sostenibilidad para equilibrar el desarrollo económico. La transparencia genera confianza y facilita la participación informando sobre proyectos.</p>
+          <h4>Acceso de los grupos sociales más vulnerables</h4>
+          <p>Garantizar la energía en zonas rurales, manejando costos y brechas tecnológicas, favorece la educación, salud, desarrollo económico y calidad de vida.</p>
+        </div>
+      </details>
+
+      <details class="acc">
+        <summary>⭐ Resumen: impacto social, económico y ambiental <span class="chev">▼</span></summary>
+        <div class="acc-body">
+          <div class="impact-grid">
+            <div class="impact-card" style="--icl:#e2f8ef; --icb:#bfebd8; --icd:#047857">
+              <h4>👥 Impacto social</h4>
+              <ul>
+                <li>Mejora la calidad de vida.</li>
+                <li>Facilita el acceso a servicios.</li>
+                <li>Promueve una cultura ambiental.</li>
+                <li>Favorece el bienestar comunal.</li>
+              </ul>
             </div>
-
-            <!-- Acordeón de Contenido Teórico -->
-            <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                <div class="p-6 border-b border-gray-100 bg-gray-50 flex items-center justify-between">
-                    <div>
-                        <h2 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-book text-emerald-600 mr-2"></i> Temario de Aprendizaje</h2>
-                        <p class="text-sm text-gray-500 mt-1">Haz clic en cada sección para expandir la información detallada.</p>
-                    </div>
-                    <div class="text-right hidden sm:block">
-                        <span class="text-xs font-semibold text-emerald-600 bg-emerald-100 px-2 py-1 rounded">Basado en Políticas Nacionales</span>
-                    </div>
-                </div>
-
-                <div class="divide-y divide-gray-200" id="accordion-container">
-                    
-                    <!-- Bloque 1: Introducción y Conceptos Básicos -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">1. Introducción y Conceptos Básicos</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">Introducción</h4>
-                                <p>La eficiencia energética consiste en utilizar la energía de manera inteligente, aprovechando mejor los recursos disponibles y reduciendo el desperdicio. En Costa Rica, este tema tiene gran importancia debido al compromiso del país con el desarrollo sostenible, la protección ambiental y el uso responsable de los recursos naturales.</p>
-                                <p>El país se ha destacado internacionalmente por el uso de energías renovables y por promover políticas relacionadas con la sostenibilidad ambiental. Sin embargo, el crecimiento de la población, el aumento del consumo eléctrico y las necesidades del sector productivo hacen necesario fortalecer la cultura de eficiencia energética.</p>
-                                <p>La eficiencia energética beneficia a las personas, empresas e instituciones públicas porque permite ahorrar dinero, reducir el impacto ambiental y mejorar la calidad de vida.</p>
-                                
-                                <h4 class="font-bold text-gray-800 mt-4">1. Eficiencia energética</h4>
-                                <p>Se refiere al uso adecuado y racional de la energía para realizar las mismas actividades consumiendo menos recursos.</p>
-                                <h5 class="font-semibold text-gray-700 mt-2">Ejemplos en Costa Rica</h5>
-                                <ul class="list-disc pl-5 space-y-1">
-                                    <li>Uso de bombillos LED en hogares y escuelas.</li>
-                                    <li>Sustitución de electrodomésticos antiguos por equipos eficientes.</li>
-                                    <li>Instalación de paneles solares en viviendas y empresas.</li>
-                                    <li>Uso de transporte eléctrico.</li>
-                                    <li>Campañas de ahorro energético impulsadas por el ICE.</li>
-                                </ul>
-                                <h5 class="font-semibold text-gray-700 mt-2">Importancia</h5>
-                                <ul class="list-disc pl-5 space-y-1">
-                                    <li>Reduce el gasto económico.</li>
-                                    <li>Disminuye la contaminación ambiental.</li>
-                                    <li>Favorece el desarrollo sostenible.</li>
-                                    <li>Reduce la dependencia energética.</li>
-                                    <li>Mejora la competitividad empresarial.</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- NUEVO BLOQUE: VII Plan Nacional de Energía 2015-2030 -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-emerald-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-bold text-emerald-800"><i class="fa-solid fa-file-pdf mr-2 text-red-500"></i>2. VII Plan Nacional de Energía 2015-2030 (MINAE)</span>
-                            <i class="fa-solid fa-chevron-down text-emerald-600 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600 border-l-4 border-emerald-500">
-                            <div class="pb-6 pt-4 space-y-4">
-                                <p class="text-gray-700 bg-emerald-50 p-3 rounded text-xs italic">
-                                    Elaborado con el apoyo del Programa de Naciones Unidas para el Desarrollo (PNUD), el <strong>VII Plan Nacional de Energía</strong> es la hoja de ruta oficial del país para garantizar un modelo energético sostenible, bajo en emisiones y competitivo.
-                                </p>
-                                
-                                <h4 class="font-bold text-gray-800 mt-4">La Realidad Energética Nacional (El Reto)</h4>
-                                <p>A menudo pensamos que Costa Rica es 100% verde energéticamente. Sin embargo, aunque la <em>matriz eléctrica</em> es altamente renovable (agua, viento, geotermia), <strong>la matriz energética total no lo es</strong>. Cerca del <strong>60% del consumo energético del país proviene de derivados del petróleo</strong> (hidrocarburos), y el responsable directo es el sector transporte.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Objetivos Estratégicos del Plan</h4>
-                                <ul class="list-none space-y-3">
-                                    <li class="flex items-start">
-                                        <i class="fa-solid fa-car-side text-blue-500 mt-1 mr-2"></i>
-                                        <div>
-                                            <strong>Sostenibilidad en el Transporte:</strong> Es el mayor desafío. El plan promueve la modernización del transporte público, la movilidad eléctrica (vehículos cero emisiones) y el uso de biocombustibles para reducir la enorme dependencia del petróleo.
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <i class="fa-solid fa-solar-panel text-yellow-500 mt-1 mr-2"></i>
-                                        <div>
-                                            <strong>Generación Distribuida:</strong> Fomentar que los usuarios puedan generar su propia electricidad (prosumidores) mediante paneles solares, aliviando la carga de la red nacional y aprovechando recursos renovables no convencionales.
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <i class="fa-solid fa-industry text-gray-500 mt-1 mr-2"></i>
-                                        <div>
-                                            <strong>Eficiencia Energética Integral:</strong> Promover el uso racional de la energía no solo en hogares, sino en industrias y comercios (macro consumidores), reduciendo costos operativos y emisiones de Gases de Efecto Invernadero (GEI).
-                                        </div>
-                                    </li>
-                                    <li class="flex items-start">
-                                        <i class="fa-solid fa-plug-circle-check text-emerald-500 mt-1 mr-2"></i>
-                                        <div>
-                                            <strong>Mantenimiento de la Matriz Renovable:</strong> Continuar diversificando las fuentes eléctricas (eólica, solar, biomasa) para no depender exclusivamente de la hidroeléctrica, la cual es vulnerable a los cambios climáticos (fenómenos de El Niño).
-                                        </div>
-                                    </li>
-                                </ul>
-
-                                <p class="mt-4"><strong>Conclusión del Plan:</strong> La eficiencia energética ya no es solo "apagar la luz", es una transformación estructural que requiere coordinación gubernamental, inversión tecnológica y, sobre todo, educación ciudadana para migrar hacia un futuro carbono neutral.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloque 3: Planificación, Equipos y Cultura -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">3. Planificación, Equipos y Cultura de Uso</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">Planificación y coordinación de la eficiencia energética</h4>
-                                <p>La planificación energética permite organizar estrategias para garantizar un uso adecuado de la energía. Aspectos importantes: Identificación de necesidades energéticas, uso eficiente de los recursos, educación y sensibilización ciudadana, coordinación entre instituciones públicas y privadas, supervisión de políticas energéticas.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">La eficiencia energética de los equipos consumidores</h4>
-                                <p>Los equipos eléctricos eficientes consumen menos energía y ofrecen el mismo rendimiento. Ejemplos: Refrigeradoras con etiquetado energético, aires acondicionados inverter, bombillos LED, cocinas de inducción, equipos de oficina de bajo consumo.</p>
-                                <p><strong>Beneficios:</strong> Menor factura eléctrica, menor impacto ambiental, mayor durabilidad, reducción de emisiones. Se recomienda revisar la etiqueta energética antes de comprar, desconectar equipos que no se usan y realizar mantenimiento preventivo.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Cultura de uso de la energía</h4>
-                                <p>Consiste en desarrollar hábitos responsables: apagar luces innecesarias, aprovechar la iluminación natural, desconectar cargadores, regular el uso de aire acondicionado y promover campañas educativas.</p>
-                                <p><em>Importancia en centros educativos:</em> Las escuelas y colegios pueden desarrollar proyectos ambientales y campañas de ahorro energético para crear conciencia en la población estudiantil.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloque 4: Oferta, Consumidores y Tarifas -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">4. Oferta, Consumidores y Tarifas</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">La eficiencia energética en la oferta</h4>
-                                <p>La oferta energética corresponde a la producción y distribución de energía. En Costa Rica gran parte proviene de fuentes renovables (Hidroeléctrica, Geotérmica, Eólica, Solar, Biomasa). El objetivo es garantizar energía suficiente utilizando tecnologías limpias y sostenibles.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Eficiencia energética en los macro consumidores</h4>
-                                <p>Son empresas o industrias que utilizan grandes cantidades de energía (Industrias manufactureras, hoteles, hospitales, centros comerciales). Aplican automatización, iluminación eficiente, uso de paneles solares y control del consumo para reducir costos y mejorar la sostenibilidad.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Eficiencia energética del sector público</h4>
-                                <p>Acciones realizadas: Sustitución de luminarias, digitalización de procesos, construcciones sostenibles, uso de vehículos eléctricos. Beneficios: Ahorro de recursos públicos, reducción del impacto ambiental y ser ejemplo para la ciudadanía.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Tarifas eléctricas y la eficiencia energética</h4>
-                                <p>ARESEP regula las tarifas. Cuando las personas utilizan eficientemente la energía: Reducen su factura eléctrica, evitan desperdicios y disminuyen el consumo en horas pico.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloque 5: Generación Distribuida -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">5. Generación Distribuida</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">Generación distribuida como alternativa</h4>
-                                <p>Consiste en producir energía cerca del lugar donde será consumida (Ej. Paneles solares en viviendas y empresas). Ventajas: Reduce pérdidas eléctricas, disminuye costos, favorece la sostenibilidad e impulsa la independencia energética.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">La planificación de la generación distribuida</h4>
-                                <p>Requiere planificación para garantizar seguridad y eficiencia. Aspectos: Capacidad de producción, infraestructura eléctrica, regulación nacional, seguridad del sistema. El Estado establece normas para un funcionamiento adecuado.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Esquema de generación distribuida</h4>
-                                <p>La vivienda o empresa genera energía, se utiliza internamente y el excedente puede incorporarse a la red eléctrica. Beneficios: Reducción del consumo nacional, menor dependencia de combustibles fósiles y promoción de energías limpias.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Seguridad jurídica</h4>
-                                <p>Garantiza respaldo legal para desarrollar proyectos. Genera confianza para invertir, protege derechos de los consumidores y regula el uso de la red eléctrica mediante reglamentos y normativas.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloque 6: Matriz, Precios y ERNC -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">6. Matriz Eléctrica, Precios y Energías Renovables</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">La matriz de generación eléctrica</h4>
-                                <p>Costa Rica posee una de las matrices más limpias del mundo (Hidroeléctrica, Eólica, Geotérmica, Solar, Biomasa). Esto reduce emisiones y mejora la imagen internacional del país.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">El abastecimiento eléctrico del país</h4>
-                                <p>Retos actuales: Crecimiento poblacional, aumento de la demanda, cambio climático y modernización de infraestructura. Soluciones: Diversificación energética, eficiencia energética e innovación tecnológica.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Situación de los precios de la electricidad</h4>
-                                <p>El costo varía según: Producción, clima, inversiones y consumo nacional. Reducir el consumo innecesario ayuda a disminuir gastos familiares y empresariales.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Energías Renovables No Convencionales (ERNC)</h4>
-                                <p>Fuentes con menor impacto ambiental: Solar, eólica, biomasa, marina. Beneficios: Reducción de contaminación, aprovechamiento de recursos e impulso a la innovación.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Planificación y Mercado regional</h4>
-                                <p>La planificación busca garantizar suministro y promover sostenibilidad con participación social. Además, Costa Rica forma parte del Mercado Eléctrico Regional de Centroamérica para compartir energía, mejorar estabilidad y reducir costos.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Bloque 7: Impacto Socioambiental y Gobernanza -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-gray-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-semibold text-gray-800">7. Impacto Socioambiental y Gobernanza</span>
-                            <i class="fa-solid fa-chevron-down text-gray-400 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-white text-sm text-gray-600">
-                            <div class="pb-6 pt-2 space-y-4">
-                                <h4 class="font-bold text-gray-800">Conflicto y Conflictividad socioambiental</h4>
-                                <p>Los proyectos (ej. represas) pueden generar conflictos sobre ecosistemas y territorio. Involucra comunidades, empresas, gobierno y organizaciones. Soluciones: Transparencia, participación ciudadana, estudios ambientales y diálogo.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Normativa ambiental</h4>
-                                <p>Instituciones como MINAE, SETENA y Municipalidades establecen reglas para reducir contaminación y proteger recursos naturales regulando proyectos energéticos.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Gobernanza y Transparencia</h4>
-                                <p>Implica participación, responsabilidad y sostenibilidad para equilibrar el desarrollo económico. La transparencia genera confianza y facilita la participación informando sobre proyectos.</p>
-
-                                <h4 class="font-bold text-gray-800 mt-4">Acceso de los grupos sociales más vulnerables</h4>
-                                <p>Garantizar la energía en zonas rurales, manejando costos y brechas tecnológicas, favorece la educación, salud, desarrollo económico y calidad de vida.</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Conclusión Final -->
-                    <div class="accordion-item">
-                        <button class="w-full px-6 py-4 text-left flex justify-between items-center focus:outline-none hover:bg-emerald-50 transition" onclick="toggleAccordion(this)">
-                            <span class="font-bold text-emerald-700">Resumen: Impacto Social, Económico y Ambiental</span>
-                            <i class="fa-solid fa-chevron-down text-emerald-600 transition-transform duration-300 transform"></i>
-                        </button>
-                        <div class="px-6 py-0 max-h-0 overflow-hidden transition-all duration-300 bg-emerald-50 text-sm text-gray-700 border-t border-emerald-100">
-                            <div class="pb-6 pt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div class="bg-white p-4 rounded shadow-sm border border-emerald-100">
-                                    <h4 class="font-bold text-emerald-800 mb-2"><i class="fa-solid fa-users mr-1"></i> Impacto Social</h4>
-                                    <ul class="list-disc pl-5 space-y-1 text-xs">
-                                        <li>Mejora la calidad de vida.</li>
-                                        <li>Facilita el acceso a servicios.</li>
-                                        <li>Promueve una cultura ambiental.</li>
-                                        <li>Favorece el bienestar comunal.</li>
-                                    </ul>
-                                </div>
-                                <div class="bg-white p-4 rounded shadow-sm border border-emerald-100">
-                                    <h4 class="font-bold text-blue-800 mb-2"><i class="fa-solid fa-chart-line mr-1"></i> Impacto Económico</h4>
-                                    <ul class="list-disc pl-5 space-y-1 text-xs">
-                                        <li>Reduce costos de producción.</li>
-                                        <li>Disminuye gastos familiares.</li>
-                                        <li>Genera empleo verde.</li>
-                                        <li>Aumenta la competitividad.</li>
-                                    </ul>
-                                </div>
-                                <div class="bg-white p-4 rounded shadow-sm border border-emerald-100">
-                                    <h4 class="font-bold text-green-800 mb-2"><i class="fa-solid fa-leaf mr-1"></i> Impacto Ambiental</h4>
-                                    <ul class="list-disc pl-5 space-y-1 text-xs">
-                                        <li>Reduce contaminación.</li>
-                                        <li>Protege recursos naturales.</li>
-                                        <li>Mitiga el cambio climático.</li>
-                                    </ul>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
+            <div class="impact-card" style="--icl:#eaf2ff; --icb:#c7dcfb; --icd:#1d4ed8">
+              <h4>📈 Impacto económico</h4>
+              <ul>
+                <li>Reduce costos de producción.</li>
+                <li>Disminuye gastos familiares.</li>
+                <li>Genera empleo verde.</li>
+                <li>Aumenta la competitividad.</li>
+              </ul>
             </div>
+            <div class="impact-card" style="--icl:#e4f9fd; --icb:#b8ecf6; --icd:#0e7490">
+              <h4>🍃 Impacto ambiental</h4>
+              <ul>
+                <li>Reduce contaminación.</li>
+                <li>Protege recursos naturales.</li>
+                <li>Mitiga el cambio climático.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </details>
+    </div>
+  </div>
+
+  <!-- ═══════ VISTA: CALCULADORA ═══════ -->
+  <div id="view-calculator" class="view">
+    <div class="calc-intro">
+      <h2>Calculadora de Consumo</h2>
+      <p>Añada sus electrodomésticos para estimar el consumo mensual en kWh y el costo según la tarifa residencial (T-RE) de la CNFL.</p>
+    </div>
+
+    <div class="calc-toolbar">
+      <button class="btn btn-white" onclick="saveJSON()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 01-2-2V5a2 2 0 012-2h11l5 5v11a2 2 0 01-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Guardar
+      </button>
+      <button class="btn btn-white" onclick="openModal('loadModal')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+        Cargar
+      </button>
+      <button class="btn btn-violet" id="btnPng" onclick="exportReport('png')">
+        <span class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg></span>
+        <span class="btn-txt">PNG</span>
+      </button>
+      <button class="btn btn-green" id="btnPdf" onclick="exportReport('pdf')">
+        <span class="btn-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg></span>
+        <span class="btn-txt">PDF</span>
+      </button>
+      <button class="btn btn-danger" onclick="clearList()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+        Vaciar
+      </button>
+    </div>
+
+    <div class="calc-grid">
+      <!-- Formulario -->
+      <div class="form-side">
+        <div class="panel">
+          <div class="panel-label"><span class="badge-icon">🔌</span> Añadir dispositivo</div>
+          <form id="add-device-form">
+            <div class="field">
+              <label for="preset-device">Dispositivo predefinido</label>
+              <select id="preset-device">
+                <option value="">Personalizado…</option>
+                <option value="150" data-name="Refrigeradora">Refrigeradora (150 W)</option>
+                <option value="50" data-name="Televisor LED">Televisor LED (50 W)</option>
+                <option value="1200" data-name="Microondas">Microondas (1200 W)</option>
+                <option value="15" data-name="Bombillo LED">Bombillo LED (15 W)</option>
+                <option value="500" data-name="Lavadora">Lavadora (500 W)</option>
+                <option value="50" data-name="Ventilador">Ventilador (50 W)</option>
+                <option value="3500" data-name="Ducha Eléctrica">Ducha eléctrica (3500 W)</option>
+                <option value="50" data-name="Laptop">Laptop (50 W)</option>
+                <option value="1000" data-name="Plancha">Plancha (1000 W)</option>
+                <option value="1500" data-name="A/C Inverter">Aire acondicionado inverter (1500 W)</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="device-name">Nombre</label>
+              <input type="text" id="device-name" required placeholder="Ej. TV del cuarto">
+            </div>
+            <div class="field field-row">
+              <div>
+                <label for="device-qty">Cantidad</label>
+                <input type="number" id="device-qty" required min="1" value="1">
+              </div>
+              <div>
+                <label for="device-watts">Potencia (W)</label>
+                <input type="number" id="device-watts" required min="1" placeholder="Watts">
+              </div>
+            </div>
+            <div class="field field-row">
+              <div>
+                <label for="device-hours">Horas / día</label>
+                <input type="number" id="device-hours" required min="0.1" max="24" step="0.1" value="1">
+              </div>
+              <div>
+                <label for="device-days">Días / mes</label>
+                <input type="number" id="device-days" required min="1" max="31" value="30">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-blue" style="width:100%">＋ Añadir a la lista</button>
+          </form>
         </div>
 
-        <!-- VISTA: CALCULADORA -->
-        <div id="view-calculator" class="hidden fade-in space-y-6">
-            
-            <div class="text-center max-w-2xl mx-auto mb-8 mt-4">
-                <h2 class="text-3xl font-bold text-gray-800">Calculadora de Consumo</h2>
-                <p class="text-gray-500 mt-2">Añade tus electrodomésticos para estimar tu consumo mensual en kWh y el costo según la Tarifa Residencial (T-RE) de la CNFL.</p>
-            </div>
+        <div class="panel">
+          <div class="panel-label"><span class="badge-icon">💡</span> Tarifa aplicada (CNFL)</div>
+          <div class="tarifa-box">
+            <p>Residencial (T-RE) · por bloques</p>
+            <ul id="tarifa-display"></ul>
+            <p class="fineprint">*Tarifa base sin IVA, alumbrado ni bomberos. Estimación con fines didácticos.</p>
+          </div>
+          <button class="tarifa-edit-link" onclick="openTarifaModal()">✏️ Actualizar tarifas</button>
+        </div>
+      </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Panel Izquierdo: Formulario -->
-                <div class="md:col-span-1 bg-white border border-gray-200 rounded-lg shadow-sm p-5 h-fit sticky top-24">
-                    <h3 class="text-lg font-bold text-gray-800 border-b pb-2 mb-4"><i class="fa-solid fa-plug text-emerald-600 mr-2"></i>Añadir Dispositivo</h3>
-                    
-                    <form id="add-device-form" class="space-y-4">
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Dispositivo Predefinido</label>
-                            <select id="preset-device" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none">
-                                <option value="">Personalizado...</option>
-                                <option value="150" data-name="Refrigeradora">Refrigeradora (150W)</option>
-                                <option value="50" data-name="Televisor LED">Televisor LED (50W)</option>
-                                <option value="1200" data-name="Microondas">Microondas (1200W)</option>
-                                <option value="15" data-name="Bombillo LED">Bombillo LED (15W)</option>
-                                <option value="500" data-name="Lavadora">Lavadora (500W)</option>
-                                <option value="50" data-name="Ventilador">Ventilador (50W)</option>
-                                <option value="3500" data-name="Ducha Eléctrica">Ducha Eléctrica (3500W)</option>
-                                <option value="50" data-name="Laptop">Laptop (50W)</option>
-                                <option value="1000" data-name="Plancha">Plancha (1000W)</option>
-                                <option value="1500" data-name="A/C Inverter">Aire Acondicionado Inverter (1500W)</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
-                            <input type="text" id="device-name" required placeholder="Ej. TV Cuarto" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Cantidad</label>
-                                <input type="number" id="device-qty" required min="1" value="1" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Potencia (Watts)</label>
-                                <input type="number" id="device-watts" required min="1" placeholder="Watts" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                            </div>
-                        </div>
-
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Horas/Día</label>
-                                <input type="number" id="device-hours" required min="0.1" max="24" step="0.1" value="1" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-gray-700 mb-1">Días/Mes</label>
-                                <input type="number" id="device-days" required min="1" max="31" value="30" class="w-full rounded-md border border-gray-300 p-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none">
-                            </div>
-                        </div>
-
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition-colors mt-4 shadow">
-                            <i class="fa-solid fa-plus mr-1"></i> Añadir a la lista
-                        </button>
-                    </form>
-
-                    <div class="mt-6 pt-4 border-t border-gray-200">
-                        <h3 class="text-sm font-medium text-gray-700 mb-2"><i class="fa-solid fa-bolt text-yellow-500 mr-1"></i> Tarifa Aplicada (CNFL)</h3>
-                        <div class="bg-emerald-50 border border-emerald-200 rounded p-3 text-sm text-gray-700">
-                            <p><strong>Residencial (T-RE) - Por Bloques</strong></p>
-                            <ul class="mt-1 space-y-1 text-xs text-gray-600">
-                                <li>0-30 kWh: ₡1.744,80 (Cargo Fijo)</li>
-                                <li>31-200 kWh: ₡58,16 / kWh</li>
-                                <li>201-300 kWh: ₡89,24 / kWh</li>
-                                <li>>300 kWh: ₡92,27 / kWh adicional</li>
-                            </ul>
-                            <p class="text-[10px] text-gray-500 mt-2">*Tarifas base sin impuestos adicionales.</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Panel Derecho: Resultados, Gráfico y Lista -->
-                <div class="md:col-span-2 flex flex-col h-[700px] md:h-auto">
-                    
-                    <!-- Resultados Resumen -->
-                    <div class="grid grid-cols-2 gap-4 mb-6">
-                        <div class="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-lg p-4 text-white shadow relative overflow-hidden">
-                            <h3 class="text-sm font-medium opacity-90 relative z-10">Consumo Mensual Estimado</h3>
-                            <div class="text-3xl font-bold mt-1 relative z-10"><span id="total-kwh">0.00</span> <span class="text-lg font-normal">kWh</span></div>
-                            <i class="fa-solid fa-leaf absolute right-2 -bottom-2 text-5xl opacity-20"></i>
-                        </div>
-                        <div class="bg-gradient-to-br from-blue-600 to-blue-800 rounded-lg p-4 text-white shadow relative overflow-hidden">
-                            <h3 class="text-sm font-medium opacity-90 relative z-10">Costo Mensual Estimado</h3>
-                            <div class="text-3xl font-bold mt-1 relative z-10">₡<span id="total-cost">0.00</span></div>
-                            <i class="fa-solid fa-coins absolute right-2 -bottom-2 text-5xl opacity-20"></i>
-                        </div>
-                    </div>
-
-                    <!-- Gráfico de Bloques (Oculto inicialmente) -->
-                    <div id="chart-section" class="hidden bg-white border border-gray-200 rounded-lg shadow-sm p-4 mb-6 fade-in">
-                        <h3 class="text-sm font-semibold text-gray-700 text-center mb-2">Distribución en Bloques Tarifarios (CNFL)</h3>
-                        <div class="relative h-48 w-full">
-                            <canvas id="blocksChart"></canvas>
-                        </div>
-                    </div>
-
-                    <!-- Lista de Dispositivos -->
-                    <div class="bg-white border border-gray-200 rounded-lg shadow-sm flex-grow flex flex-col overflow-hidden">
-                        <div class="bg-gray-50 px-4 py-3 border-b border-gray-200 grid grid-cols-12 gap-2 text-xs font-semibold text-gray-600 uppercase tracking-wider">
-                            <div class="col-span-4">Dispositivo</div>
-                            <div class="col-span-2 text-center">Potencia</div>
-                            <div class="col-span-2 text-center">Uso/Mes</div>
-                            <div class="col-span-3 text-right">Costo / Consumo</div>
-                            <div class="col-span-1"></div>
-                        </div>
-                        
-                        <div id="device-list" class="flex-grow overflow-y-auto p-4 space-y-3 custom-scrollbar bg-gray-50/50">
-                            <!-- Items insertados via JS -->
-                        </div>
-
-                        <div class="bg-gray-50 p-3 border-t border-gray-200 flex justify-between items-center">
-                            <span class="text-sm text-gray-600">Total dispositivos: <span id="device-count" class="font-bold text-gray-800">0</span></span>
-                            <div class="space-x-2 flex">
-                                <button onclick="clearList()" class="text-red-500 hover:text-red-700 text-sm font-medium px-3 py-1.5 rounded bg-white hover:bg-red-50 transition border border-gray-200 hover:border-red-200 flex items-center">
-                                    <i class="fa-solid fa-trash-can mr-2"></i> Vaciar
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+      <!-- Resultados -->
+      <div>
+        <div class="totals-row">
+          <div class="total-card kwh">
+            <p class="tc-label">Consumo mensual estimado</p>
+            <p class="tc-value"><span id="total-kwh">0.00</span> <small>kWh</small></p>
+            <span class="tc-emoji">🍃</span>
+          </div>
+          <div class="total-card cost">
+            <p class="tc-label">Costo mensual estimado</p>
+            <p class="tc-value">₡<span id="total-cost">0,00</span></p>
+            <span class="tc-emoji">🪙</span>
+          </div>
         </div>
 
-    </main>
+        <div class="panel" id="blocks-panel" style="display:none; margin-bottom:1.2rem">
+          <div class="panel-label"><span class="badge-icon">📊</span> Distribución en bloques tarifarios</div>
+          <div class="blocks-bar" id="blocksBar"></div>
+          <div class="blocks-legend" id="blocksLegend"></div>
+        </div>
 
-    <script>
-        // --- LÓGICA DE SPA (NAVEGACIÓN REDISEÑADA) ---
-        function switchView(view) {
-            const viewTutorial = document.getElementById('view-tutorial');
-            const viewCalculator = document.getElementById('view-calculator');
-            const tabTutorial = document.getElementById('tab-tutorial');
-            const tabCalculator = document.getElementById('tab-calculator');
+        <div class="panel" id="top-panel" style="display:none; margin-bottom:1.2rem">
+          <div class="panel-label"><span class="badge-icon">🏆</span> Top consumidores del hogar</div>
+          <div class="top-list" id="topList"></div>
+        </div>
 
-            // Clases para Pestaña Activa (Pill verde)
-            const activeClasses = ['bg-emerald-50', 'text-emerald-700', 'border-emerald-100', 'shadow-sm'];
-            // Clases para Pestaña Inactiva (Texto gris con hover)
-            const inactiveClasses = ['text-gray-500', 'hover:text-emerald-600', 'hover:bg-gray-50', 'border-transparent'];
+        <div class="panel">
+          <div class="panel-label"><span class="badge-icon">📋</span> Dispositivos registrados</div>
+          <div class="dev-head">
+            <span>Dispositivo</span><span style="text-align:center">Potencia</span><span style="text-align:center">Uso</span><span style="text-align:right">Costo / kWh</span><span></span>
+          </div>
+          <div class="dev-list" id="device-list"></div>
+          <div class="dev-footer">
+            <span>Total de dispositivos: <b id="device-count">0</b></span>
+            <span class="save-note" style="font-size:.7rem; color:var(--muted)">Guardado automático ✓</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
-            if (view === 'tutorial') {
-                viewTutorial.classList.remove('hidden');
-                viewCalculator.classList.add('hidden');
-                
-                tabTutorial.classList.remove(...inactiveClasses);
-                tabTutorial.classList.add(...activeClasses);
-                
-                tabCalculator.classList.remove(...activeClasses);
-                tabCalculator.classList.add(...inactiveClasses);
-            } else {
-                viewTutorial.classList.add('hidden');
-                viewCalculator.classList.remove('hidden');
-                
-                tabCalculator.classList.remove(...inactiveClasses);
-                tabCalculator.classList.add(...activeClasses);
-                
-                tabTutorial.classList.remove(...activeClasses);
-                tabTutorial.classList.add(...inactiveClasses);
-                
-                if (myChart) {
-                    myChart.resize();
-                }
-            }
-        }
+<!-- ═══════ MODALES ═══════ -->
+<div id="confirmModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3 id="confirmTitle">¿Confirmar?</h3>
+    <p id="confirmText"></p>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="closeModal('confirmModal')">Cancelar</button>
+      <button class="btn-confirm" onclick="runConfirm()">Sí, continuar</button>
+    </div>
+  </div>
+</div>
 
-        // --- LÓGICA DEL ACORDEÓN ---
-        function toggleAccordion(btn) {
-            const content = btn.nextElementSibling;
-            const icon = btn.querySelector('.fa-chevron-down');
-            
-            if (content.style.maxHeight) {
-                content.style.maxHeight = null;
-                icon.classList.remove('rotate-180');
-            } else {
-                document.querySelectorAll('.accordion-item > div').forEach(div => {
-                    div.style.maxHeight = null;
-                });
-                document.querySelectorAll('.accordion-item i.fa-chevron-down').forEach(i => {
-                    i.classList.remove('rotate-180');
-                });
-                
-                content.style.maxHeight = content.scrollHeight + "px";
-                icon.classList.add('rotate-180');
-            }
-        }
+<div id="loadModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3>📂 Cargar lista</h3>
+    <p>Seleccione o arrastre un archivo <strong>.json</strong> guardado desde esta calculadora. La lista actual será <strong>reemplazada</strong>.</p>
+    <div class="drop-zone" id="dropZone"
+      onclick="document.getElementById('fileInput').click()"
+      ondragover="event.preventDefault(); this.classList.add('dragover')"
+      ondragleave="this.classList.remove('dragover')"
+      ondrop="dropFile(event)">
+      <input type="file" id="fileInput" accept=".json,application/json" onchange="loadFileInput(event)">
+      <span style="font-size:1.8rem; display:block; margin-bottom:.4rem">🗂️</span>
+      <strong>Haga clic aquí</strong> o arrastre su archivo
+    </div>
+    <div class="modal-actions"><button class="btn-ghost" onclick="closeModal('loadModal')">Cancelar</button></div>
+  </div>
+</div>
 
-        // --- LÓGICA DE LA CALCULADORA ---
-        let devices = [];
-        let myChart = null; 
-        
-        const form = document.getElementById('add-device-form');
-        const listContainer = document.getElementById('device-list');
-        const emptyState = document.createElement('div');
-        emptyState.className = 'flex flex-col items-center justify-center h-full text-gray-400 p-6';
-        emptyState.innerHTML = '<i class="fa-solid fa-plug text-4xl mb-3 opacity-50"></i><p class="text-sm text-center">No hay dispositivos registrados.</p><p class="text-xs text-center mt-1">Añade uno usando el formulario.</p>';
+<div id="tarifaModal" class="modal-backdrop">
+  <div class="modal-card">
+    <h3>✏️ Actualizar tarifas T-RE</h3>
+    <p>ARESEP ajusta las tarifas periódicamente. Consulte los valores vigentes en <strong>cnfl.go.cr</strong> o <strong>aresep.go.cr</strong> y actualícelos aquí. Se guardan en este navegador.</p>
+    <div class="field">
+      <label for="t-fijo">Cargo fijo bloque 0–30 kWh (₡)</label>
+      <input type="number" id="t-fijo" min="0" step="0.01">
+    </div>
+    <div class="field field-row">
+      <div>
+        <label for="t-b2">31–200 kWh (₡/kWh)</label>
+        <input type="number" id="t-b2" min="0" step="0.01">
+      </div>
+      <div>
+        <label for="t-b3">201–300 kWh (₡/kWh)</label>
+        <input type="number" id="t-b3" min="0" step="0.01">
+      </div>
+    </div>
+    <div class="field">
+      <label for="t-b4">Más de 300 kWh (₡/kWh)</label>
+      <input type="number" id="t-b4" min="0" step="0.01">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-ghost" onclick="restoreTarifas()">Restaurar originales</button>
+      <button class="btn-ghost" onclick="closeModal('tarifaModal')">Cancelar</button>
+      <button class="btn btn-green" onclick="saveTarifas()">Guardar tarifas</button>
+    </div>
+  </div>
+</div>
 
-        document.getElementById('preset-device').addEventListener('change', function(e) {
-            if(e.target.value) {
-                document.getElementById('device-watts').value = e.target.value;
-                document.getElementById('device-name').value = e.target.options[e.target.selectedIndex].dataset.name;
-            }
-        });
+<div id="toastContainer"></div>
 
-        form.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const name = document.getElementById('device-name').value;
-            const quantity = parseInt(document.getElementById('device-qty').value);
-            const watts = parseFloat(document.getElementById('device-watts').value);
-            const hours = parseFloat(document.getElementById('device-hours').value);
-            const days = parseInt(document.getElementById('device-days').value);
+<!-- Plantilla oculta para exportación en carta horizontal -->
+<div id="exportDoc" aria-hidden="true"></div>
 
-            const device = {
-                id: Date.now().toString(),
-                name, quantity, watts, hours, days
-            };
+<script>
+/* ══════════════════════════════════════
+   ESTADO Y CONFIGURACIÓN
+══════════════════════════════════════ */
+const LS_DEVICES = 'ecocalc_devices_v1';
+const LS_TARIFAS = 'ecocalc_tarifas_v1';
 
-            devices.push(device);
-            renderList();
-            
-            document.getElementById('device-name').value = '';
-            document.getElementById('preset-device').value = '';
-            document.getElementById('device-name').focus();
-        });
+const TARIFAS_DEFAULT = { fijo: 1744.80, b2: 58.16, b3: 89.24, b4: 92.27 };
+const BLOCK_COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'];
+const BLOCK_LABELS = ['0–30 kWh (base)', '31–200 kWh', '201–300 kWh', '> 300 kWh'];
 
-        function removeDevice(id) {
-            devices = devices.filter(d => d.id !== id);
-            renderList();
-        }
+let devices = [];
+let tarifas = { ...TARIFAS_DEFAULT };
+let confirmCallback = null;
 
-        function clearList() {
-            if(devices.length === 0) return;
-            
-            const overlay = document.createElement('div');
-            overlay.className = 'fixed inset-0 bg-gray-900 bg-opacity-50 z-[100] flex items-center justify-center fade-in';
-            overlay.innerHTML = `
-                <div class="bg-white rounded-lg p-6 max-w-sm w-full shadow-xl">
-                    <h4 class="text-lg font-bold text-gray-800 mb-2">¿Vaciar lista?</h4>
-                    <p class="text-sm text-gray-600 mb-6">Se eliminarán todos los dispositivos registrados. Esta acción no se puede deshacer.</p>
-                    <div class="flex justify-end space-x-3">
-                        <button id="cancel-clear" class="px-4 py-2 text-sm text-gray-600 hover:bg-gray-100 rounded-md transition border border-gray-200">Cancelar</button>
-                        <button id="confirm-clear" class="px-4 py-2 text-sm text-white bg-red-600 hover:bg-red-700 rounded-md transition shadow">Sí, vaciar</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(overlay);
+/* ══════════════════════════════════════
+   UTILIDADES
+══════════════════════════════════════ */
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function el(id){ return document.getElementById(id); }
+function crc(n, dec = 2){ return n.toLocaleString('es-CR', { minimumFractionDigits: dec, maximumFractionDigits: dec }); }
+function fechaHoy(){ return new Date().toLocaleDateString('es-CR', { year:'numeric', month:'long', day:'numeric' }); }
 
-            document.getElementById('cancel-clear').onclick = () => document.body.removeChild(overlay);
-            document.getElementById('confirm-clear').onclick = () => {
-                devices = [];
-                renderList();
-                document.body.removeChild(overlay);
-            };
-        }
+function showToast(msg, isError = false){
+  const c = el('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast' + (isError ? ' error' : '');
+  t.innerText = msg;
+  c.appendChild(t);
+  requestAnimationFrame(() => t.classList.add('show'));
+  setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 3000);
+}
 
-        function calculateCNFLTariff(totalKwh) {
-            if (totalKwh === 0) return 0;
-            let cost = 0;
-            if (totalKwh <= 30) {
-                cost = 1744.80;
-            } else if (totalKwh <= 200) {
-                cost = 1744.80 + ((totalKwh - 30) * 58.16);
-            } else if (totalKwh <= 300) {
-                cost = 1744.80 + (170 * 58.16) + ((totalKwh - 200) * 89.24);
-            } else {
-                cost = 1744.80 + (170 * 58.16) + (100 * 89.24) + ((totalKwh - 300) * 92.27);
-            }
-            return cost;
-        }
+function openModal(id){ const m = el(id); m.classList.add('open'); requestAnimationFrame(() => m.classList.add('visible')); }
+function closeModal(id){ const m = el(id); m.classList.remove('visible'); setTimeout(() => m.classList.remove('open'), 250); }
+document.querySelectorAll('.modal-backdrop').forEach(m => m.addEventListener('click', e => { if (e.target === m) closeModal(m.id); }));
+document.addEventListener('keydown', e => { if (e.key === 'Escape') ['confirmModal','loadModal','tarifaModal'].forEach(closeModal); });
 
-        function renderList() {
-            listContainer.innerHTML = '';
-            
-            if (devices.length === 0) {
-                listContainer.appendChild(emptyState);
-                calculateTotals();
-                document.getElementById('device-count').innerText = "0";
-                return;
-            }
+function askConfirm(title, text, cb){
+  el('confirmTitle').textContent = title;
+  el('confirmText').textContent = text;
+  confirmCallback = cb;
+  openModal('confirmModal');
+}
+function runConfirm(){ closeModal('confirmModal'); if (confirmCallback){ confirmCallback(); confirmCallback = null; } }
 
-            let totalKwh = 0;
-            devices.forEach(d => {
-                totalKwh += (d.watts * d.hours * d.days * d.quantity) / 1000;
-            });
-            const totalBill = calculateCNFLTariff(totalKwh);
+/* ══════════════════════════════════════
+   NAVEGACIÓN
+══════════════════════════════════════ */
+function switchView(view){
+  el('view-tutorial').classList.toggle('active', view === 'tutorial');
+  el('view-calculator').classList.toggle('active', view === 'calculator');
+  el('tab-tutorial').classList.toggle('active', view === 'tutorial');
+  el('tab-calculator').classList.toggle('active', view === 'calculator');
+  window.scrollTo(0, 0);
+}
 
-            devices.forEach(device => {
-                const kwhMonth = (device.watts * device.hours * device.days * device.quantity) / 1000;
-                const costMonth = totalKwh > 0 ? (kwhMonth / totalKwh) * totalBill : 0;
+/* ══════════════════════════════════════
+   PERSISTENCIA
+══════════════════════════════════════ */
+function saveDevices(){ try { localStorage.setItem(LS_DEVICES, JSON.stringify(devices)); } catch(e){} }
+function loadDevices(){
+  try {
+    const raw = localStorage.getItem(LS_DEVICES);
+    if (raw){ const d = JSON.parse(raw); if (Array.isArray(d)) devices = d; }
+  } catch(e){}
+}
+function loadTarifas(){
+  try {
+    const raw = localStorage.getItem(LS_TARIFAS);
+    if (raw){
+      const t = JSON.parse(raw);
+      if (t && [t.fijo, t.b2, t.b3, t.b4].every(v => typeof v === 'number' && v >= 0)) tarifas = t;
+    }
+  } catch(e){}
+}
 
-                const item = document.createElement('div');
-                item.className = 'bg-white border border-gray-100 rounded p-3 shadow-sm hover:shadow-md transition-shadow grid grid-cols-12 gap-2 items-center text-sm fade-in';
-                
-                item.innerHTML = `
-                    <div class="col-span-4 flex flex-col">
-                        <span class="font-semibold text-gray-800 truncate" title="${device.name}">${device.name}</span>
-                        <span class="text-xs text-gray-500">Cant: ${device.quantity}</span>
-                    </div>
-                    <div class="col-span-2 text-center text-gray-600">
-                        ${device.watts}W
-                    </div>
-                    <div class="col-span-2 text-center text-xs text-gray-500 flex flex-col">
-                        <span>${device.hours}h/día</span>
-                        <span>${device.days}d/mes</span>
-                    </div>
-                    <div class="col-span-3 text-right flex flex-col">
-                        <span class="font-bold text-blue-700">₡${costMonth.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</span>
-                        <span class="text-xs text-emerald-600">${kwhMonth.toFixed(2)} kWh</span>
-                    </div>
-                    <div class="col-span-1 flex justify-end">
-                        <button onclick="removeDevice('${device.id}')" class="text-gray-400 hover:text-red-500 p-1 rounded-full hover:bg-red-50 transition" title="Eliminar">
-                            <i class="fa-solid fa-xmark"></i>
-                        </button>
-                    </div>
-                `;
-                listContainer.appendChild(item);
-            });
+/* ══════════════════════════════════════
+   TARIFAS
+══════════════════════════════════════ */
+function renderTarifaBox(){
+  el('tarifa-display').innerHTML = `
+    <li><span>0–30 kWh (cargo fijo)</span><b>₡${crc(tarifas.fijo)}</b></li>
+    <li><span>31–200 kWh</span><b>₡${crc(tarifas.b2)} /kWh</b></li>
+    <li><span>201–300 kWh</span><b>₡${crc(tarifas.b3)} /kWh</b></li>
+    <li><span>Más de 300 kWh</span><b>₡${crc(tarifas.b4)} /kWh</b></li>`;
+}
 
-            document.getElementById('device-count').innerText = devices.length;
-            calculateTotals();
-        }
+function openTarifaModal(){
+  el('t-fijo').value = tarifas.fijo;
+  el('t-b2').value = tarifas.b2;
+  el('t-b3').value = tarifas.b3;
+  el('t-b4').value = tarifas.b4;
+  openModal('tarifaModal');
+}
 
-        function calculateTotals() {
-            let totalKwh = 0;
+function saveTarifas(){
+  const vals = ['t-fijo','t-b2','t-b3','t-b4'].map(id => parseFloat(el(id).value));
+  if (vals.some(v => isNaN(v) || v < 0)){ showToast('✗ Revise los valores: deben ser números positivos', true); return; }
+  tarifas = { fijo: vals[0], b2: vals[1], b3: vals[2], b4: vals[3] };
+  try { localStorage.setItem(LS_TARIFAS, JSON.stringify(tarifas)); } catch(e){}
+  renderTarifaBox();
+  renderAll();
+  closeModal('tarifaModal');
+  showToast('✓ Tarifas actualizadas');
+}
 
-            devices.forEach(device => {
-                totalKwh += (device.watts * device.hours * device.days * device.quantity) / 1000;
-            });
+function restoreTarifas(){
+  tarifas = { ...TARIFAS_DEFAULT };
+  try { localStorage.removeItem(LS_TARIFAS); } catch(e){}
+  renderTarifaBox();
+  renderAll();
+  closeModal('tarifaModal');
+  showToast('✓ Tarifas originales restauradas');
+}
 
-            const totalCost = calculateCNFLTariff(totalKwh);
+/* ══════════════════════════════════════
+   CÁLCULO
+══════════════════════════════════════ */
+function kwhOf(d){ return (d.watts * d.hours * d.days * d.quantity) / 1000; }
 
-            const currentCostText = document.getElementById('total-cost').innerText.replace(/\./g, '').replace(',', '.');
-            const currentCost = parseFloat(currentCostText) || 0;
+function calcTariff(totalKwh){
+  if (totalKwh === 0) return 0;
+  if (totalKwh <= 30)  return tarifas.fijo;
+  if (totalKwh <= 200) return tarifas.fijo + (totalKwh - 30) * tarifas.b2;
+  if (totalKwh <= 300) return tarifas.fijo + 170 * tarifas.b2 + (totalKwh - 200) * tarifas.b3;
+  return tarifas.fijo + 170 * tarifas.b2 + 100 * tarifas.b3 + (totalKwh - 300) * tarifas.b4;
+}
 
-            animateValue("total-kwh", parseFloat(document.getElementById('total-kwh').innerText), totalKwh, 300);
-            animateValue("total-cost", currentCost, totalCost, 300);
-            
-            updateChart(totalKwh);
-        }
+function blockSplit(totalKwh){
+  return [
+    Math.min(totalKwh, 30),
+    Math.min(Math.max(totalKwh - 30, 0), 170),
+    Math.min(Math.max(totalKwh - 200, 0), 100),
+    Math.max(totalKwh - 300, 0)
+  ];
+}
 
-        function updateChart(totalKwh) {
-            const chartSection = document.getElementById('chart-section');
-            
-            if (totalKwh === 0) {
-                chartSection.classList.add('hidden');
-                return;
-            } else {
-                chartSection.classList.remove('hidden');
-            }
+function blockCosts(blocks){
+  return [ blocks[0] > 0 ? tarifas.fijo : 0, blocks[1] * tarifas.b2, blocks[2] * tarifas.b3, blocks[3] * tarifas.b4 ];
+}
 
-            let b1 = Math.min(totalKwh, 30);
-            let b2 = Math.min(Math.max(totalKwh - 30, 0), 170);
-            let b3 = Math.min(Math.max(totalKwh - 200, 0), 100);
-            let b4 = Math.max(totalKwh - 300, 0);
+/* ══════════════════════════════════════
+   FORMULARIO
+══════════════════════════════════════ */
+el('preset-device').addEventListener('change', function(e){
+  if (e.target.value){
+    el('device-watts').value = e.target.value;
+    el('device-name').value = e.target.options[e.target.selectedIndex].dataset.name;
+  }
+});
 
-            const data = [b1, b2, b3, b4];
+el('add-device-form').addEventListener('submit', function(e){
+  e.preventDefault();
+  devices.push({
+    id: Date.now().toString(),
+    name: el('device-name').value.trim() || 'Dispositivo',
+    quantity: parseInt(el('device-qty').value) || 1,
+    watts: parseFloat(el('device-watts').value) || 1,
+    hours: parseFloat(el('device-hours').value) || 1,
+    days: parseInt(el('device-days').value) || 30
+  });
+  saveDevices();
+  renderAll();
+  el('device-name').value = '';
+  el('preset-device').value = '';
+  el('device-name').focus();
+  showToast('✓ Dispositivo añadido');
+});
 
-            if (myChart) {
-                myChart.data.datasets[0].data = data;
-                myChart.update();
-            } else {
-                const ctx = document.getElementById('blocksChart').getContext('2d');
-                myChart = new Chart(ctx, {
-                    type: 'doughnut',
-                    data: {
-                        labels: ['0-30 kWh (Base)', '31-200 kWh', '201-300 kWh', '>300 kWh'],
-                        datasets: [{
-                            data: data,
-                            backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#ef4444'],
-                            borderWidth: 2,
-                            borderColor: '#ffffff'
-                        }]
-                    },
-                    options: {
-                        responsive: true,
-                        maintainAspectRatio: false,
-                        animation: false,
-                        plugins: {
-                            legend: {
-                                position: 'right',
-                                labels: { font: { family: "'Inter', sans-serif", size: 11 } }
-                            },
-                            tooltip: {
-                                callbacks: {
-                                    label: function(context) {
-                                        return ' ' + context.parsed.toFixed(2) + ' kWh';
-                                    }
-                                }
-                            }
-                        }
-                    }
-                });
-            }
-        }
+function removeDevice(id){
+  devices = devices.filter(d => d.id !== id);
+  saveDevices();
+  renderAll();
+}
 
-        function animateValue(id, start, end, duration) {
-            const obj = document.getElementById(id);
-            if (start === end) return;
-            let startTimestamp = null;
-            const step = (timestamp) => {
-                if (!startTimestamp) startTimestamp = timestamp;
-                const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-                
-                const currentVal = progress * (end - start) + start;
-                
-                if (id === "total-cost") {
-                    obj.innerHTML = currentVal.toLocaleString('es-CR', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-                } else {
-                    obj.innerHTML = currentVal.toFixed(2);
-                }
-                
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                }
-            };
-            window.requestAnimationFrame(step);
-        }
+function clearList(){
+  if (devices.length === 0) return;
+  askConfirm('¿Vaciar la lista?', 'Se eliminarán todos los dispositivos registrados. Esta acción no se puede deshacer.', () => {
+    devices = [];
+    saveDevices();
+    renderAll();
+    showToast('🧹 Lista vaciada');
+  });
+}
 
-        renderList();
-    </script>
+/* ══════════════════════════════════════
+   RENDER
+══════════════════════════════════════ */
+function renderAll(){
+  const totalKwh = devices.reduce((s, d) => s + kwhOf(d), 0);
+  const totalCost = calcTariff(totalKwh);
+
+  el('total-kwh').textContent = totalKwh.toFixed(2);
+  el('total-cost').textContent = crc(totalCost);
+  el('device-count').textContent = devices.length;
+
+  // lista
+  const list = el('device-list');
+  if (devices.length === 0){
+    list.innerHTML = `<div class="dev-empty"><strong>No hay dispositivos registrados.</strong><br>Añada uno con el formulario.</div>`;
+  } else {
+    list.innerHTML = devices.map(d => {
+      const k = kwhOf(d);
+      const c = totalKwh > 0 ? (k / totalKwh) * totalCost : 0;
+      return `
+      <div class="dev-item">
+        <div>
+          <span class="d-name" title="${esc(d.name)}">${esc(d.name)}</span>
+          <span class="d-qty">Cantidad: ${d.quantity}</span>
+        </div>
+        <div class="d-mid">${d.watts} W</div>
+        <div class="d-mid">${d.hours} h/d<br>${d.days} d/m</div>
+        <div class="d-cost"><span class="c">₡${crc(c)}</span><span class="k">${k.toFixed(2)} kWh</span></div>
+        <button class="dev-del" data-id="${d.id}" title="Eliminar">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>`;
+    }).join('');
+  }
+
+  // bloques
+  const blocksPanel = el('blocks-panel');
+  const topPanel = el('top-panel');
+  if (totalKwh === 0){
+    blocksPanel.style.display = 'none';
+    topPanel.style.display = 'none';
+  } else {
+    blocksPanel.style.display = '';
+    const blocks = blockSplit(totalKwh);
+    const costs = blockCosts(blocks);
+    el('blocksBar').innerHTML = blocks.map((b, i) =>
+      `<div class="seg" style="width:${(b / totalKwh * 100).toFixed(2)}%; background:${BLOCK_COLORS[i]}"></div>`
+    ).join('');
+    el('blocksLegend').innerHTML = blocks.map((b, i) =>
+      b > 0 ? `<span><i style="background:${BLOCK_COLORS[i]}"></i>${BLOCK_LABELS[i]}: <b>${b.toFixed(1)} kWh</b> · ₡${crc(costs[i], 0)}</span>` : ''
+    ).join('');
+
+    // top consumidores
+    const sorted = [...devices].sort((a, b) => kwhOf(b) - kwhOf(a)).slice(0, 6);
+    if (sorted.length >= 2){
+      topPanel.style.display = '';
+      const maxK = kwhOf(sorted[0]);
+      el('topList').innerHTML = sorted.map(d => {
+        const k = kwhOf(d);
+        const c = totalKwh > 0 ? (k / totalKwh) * totalCost : 0;
+        return `
+        <div class="top-item">
+          <div class="ti-head"><span>${esc(d.name)}</span><span class="ti-kwh">${k.toFixed(1)} kWh · ₡${crc(c, 0)}</span></div>
+          <div class="ti-track"><div class="ti-fill" style="width:${(k / maxK * 100).toFixed(1)}%"></div></div>
+        </div>`;
+      }).join('');
+    } else {
+      topPanel.style.display = 'none';
+    }
+  }
+}
+
+// delegación para eliminar (evita onclick con id en atributo)
+el('device-list').addEventListener('click', e => {
+  const btn = e.target.closest('.dev-del');
+  if (btn) removeDevice(btn.dataset.id);
+});
+
+/* ══════════════════════════════════════
+   JSON GUARDAR / CARGAR
+══════════════════════════════════════ */
+function saveJSON(){
+  const snap = { version: 1, appName: 'EcoCalcula CR', savedAt: new Date().toISOString(), devices, tarifas };
+  const blob = new Blob([JSON.stringify(snap, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `EcoCalcula_${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+  showToast('💾 Archivo JSON descargado');
+}
+
+function loadJSONText(str){
+  try {
+    const snap = JSON.parse(str);
+    if (!Array.isArray(snap.devices)) throw 0;
+    devices = snap.devices.map(d => ({
+      id: d.id || Date.now() + Math.random().toString(),
+      name: String(d.name || 'Dispositivo'),
+      quantity: Math.max(1, parseInt(d.quantity) || 1),
+      watts: Math.max(1, parseFloat(d.watts) || 1),
+      hours: Math.min(24, Math.max(0.1, parseFloat(d.hours) || 1)),
+      days: Math.min(31, Math.max(1, parseInt(d.days) || 30))
+    }));
+    if (snap.tarifas && [snap.tarifas.fijo, snap.tarifas.b2, snap.tarifas.b3, snap.tarifas.b4].every(v => typeof v === 'number' && v >= 0)){
+      tarifas = snap.tarifas;
+      try { localStorage.setItem(LS_TARIFAS, JSON.stringify(tarifas)); } catch(e){}
+      renderTarifaBox();
+    }
+    saveDevices();
+    renderAll();
+    closeModal('loadModal');
+    showToast('📂 Lista cargada correctamente');
+  } catch(e){ showToast('✗ Archivo JSON inválido', true); }
+}
+
+function loadFileInput(e){
+  const f = e.target.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+  e.target.value = '';
+}
+
+function dropFile(e){
+  e.preventDefault();
+  el('dropZone').classList.remove('dragover');
+  const f = e.dataTransfer.files[0]; if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => loadJSONText(ev.target.result);
+  r.readAsText(f);
+}
+
+/* ══════════════════════════════════════
+   EXPORTACIÓN PNG / PDF (carta horizontal 11 × 8.5)
+══════════════════════════════════════ */
+function buildExportDoc(){
+  const totalKwh = devices.reduce((s, d) => s + kwhOf(d), 0);
+  const totalCost = calcTariff(totalKwh);
+  const blocks = blockSplit(totalKwh);
+  const costs = blockCosts(blocks);
+
+  const MAX_ROWS = 15;
+  const rows = devices.slice(0, MAX_ROWS).map(d => {
+    const k = kwhOf(d);
+    const c = totalKwh > 0 ? (k / totalKwh) * totalCost : 0;
+    return `<tr>
+      <td class="name">${esc(d.name)}</td>
+      <td class="c">${d.quantity}</td>
+      <td class="c">${d.watts} W</td>
+      <td class="c">${d.hours} h · ${d.days} d</td>
+      <td class="r">${k.toFixed(2)}</td>
+      <td class="r">₡${crc(c)}</td>
+    </tr>`;
+  }).join('');
+  const more = devices.length > MAX_ROWS ? `<p class="xp-more">… y ${devices.length - MAX_ROWS} dispositivos más (total incluido en los montos).</p>` : '';
+
+  const barHTML = totalKwh > 0
+    ? blocks.map((b, i) => `<div style="width:${(b / totalKwh * 100).toFixed(2)}%; background:${BLOCK_COLORS[i]}"></div>`).join('')
+    : `<div style="width:100%; background:#dcebe2"></div>`;
+
+  const blockList = blocks.map((b, i) =>
+    `<li><i style="background:${BLOCK_COLORS[i]}"></i>${BLOCK_LABELS[i]}<b>${b.toFixed(1)} kWh · ₡${crc(costs[i], 0)}</b></li>`
+  ).join('');
+
+  const sorted = [...devices].sort((a, b) => kwhOf(b) - kwhOf(a)).slice(0, 5);
+  const maxK = sorted.length ? kwhOf(sorted[0]) : 1;
+  const topHTML = sorted.length
+    ? sorted.map(d => {
+        const k = kwhOf(d);
+        return `<div class="xp-topitem">
+          <div class="th"><span>${esc(d.name)}</span><span>${k.toFixed(1)} kWh</span></div>
+          <div class="tt"><div class="tf" style="width:${(k / maxK * 100).toFixed(1)}%"></div></div>
+        </div>`;
+      }).join('')
+    : `<p class="xp-more">Sin dispositivos registrados.</p>`;
+
+  el('exportDoc').innerHTML = `
+    <div class="xp-head">
+      <div>
+        <div class="xp-title">⚡ EcoCalcula CR</div>
+        <div class="xp-subtitle">Estimación de consumo eléctrico residencial · Tarifa T-RE CNFL</div>
+      </div>
+      <div class="xp-date">${fechaHoy()}</div>
+    </div>
+    <div class="xp-rule"></div>
+    <div class="xp-totals">
+      <div class="xp-total" style="background:linear-gradient(135deg,#10b981,#0e7490)">
+        <div class="l">Consumo mensual estimado</div>
+        <div class="v">${totalKwh.toFixed(2)} kWh</div>
+      </div>
+      <div class="xp-total" style="background:linear-gradient(135deg,#3b82f6,#7c3aed)">
+        <div class="l">Costo mensual estimado</div>
+        <div class="v">₡${crc(totalCost)}</div>
+      </div>
+    </div>
+    <div class="xp-cols">
+      <div class="xp-card">
+        <h4>📋 Dispositivos registrados (${devices.length})</h4>
+        <table class="xp-table">
+          <thead><tr><th>Dispositivo</th><th class="c">Cant.</th><th class="c">Potencia</th><th class="c">Uso</th><th class="r">kWh/mes</th><th class="r">Costo</th></tr></thead>
+          <tbody>${rows || `<tr><td colspan="6" style="font-style:italic; color:#93a8a0">Sin dispositivos registrados.</td></tr>`}</tbody>
+        </table>
+        ${more}
+      </div>
+      <div style="display:flex; flex-direction:column; gap:16px; min-height:0">
+        <div class="xp-card">
+          <h4>📊 Bloques tarifarios</h4>
+          <div class="xp-blockbar">${barHTML}</div>
+          <ul class="xp-blocklist">${blockList}</ul>
+          <p class="xp-tarifa-note">Cargo fijo ₡${crc(tarifas.fijo)} · ₡${crc(tarifas.b2)}, ₡${crc(tarifas.b3)} y ₡${crc(tarifas.b4)} por kWh según bloque. Tarifa base sin impuestos, con fines didácticos.</p>
+        </div>
+        <div class="xp-card" style="flex:1">
+          <h4>🏆 Top consumidores</h4>
+          ${topHTML}
+        </div>
+      </div>
+    </div>
+    <div class="xp-foot">
+      <span>EcoCalcula CR · Emprendimiento e Innovación</span>
+      <span>Formato carta horizontal (11" × 8.5")</span>
+    </div>`;
+}
+
+function setBtnLoading(btn, loading, defaultText){
+  if (!btn) return;
+  const txt = btn.querySelector('.btn-txt');
+  const icon = btn.querySelector('.btn-icon');
+  btn.disabled = loading;
+  if (txt) txt.textContent = loading ? 'Generando…' : defaultText;
+  if (icon){
+    if (!icon.dataset.original) icon.dataset.original = icon.innerHTML;
+    icon.innerHTML = loading
+      ? '<svg class="spin" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg>'
+      : icon.dataset.original;
+  }
+}
+
+async function exportReport(fmt){
+  if (typeof html2canvas === 'undefined' || typeof window.jspdf === 'undefined'){
+    showToast('Las librerías aún no cargan. Intente en un segundo.', true);
+    return;
+  }
+  const btn = el(fmt === 'png' ? 'btnPng' : 'btnPdf');
+  setBtnLoading(btn, true, fmt.toUpperCase());
+
+  try {
+    buildExportDoc();
+    await new Promise(r => setTimeout(r, 120)); // dejar que el navegador aplique el layout
+
+    const canvas = await html2canvas(el('exportDoc'), {
+      scale: 2,               // 1320×1020 → 2640×2040 px (240 ppp en carta)
+      useCORS: true,
+      backgroundColor: '#f4faf6'
+    });
+
+    const base = `EcoCalcula_${new Date().toISOString().slice(0,10)}`;
+
+    if (fmt === 'png'){
+      const link = document.createElement('a');
+      link.download = base + '.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('✅ PNG descargado (11" × 8.5")');
+    } else {
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ orientation: 'landscape', unit: 'in', format: 'letter' });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', 0, 0, 11, 8.5);
+      pdf.save(base + '.pdf');
+      showToast('✅ PDF descargado (carta horizontal)');
+    }
+  } catch(err){
+    console.error('Error en la exportación:', err);
+    showToast('❌ Ocurrió un error al exportar', true);
+  } finally {
+    el('exportDoc').innerHTML = '';
+    setBtnLoading(btn, false, fmt.toUpperCase());
+  }
+}
+
+/* ══════════════════════════════════════
+   ARRANQUE
+══════════════════════════════════════ */
+loadTarifas();
+loadDevices();
+renderTarifaBox();
+renderAll();
+</script>
 </body>
 </html>
