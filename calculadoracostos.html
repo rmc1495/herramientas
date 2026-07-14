@@ -3156,7 +3156,7 @@ async function _exportarExcelInner(d) {
     sRow.values=['TOTAL / PROMEDIO',cr(cvP),cr(pvP),cr(mp.mcPonderado),1,Math.ceil(mp.peMulti),cr(mp.peColones)];
     sRow.getCell(2).numFmt=colFmt;sRow.getCell(3).numFmt=colFmt;sRow.getCell(4).numFmt=colFmt;
     sRow.getCell(5).numFmt=pctFmt;sRow.getCell(6).numFmt='#,##0';sRow.getCell(7).numFmt=colFmt;
-    styleSub(sRow);
+    styleS(sRow);
 
     r+=2;
     // Proyección con ventas estimadas
