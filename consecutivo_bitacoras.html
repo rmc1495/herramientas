@@ -3,46 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generador de Bitácoras PEI - Centro de IA</title>
-    <!-- Estilos con Tailwind CSS -->
+    <title>Generador de Bitácoras PEI</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- React y Babel -->
     <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- PDF.js para lectura de archivos -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 </head>
-<body class="bg-slate-50 min-h-screen font-sans">
+<body class="bg-gray-50 min-h-screen font-sans">
     <div id="root"></div>
 
     <script type="text/babel">
         const { useState, useEffect } = React;
 
-        // --- Componentes de Iconos ---
+        // --- Iconos ---
         const IconFile = () => (<svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 0 2 2z"/></svg>);
         const IconUpload = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>);
         const IconSparkles = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>);
+        const IconBolt = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>);
         const IconSettings = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 0 0 2.572-1.065z"/><circle cx="12" cy="12" r="3" strokeWidth="2"/></svg>);
         const IconCopy = () => (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>);
         const IconTrash2 = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+        const IconMagic = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M15 4V2m0 14v-2M8 9h2M20 9h2M17.8 11.8L19 13M15 9h0M17.8 6.2L19 5M3 21l9-9M12.2 6.2L11 5"/></svg>);
+
+        // ============================================================
+        // RESUMIDOR LOCAL (sin API, sin internet, siempre funciona)
+        // ============================================================
+        function localSummarize(rawText) {
+            if (!rawText || rawText.trim().length < 20) {
+                return "Texto insuficiente para resumir.";
+            }
+
+            // Normaliza el texto y elimina los marcadores de sección "--- Sección ... ---"
+            const text = rawText
+                .replace(/---[^-]+---/g, ' ')
+                .replace(/\s+/g, ' ')
+                .replace(/•/g, ' ')
+                .trim();
+
+            // Extrae cada bloque temático buscando desde una etiqueta hasta la siguiente
+            const extractSection = (labelRegex, stopRegex) => {
+                const combined = new RegExp(labelRegex.source + '\\s*[:\\-]?\\s*(.+?)(?=' + stopRegex.source + '|$)', 'is');
+                const m = text.match(combined);
+                if (!m || !m[1]) return '';
+                return m[1]
+                    .replace(/\s+/g, ' ')
+                    .replace(/^[:\-\s•]+/, '')
+                    .trim();
+            };
+
+            const stopWords = /Unidad(?:\s+de\s+estudio)?|Resultado(?:\s+de\s+aprendizaje)?|Actividades|Observaciones|Nombre\s+del\s+docente|Firma|Recibido|OPORTUNIDADES/i;
+
+            const unidad = extractSection(/Unidad(?:\s+de\s+estudio)?/i, stopWords);
+            const resultado = extractSection(/Resultado(?:\s+de\s+aprendizaje)?/i, stopWords);
+            const actividades = extractSection(/Actividades/i, stopWords);
+            const observaciones = extractSection(/Observaciones/i, stopWords);
+
+            // Recorta cada parte a longitud manejable
+            const trim = (s, n) => {
+                if (!s) return '';
+                s = s.replace(/\.+$/, '');
+                if (s.length <= n) return s;
+                // Corta en el último espacio antes del límite para no partir palabras
+                const cut = s.substring(0, n);
+                const lastSpace = cut.lastIndexOf(' ');
+                return (lastSpace > n * 0.6 ? cut.substring(0, lastSpace) : cut) + '...';
+            };
+
+            const partes = [];
+            if (unidad) partes.push(`Unidad: ${trim(unidad, 80)}`);
+            if (resultado) partes.push(`Resultado: ${trim(resultado, 90)}`);
+            if (actividades) partes.push(`Actividades: ${trim(actividades, 120)}`);
+            if (observaciones && observaciones.length > 5 && !/^n\/?a$|^ninguna?$/i.test(observaciones)) {
+                partes.push(`Obs: ${trim(observaciones, 60)}`);
+            }
+
+            if (partes.length === 0) {
+                // Fallback: primeras 45 palabras del texto limpio
+                const words = text.split(/\s+/).slice(0, 45);
+                return words.join(' ') + (text.split(/\s+/).length > 45 ? '...' : '');
+            }
+
+            return partes.join('. ') + '.';
+        }
 
         function App() {
             const [bitacoras, setBitacoras] = useState([]);
             const [loading, setLoading] = useState(false);
             const [toast, setToast] = useState(null);
             const [aiLoadingId, setAiLoadingId] = useState(null);
-            const [isSummarizingAll, setIsSummarizingAll] = useState(false);
             const [showSettings, setShowSettings] = useState(false);
-            
-            // --- Configuración de Proveedores ---
-            const [provider, setProvider] = useState(localStorage.getItem('pei_provider') || "openrouter");
-            const [config, setConfig] = useState({
-                openrouter: { key: localStorage.getItem('pei_or_key') || "", model: localStorage.getItem('pei_or_model') || "google/gemini-2.0-flash-lite-preview-02-05:free", url: "https://openrouter.ai/api/v1/chat/completions" },
-                groq: { key: localStorage.getItem('pei_groq_key') || "", model: localStorage.getItem('pei_groq_model') || "llama-3.3-70b-versatile", url: "https://api.groq.com/openai/v1/chat/completions" },
-                nvidia: { key: localStorage.getItem('pei_nv_key') || "", model: localStorage.getItem('pei_nv_model') || "nvidia/llama-3.1-nemotron-70b-instruct", url: "https://integrate.api.nvidia.com/v1/chat/completions" },
-                ollama: { key: "no-necesaria", model: localStorage.getItem('pei_ol_model') || "llama3", url: localStorage.getItem('pei_ol_url') || "http://localhost:11434/api/chat" }
-            });
+            const [userApiKey, setUserApiKey] = useState(localStorage.getItem('bitacora_gemini_key') || "");
+            const [selectedModel, setSelectedModel] = useState(localStorage.getItem('bitacora_gemini_model') || "gemini-2.5-flash");
+            const [diagnostico, setDiagnostico] = useState(null); // Muestra detalles técnicos de errores
+            const [batchProgress, setBatchProgress] = useState(null); // {current, total, errors}
 
             useEffect(() => {
                 if (window.pdfjsLib) {
@@ -50,175 +104,229 @@
                 }
             }, []);
 
-            const showToast = (message, type = 'success') => {
+            const showToast = (message, type = 'success', duration = 5000) => {
                 setToast({ message, type });
-                setTimeout(() => setToast(null), 5000);
+                setTimeout(() => setToast(null), duration);
             };
 
             const saveSettings = () => {
-                localStorage.setItem('pei_provider', provider);
-                localStorage.setItem('pei_or_key', config.openrouter.key);
-                localStorage.setItem('pei_or_model', config.openrouter.model);
-                localStorage.setItem('pei_groq_key', config.groq.key);
-                localStorage.setItem('pei_groq_model', config.groq.model);
-                localStorage.setItem('pei_nv_key', config.nvidia.key);
-                localStorage.setItem('pei_nv_model', config.nvidia.model);
-                localStorage.setItem('pei_ol_model', config.ollama.model);
-                localStorage.setItem('pei_ol_url', config.ollama.url);
+                localStorage.setItem('bitacora_gemini_key', userApiKey.trim());
+                localStorage.setItem('bitacora_gemini_model', selectedModel);
                 setShowSettings(false);
-                showToast("Configuración guardada correctamente.");
+                showToast("✅ Configuración guardada.");
             };
 
-            const callUniversalAI = async (text, retries = 2) => {
-                const current = config[provider];
-                if (!current.key && provider !== 'ollama') throw new Error(`Falta API Key para ${provider.toUpperCase()}`);
+            // ============================================================
+            // LLAMADA GEMINI CON DIAGNÓSTICO EXHAUSTIVO
+            // ============================================================
+            const callGeminiAI = async (text) => {
+                const apiKey = userApiKey.trim();
+                if (!apiKey) throw new Error("Sin API Key configurada.");
+                
+                const cleanInput = (text || "").replace(/\s+/g, ' ').trim();
+                if (cleanInput.length < 20) throw new Error("Texto muy corto.");
+                
+                const model = selectedModel || "gemini-2.5-flash";
+                // Usamos ?key= en URL (compatibilidad universal) Y el header (por si acaso)
+                const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(apiKey)}`;
+                
+                const prompt = `Resume de forma profesional y muy breve (máximo 50 palabras, sin negritas ni asteriscos ni viñetas) las siguientes actividades educativas para una tabla de Excel:\n\n${cleanInput}\n\nResponda solo con el resumen.`;
 
-                const systemPrompt = "Eres un asistente administrativo experto. Resume de forma profesional y muy breve (máximo 50 palabras) las actividades educativas para una tabla de Excel. No uses negritas ni asteriscos.";
-                const userPrompt = `Resume este texto:\n${text}`;
+                const requestBody = {
+                    contents: [{ parts: [{ text: prompt }] }]
+                };
+
+                console.log("[Gemini] Request →", { url: url.replace(apiKey, "***"), model, textLen: cleanInput.length });
+
+                let response, rawBody;
+                try {
+                    response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(requestBody)
+                    });
+                } catch (netErr) {
+                    // Error de red / CORS / DNS / sin internet
+                    console.error("[Gemini] Network error:", netErr);
+                    throw new Error(`Sin conexión con Gemini: ${netErr.message}. Verifique internet, firewall o proxy.`);
+                }
 
                 try {
-                    let response;
-                    if (provider === 'ollama') {
-                        response = await fetch(current.url, {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                model: current.model,
-                                messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }],
-                                stream: false
-                            })
-                        });
-                    } else {
-                        response = await fetch(current.url, {
-                            method: 'POST',
-                            headers: { 
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${current.key}`,
-                                ...(provider === 'openrouter' ? { 'HTTP-Referer': window.location.href, 'X-Title': 'PEI Center' } : {})
-                            },
-                            body: JSON.stringify({
-                                model: current.model, 
-                                messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }]
-                            })
-                        });
-                    }
-
-                    if (!response.ok) {
-                        const err = await response.json().catch(() => ({}));
-                        throw new Error(err.error?.message || `Error ${response.status}`);
-                    }
-
-                    const data = await response.json();
-                    const result = provider === 'ollama' ? data.message?.content : data.choices?.[0]?.message?.content;
-                    if (!result) throw new Error("La IA no devolvió respuesta.");
-                    return result.trim();
-                } catch (error) {
-                    if (retries > 0) {
-                        await new Promise(r => setTimeout(r, 2000));
-                        return callUniversalAI(text, retries - 1);
-                    }
-                    throw error;
+                    rawBody = await response.text();
+                } catch (e) {
+                    rawBody = "(no se pudo leer el cuerpo de respuesta)";
                 }
+
+                console.log("[Gemini] Response ←", response.status, rawBody.substring(0, 500));
+
+                let data = null;
+                try { data = JSON.parse(rawBody); } catch (e) { /* no era JSON */ }
+
+                if (!response.ok) {
+                    const apiMsg = data?.error?.message || rawBody.substring(0, 200) || `HTTP ${response.status}`;
+                    // Guardar diagnóstico completo para el modal
+                    setDiagnostico({
+                        status: response.status,
+                        statusText: response.statusText,
+                        model,
+                        endpoint: url.replace(apiKey, "***"),
+                        respuestaCompleta: rawBody,
+                        mensajeGoogle: data?.error?.message || "(sin mensaje)",
+                        codigoGoogle: data?.error?.code || "(sin código)",
+                        statusGoogle: data?.error?.status || "(sin status)"
+                    });
+                    throw new Error(`HTTP ${response.status}: ${apiMsg.substring(0, 150)}`);
+                }
+
+                const candidate = data?.candidates?.[0];
+                if (!candidate) {
+                    setDiagnostico({ tipo: "Respuesta vacía", respuestaCompleta: rawBody });
+                    throw new Error("La IA no devolvió respuesta.");
+                }
+                if (candidate.finishReason === "SAFETY") {
+                    throw new Error("Respuesta bloqueada por filtros de seguridad de Google.");
+                }
+                const resultText = candidate.content?.parts?.[0]?.text;
+                if (!resultText) throw new Error("La IA devolvió una respuesta vacía.");
+                return resultText.trim();
             };
 
-            const handleSummarize = async (id, text) => {
+            const handleSummarizeAI = async (id, text) => {
+                if (!userApiKey.trim()) {
+                    showToast("⚙️ Configure una API Key de Gemini o use el resumidor local (⚡)", "error", 7000);
+                    setShowSettings(true);
+                    return;
+                }
                 setAiLoadingId(id);
                 try {
-                    const summary = await callUniversalAI(text);
+                    const summary = await callGeminiAI(text);
                     setBitacoras(prev => prev.map(b => b.id === id ? { ...b, asunto: summary } : b));
-                    showToast(`✨ Resumen generado con ${provider.toUpperCase()}`);
+                    showToast("✨ Resumen IA generado.");
                 } catch (err) {
-                    showToast(`❌ ${err.message}`, "error");
+                    console.error("Error IA:", err);
+                    showToast(`❌ ${err.message} — Clic aquí para ver diagnóstico técnico.`, "error", 10000);
                 } finally {
                     setAiLoadingId(null);
                 }
             };
 
-            const handleSummarizeAll = async () => {
-                if (bitacoras.length === 0) return;
-                setIsSummarizingAll(true);
-                showToast(`⏳ Procesando con ${provider.toUpperCase()}...`, "success");
-                for (let i = 0; i < bitacoras.length; i++) {
-                    const row = bitacoras[i];
-                    if (row.asunto && row.asunto.length > 50) {
-                        setAiLoadingId(row.id);
-                        try {
-                            const summary = await callUniversalAI(row.asunto);
-                            setBitacoras(prev => prev.map(b => b.id === row.id ? { ...b, asunto: summary } : b));
-                        } catch (err) {
-                            showToast(`⚠️ Error en fila ${i + 1}`, "error");
-                        }
-                    }
-                }
-                setAiLoadingId(null);
-                setIsSummarizingAll(false);
-                showToast("✅ Procesamiento masivo completado.");
-            };
-
-            const parseReunion = (fullText) => {
-                let persona = "Participantes";
-                const depto = fullText.match(/Departamento\s*\/?\s*Institución\s*:\s*(.*?)(?=Propósito|Fecha|$)/i);
-                if (depto) persona = depto[1].trim();
-
-                const start = fullText.match(/Propósito de la reunión:?|Asuntos tratados:?/i);
-                const end = fullText.search(/Nombre de los docentes|Participantes:|Firma|Recibido/i);
-                let asunto = fullText.substring(start ? start.index : 0, end > -1 ? end : fullText.length).trim();
-                
-                return { asunto: asunto || fullText.substring(0, 1500), persona };
-            };
-
-            const parseGrupo = (text) => {
-                const secMatch = text.match(/Secci[oó]n\s*[:\-\.]?\s*(\d{1,2}\s*[-\/_]\s*\d+(?:\s*[\/\\]\s*\d+)?(?:\s+[A-Z]\b)?)/i);
-                const seccion = secMatch ? "Sección " + secMatch[1].replace(/\s+/g, '').toUpperCase() : "";
-
-                let carrera = "";
-                const dict = {"Contabilidad y Finanzas": /FINANZAS/i, "Contabilidad y Costos": /COSTOS/i, "Desarrollo Web": /DESARROLLO/i, "Ejecutivo Comercial": /COMERCIAL/i};
-                for (const [n, r] of Object.entries(dict)) { if (r.test(text)) { carrera = n; break; } }
-
-                const block = text.match(/Unidad de estudio:\s*(.*?)(?=Nombre de los docentes|Firma|$)/i);
-                return { asunto: block ? block[1].trim() : "Actividades de aula", persona: (seccion + (carrera ? " - " + carrera : "")).trim() };
-            };
-
-            const processPDF = async (file) => {
+            const handleSummarizeLocal = (id, text) => {
                 try {
-                    const arrayBuffer = await file.arrayBuffer();
-                    const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
-                    let consecutivo = "N/D", fecha = "N/D", tipo = "BITÁCORA", pagesText = [], fullText = '';
-
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const page = await pdf.getPage(i);
-                        const content = await page.getTextContent();
-                        const text = content.items.map(s => s.str).join(' ').replace(/\s+/g, ' ');
-                        pagesText.push(text); 
-                        fullText += text + " ";
-                        if (i === 1) {
-                            const b = text.replace(/\s+/g, '').match(/([A-Z0-9]+-PEI-\d+-\d{4})/);
-                            if (b) consecutivo = b[0];
-                            if (text.includes("REUNIÓN")) tipo = "BITÁCORA DE ATENCIÓN A REUNIÓN";
-                            else if (text.includes("GRUPOS")) tipo = "BITÁCORA DE ATENCIÓN A GRUPOS";
-                            const f = text.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
-                            if (f) fecha = f[0];
-                        }
-                    }
-
-                    if (tipo.includes("REUNIÓN")) {
-                        const data = parseReunion(fullText);
-                        return [{ id: crypto.randomUUID(), bitacora: consecutivo, tipo, asunto: data.asunto, fecha, persona: data.persona }];
-                    } else {
-                        let grupos = [], personas = [];
-                        for (const p of pagesText) {
-                            if (p.length > 100) {
-                                const data = parseGrupo(p);
-                                if (!personas.includes(data.persona)) personas.push(data.persona);
-                                grupos.push(`--- ${data.persona} ---\n${data.asunto}`);
-                            }
-                        }
-                        return [{ id: crypto.randomUUID(), bitacora: consecutivo, tipo, asunto: grupos.join('\n\n'), fecha, persona: personas.join('\n') }];
-                    }
+                    const summary = localSummarize(text);
+                    setBitacoras(prev => prev.map(b => b.id === id ? { ...b, asunto: summary } : b));
+                    showToast("⚡ Resumen local generado.");
                 } catch (err) {
-                    console.error("Error procesando PDF:", err);
-                    return [];
+                    showToast(`❌ ${err.message}`, "error");
                 }
+            };
+
+            const handleSummarizeAllLocal = () => {
+                setBitacoras(prev => prev.map(b => ({ ...b, asunto: localSummarize(b.asunto) })));
+                showToast(`⚡ ${bitacoras.length} bitácoras resumidas localmente.`);
+            };
+
+            const handleSummarizeAllAI = async () => {
+                if (!userApiKey.trim()) {
+                    showToast("⚙️ Configure una API Key de Gemini primero", "error", 7000);
+                    setShowSettings(true);
+                    return;
+                }
+                if (bitacoras.length === 0) return;
+                
+                // Confirmación previa si son muchas (cuidar cuotas)
+                if (bitacoras.length > 5) {
+                    const ok = window.confirm(`Se enviarán ${bitacoras.length} solicitudes a Gemini. Esto puede tardar y consumir su cuota gratuita (nivel gratis: 15 solicitudes por minuto).\n\n¿Continuar?`);
+                    if (!ok) return;
+                }
+
+                const total = bitacoras.length;
+                const errores = [];
+                setBatchProgress({ current: 0, total, errors: 0 });
+
+                for (let i = 0; i < bitacoras.length; i++) {
+                    const b = bitacoras[i];
+                    setBatchProgress({ current: i + 1, total, errors: errores.length });
+                    setAiLoadingId(b.id);
+                    
+                    try {
+                        const summary = await callGeminiAI(b.asunto);
+                        setBitacoras(prev => prev.map(x => x.id === b.id ? { ...x, asunto: summary } : x));
+                    } catch (err) {
+                        console.error(`Error en bitácora ${b.bitacora}:`, err);
+                        errores.push({ bitacora: b.bitacora, error: err.message });
+                    }
+                    
+                    // Pausa entre solicitudes para respetar límite de 15 req/min (4s = seguro)
+                    // Con 15 req/min = 1 cada 4s. Usamos 4.2s para tener margen.
+                    if (i < bitacoras.length - 1) {
+                        await new Promise(r => setTimeout(r, 4200));
+                    }
+                }
+
+                setAiLoadingId(null);
+                setBatchProgress(null);
+
+                if (errores.length === 0) {
+                    showToast(`✨ ${total} bitácoras resumidas con IA correctamente.`, "success", 6000);
+                } else if (errores.length === total) {
+                    showToast(`❌ Fallaron TODAS (${total}). Revise el diagnóstico técnico.`, "error", 10000);
+                } else {
+                    showToast(`⚠️ ${total - errores.length} exitosas, ${errores.length} fallidas. Revise consola (F12).`, "error", 8000);
+                }
+            };
+
+            // --- EXTRACCIÓN DE DATOS (intacta) ---
+            const extractInfo = (fullText, pages) => {
+                const cleanText = fullText.replace(/\s+/g, ' ');
+                const textFlat = fullText.replace(/\s+/g, '').toUpperCase();
+
+                let consecutivo = "N/D";
+                const conMatch = textFlat.match(/([A-Z0-9]+-PEI-\d+-\d{4})/) || textFlat.match(/(PEI-\d+-\d{4})/);
+                if (conMatch) consecutivo = conMatch[0];
+
+                let tipo = "BITÁCORA";
+                if (/ATENCI.N\s*A\s*GRUPOS/i.test(cleanText)) tipo = "BITÁCORA DE ATENCIÓN A GRUPOS";
+                else if (/REUNI.N/i.test(cleanText)) tipo = "BITÁCORA DE ATENCIÓN A REUNIÓN";
+
+                const fMatch = cleanText.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+                const fecha = fMatch ? fMatch[0] : "N/D";
+
+                if (tipo.includes("GRUPOS")) {
+                    let personasEncontradas = [];
+                    let contenidosAsunto = [];
+
+                    pages.forEach(p => {
+                        if (p.length < 100) return;
+                        const secMatch = p.match(/Secci[oó]n\s*[:\-\.]?\s*(\d{1,2}\s*[-\/_]\s*\d+(?:\s*[\/\\]\s*\d+)?(?:\s+[A-Z]\b)?)/i);
+                        let seccionStr = secMatch ? "Sección " + secMatch[1].replace(/\s+/g, '').toUpperCase() : "";
+                        let carreraStr = "";
+                        const catalogo = {
+                            "Contabilidad y Finanzas": /CONTABILIDAD\s*Y\s*FINANZAS/i,
+                            "Contabilidad y Costos": /CONTABILIDAD\s*Y\s*COSTOS/i,
+                            "Ejecutivo Comercial": /EJECUTIVO\s*COMERCIAL/i,
+                            "Desarrollo Web": /DESARROLLO\s*WEB/i,
+                            "Secretariado Ejecutivo": /SECRETARIADO\s*EJECUTIVO/i,
+                            "Ciberseguridad": /CIBERSEGURIDAD/i,
+                            "Contabilidad": /CONTABILIDAD/i
+                        };
+                        for (const [nombre, regex] of Object.entries(catalogo)) {
+                            if (regex.test(p)) { carreraStr = nombre; break; }
+                        }
+                        const identificador = (seccionStr + (carreraStr ? " - " + carreraStr : "")).trim() || "Grupo Estudiantes";
+                        if (!personasEncontradas.includes(identificador)) {
+                            personasEncontradas.push(identificador);
+                            const mAsunto = p.match(/(?:Unidad|Resultado|Actividades|OPORTUNIDADES)[\s\S]*?(?=Nombre del docente|Firma|Recibido|$)/i);
+                            let asTexto = mAsunto ? mAsunto[0].replace(/\s+/g, ' ')
+                                .replace(/Unidad de estudio:?/gi, "\n• Unidad: ")
+                                .replace(/Resultado de aprendizaje:?/gi, "\n• Resultado: ")
+                                .replace(/Actividades:?/gi, "\n• Actividades: ")
+                                .replace(/Observaciones:?/gi, "\n• Observaciones: ").trim() : "";
+                            contenidosAsunto.push(`--- ${identificador} ---\n${asTexto}`);
+                        }
+                    });
+                    return { id: Math.random(), bitacora: consecutivo, tipo, fecha, persona: personasEncontradas.join("\n"), asunto: contenidosAsunto.join("\n\n") };
+                }
+                return { id: Math.random(), bitacora: consecutivo, tipo, fecha, persona: "Dirección / Técnica", asunto: cleanText.substring(0, 1000) };
             };
 
             const handleFileUpload = async (e) => {
@@ -227,128 +335,197 @@
                 setLoading(true);
                 const results = [];
                 for (const file of files) {
-                    const r = await processPDF(file);
-                    results.push(...r);
+                    try {
+                        const arrayBuffer = await file.arrayBuffer();
+                        const pdf = await window.pdfjsLib.getDocument(arrayBuffer).promise;
+                        let fullText = "";
+                        let pages = [];
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const content = await page.getTextContent();
+                            const text = content.items.map(s => s.str).join(" ");
+                            pages.push(text);
+                            fullText += text + " ";
+                        }
+                        results.push(extractInfo(fullText, pages));
+                    } catch (err) {
+                        showToast("Error en: " + file.name, "error");
+                    }
                 }
                 setBitacoras(prev => [...prev, ...results]);
                 setLoading(false);
                 e.target.value = null;
-                showToast("✅ Bitácoras cargadas con éxito.");
+                showToast("✅ Bitácoras procesadas.");
             };
 
             const updateCell = (id, field, val) => {
                 setBitacoras(prev => prev.map(b => b.id === id ? { ...b, [field]: val } : b));
             };
 
+            const testConnection = async () => {
+                if (!userApiKey.trim()) { showToast("⚠️ Ingrese una API Key primero", "error"); return; }
+                showToast("🔄 Probando conexión...", "success", 2000);
+                try {
+                    const result = await callGeminiAI("Prueba de conexión. Responda solo la palabra: OK.");
+                    showToast(`✅ ¡Conexión exitosa! Respuesta: "${result.substring(0, 80)}"`, "success", 7000);
+                } catch (err) {
+                    showToast(`❌ ${err.message} — Revise el diagnóstico`, "error", 10000);
+                }
+            };
+
             return (
                 <div className="max-w-7xl mx-auto py-10 px-4">
-                    <header className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 text-center mb-8 relative overflow-hidden">
-                        <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-green-400 to-blue-500"></div>
-                        <button onClick={() => setShowSettings(!showSettings)} className="absolute right-6 top-6 p-2 bg-slate-50 border rounded-xl hover:bg-slate-100 transition-all"><IconSettings /></button>
+                    <header className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 text-center mb-8 relative">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                        <button onClick={() => setShowSettings(!showSettings)} className="absolute right-6 top-6 text-gray-400 hover:text-green-600 transition-colors p-2" title="Configuración"><IconSettings /></button>
                         <h1 className="text-4xl font-black text-gray-800 flex justify-center items-center gap-4">
-                            <IconFile /> PEI Center IA
+                            <IconFile /> Generador PEI
                         </h1>
-                        <p className="text-gray-500 mt-2 font-medium tracking-tight text-lg">Procesador Inteligente de Bitácoras</p>
+                        <p className="text-gray-500 mt-2">Carga tus bitácoras y genera el cuadro para Excel automáticamente.</p>
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs">
+                            <span className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 px-3 py-1.5 rounded-full font-semibold">
+                                <IconBolt /> Resumidor Local: siempre disponible
+                            </span>
+                            <span className={`inline-flex items-center gap-2 border px-3 py-1.5 rounded-full font-semibold ${userApiKey ? 'bg-purple-50 border-purple-200 text-purple-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                                <IconSparkles /> IA Gemini: {userApiKey ? 'configurada' : 'no configurada'}
+                            </span>
+                        </div>
                     </header>
 
                     {showSettings && (
-                        <div className="bg-white border-2 border-blue-100 rounded-3xl p-8 mb-8 shadow-2xl animate-in slide-in-from-top-4 duration-300">
-                            <h3 className="font-bold text-gray-800 text-xl mb-6 flex items-center gap-2">Configuración Multi-IA</h3>
-                            <div className="mb-6">
-                                <label className="block text-xs font-black text-slate-400 uppercase mb-2 tracking-widest">Proveedor Activo</label>
-                                <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                    {['openrouter', 'groq', 'nvidia', 'ollama'].map(p => (
-                                        <button key={p} onClick={() => setProvider(p)} className={`p-3 rounded-xl font-bold uppercase text-xs border transition-all ${provider === p ? 'bg-blue-600 text-white border-blue-600 shadow-lg shadow-blue-200' : 'bg-white text-slate-500 hover:bg-slate-50'}`}>{p}</button>
-                                    ))}
-                                </div>
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-6 mb-8">
+                            <h3 className="font-bold text-blue-900 mb-2 text-lg">Configuración de Gemini IA (opcional)</h3>
+                            <p className="text-blue-700 text-sm mb-4">Obtenga su API Key gratis en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener" className="underline font-bold">aistudio.google.com/apikey</a>. Si no la configura, use el botón <b>⚡ Local</b> que no requiere internet.</p>
+                            
+                            <label className="block text-xs font-bold text-blue-900 mb-1 uppercase">API Key</label>
+                            <input type="password" value={userApiKey} onChange={(e) => setUserApiKey(e.target.value)} placeholder="AIzaSy..." className="w-full px-4 py-3 rounded-xl border border-blue-300 outline-none focus:ring-4 focus:ring-blue-100 mb-4 font-mono text-sm" />
+                            
+                            <label className="block text-xs font-bold text-blue-900 mb-1 uppercase">Modelo</label>
+                            <select value={selectedModel} onChange={(e) => setSelectedModel(e.target.value)} className="w-full px-4 py-3 rounded-xl border border-blue-300 outline-none focus:ring-4 focus:ring-blue-100 mb-4 bg-white">
+                                <option value="gemini-2.5-flash">gemini-2.5-flash (recomendado)</option>
+                                <option value="gemini-2.5-flash-lite">gemini-2.5-flash-lite</option>
+                                <option value="gemini-2.5-pro">gemini-2.5-pro</option>
+                                <option value="gemini-2.0-flash">gemini-2.0-flash</option>
+                                <option value="gemini-2.0-flash-lite">gemini-2.0-flash-lite</option>
+                            </select>
+
+                            <div className="flex gap-3 flex-wrap">
+                                <button onClick={saveSettings} className="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-blue-700">Guardar</button>
+                                <button onClick={testConnection} className="bg-purple-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-purple-700">🧪 Probar conexión</button>
+                                <button onClick={() => setShowSettings(false)} className="bg-white border border-gray-300 text-gray-600 px-6 py-3 rounded-xl font-bold hover:bg-gray-50">Cerrar</button>
                             </div>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                {provider !== 'ollama' && (
-                                    <div>
-                                        <label className="block text-xs font-black text-slate-400 uppercase mb-2 tracking-widest">API Key de {provider.toUpperCase()}</label>
-                                        <input type="password" value={config[provider].key} onChange={(e) => setConfig({...config, [provider]: {...config[provider], key: e.target.value}})} className="w-full px-4 py-3 rounded-xl border outline-none focus:ring-4 focus:ring-blue-50 bg-slate-50 shadow-inner" placeholder="Pega tu clave aquí..." />
-                                    </div>
-                                )}
-                                {provider === 'ollama' && (
-                                    <div>
-                                        <label className="block text-xs font-black text-slate-400 uppercase mb-2 tracking-widest">URL de Ollama</label>
-                                        <input type="text" value={config.ollama.url} onChange={(e) => setConfig({...config, ollama: {...config.ollama, url: e.target.value}})} className="w-full px-4 py-3 rounded-xl border outline-none focus:ring-4 focus:ring-blue-50 bg-slate-50 shadow-inner" />
-                                    </div>
-                                )}
-                                <div>
-                                    <label className="block text-xs font-black text-slate-400 uppercase mb-2 tracking-widest">Modelo</label>
-                                    <input type="text" value={config[provider].model} onChange={(e) => setConfig({...config, [provider]: {...config[provider], model: e.target.value}})} className="w-full px-4 py-3 rounded-xl border outline-none focus:ring-4 focus:ring-blue-50 bg-slate-50 shadow-inner" />
-                                </div>
-                            </div>
-                            <button onClick={saveSettings} className="mt-8 w-full bg-slate-800 text-white py-4 rounded-2xl font-bold hover:bg-slate-900 transition-all shadow-xl">Guardar Cambios</button>
                         </div>
                     )}
 
-                    <div className="flex flex-col lg:flex-row gap-6 mb-8 items-stretch">
-                        <div className="flex-1 bg-white p-6 rounded-3xl shadow-lg border relative group cursor-pointer hover:border-green-300 transition-all text-center">
-                            <input type="file" multiple accept=".pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" disabled={loading} />
-                            <div className={`p-6 inline-block rounded-2xl mb-2 ${loading ? 'bg-slate-100' : 'bg-green-50 text-green-600'}`}>
-                                {loading ? <div className="animate-spin h-10 w-10 border-4 border-green-600 border-t-transparent rounded-full"></div> : <IconUpload />}
+                    {diagnostico && (
+                        <div className="bg-red-50 border-2 border-red-300 rounded-3xl p-6 mb-8">
+                            <div className="flex justify-between items-start mb-3">
+                                <h3 className="font-bold text-red-900 text-lg">🔬 Diagnóstico técnico del error</h3>
+                                <button onClick={() => setDiagnostico(null)} className="text-red-600 font-bold text-xl">✕</button>
                             </div>
-                            <div className="font-bold text-gray-700 block text-lg tracking-tight">{loading ? "Analizando documentos..." : "Cargar Bitácoras PDF"}</div>
+                            <div className="text-sm text-red-800 space-y-2 font-mono bg-white p-4 rounded-xl border border-red-200 overflow-x-auto">
+                                {diagnostico.status && <div><b>HTTP Status:</b> {diagnostico.status} {diagnostico.statusText}</div>}
+                                {diagnostico.model && <div><b>Modelo usado:</b> {diagnostico.model}</div>}
+                                {diagnostico.codigoGoogle && <div><b>Código Google:</b> {diagnostico.codigoGoogle}</div>}
+                                {diagnostico.statusGoogle && <div><b>Status Google:</b> {diagnostico.statusGoogle}</div>}
+                                {diagnostico.mensajeGoogle && <div><b>Mensaje Google:</b> {diagnostico.mensajeGoogle}</div>}
+                                <div className="mt-3">
+                                    <b>Respuesta completa:</b>
+                                    <pre className="mt-1 text-xs whitespace-pre-wrap bg-gray-50 p-2 rounded max-h-60 overflow-y-auto">{diagnostico.respuestaCompleta || "(vacío)"}</pre>
+                                </div>
+                            </div>
+                            <p className="text-xs text-red-700 mt-3">📋 Copie este diagnóstico y compártalo para obtener ayuda específica.</p>
                         </div>
-                        <div className="flex flex-col sm:flex-row lg:flex-col gap-4">
-                            <div className="flex gap-2 h-full">
-                                <button onClick={handleSummarizeAll} disabled={bitacoras.length === 0 || isSummarizingAll} className="flex-1 bg-purple-600 hover:bg-purple-700 text-white px-8 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg shadow-purple-100 disabled:opacity-50 min-w-[180px]">
-                                    {isSummarizingAll ? <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full"></div> : <IconSparkles />}
-                                    Resumir Todo
-                                </button>
-                                <button onClick={() => {
-                                    const rows = bitacoras.map(b => [b.bitacora, b.tipo, `"${b.asunto.replace(/"/g, '""')}"`, b.fecha, `"${b.persona.replace(/"/g, '""')}"`].join("\t")).join("\n");
-                                    const txt = document.createElement("textarea"); txt.value = rows; document.body.appendChild(txt); txt.select(); document.execCommand("copy"); document.body.removeChild(txt);
-                                    showToast("📋 ¡Tabla copiada! Pega en Excel Celda A5.");
-                                }} disabled={bitacoras.length === 0} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-8 rounded-2xl font-bold flex items-center justify-center gap-3 transition-all shadow-lg shadow-blue-100 disabled:opacity-50 min-w-[150px]"><IconCopy /> Copiar</button>
+                    )}
+
+                    <div className="flex flex-col md:flex-row gap-6 mb-8 items-stretch">
+                        <div className="flex-1 bg-white p-6 rounded-3xl shadow-lg border border-gray-100 relative group cursor-pointer hover:border-green-300 transition-all text-center">
+                            <input type="file" multiple accept=".pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" disabled={loading} />
+                            <div className={`p-4 inline-block rounded-2xl mb-2 ${loading ? 'bg-gray-100' : 'bg-green-50 text-green-600'}`}>
+                                {loading ? <div className="animate-spin h-8 w-8 border-4 border-green-600 border-t-transparent rounded-full"></div> : <IconUpload />}
                             </div>
-                            <button onClick={() => setBitacoras([])} className="bg-white border text-red-500 px-8 py-3 rounded-2xl font-bold hover:bg-red-50 transition-all border-red-100">Limpiar Todo</button>
+                            <div className="font-bold text-gray-700 block">{loading ? "Procesando..." : "Subir Bitácoras PDF"}</div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <button onClick={handleSummarizeAllLocal} disabled={bitacoras.length === 0 || batchProgress} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconBolt /> Resumir TODAS (Local)</button>
+                            <button onClick={handleSummarizeAllAI} disabled={bitacoras.length === 0 || batchProgress} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconSparkles /> Resumir TODAS (IA Gemini)</button>
+                            <button onClick={() => {
+                                const rows = bitacoras.map(b => [b.bitacora, b.tipo, `"${b.asunto.replace(/"/g, '""')}"`, b.fecha, `"${b.persona.replace(/"/g, '""')}"`].join("\t")).join("\n");
+                                const txt = document.createElement("textarea"); txt.value = rows; document.body.appendChild(txt); txt.select(); document.execCommand("copy"); document.body.removeChild(txt);
+                                showToast("📋 Copiado. Pega en Excel.");
+                            }} disabled={bitacoras.length === 0} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconCopy /> Copiar Tabla</button>
+                            <button onClick={() => setBitacoras([])} disabled={batchProgress} className="bg-white border-2 border-red-100 text-red-600 px-6 py-2 rounded-2xl font-bold hover:bg-red-50 text-sm disabled:opacity-40">Limpiar</button>
                         </div>
                     </div>
+
+                    {batchProgress && (
+                        <div className="bg-purple-50 border-2 border-purple-300 rounded-3xl p-5 mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3 text-purple-900 font-bold">
+                                    <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                                    Procesando con Gemini IA: {batchProgress.current} de {batchProgress.total}
+                                </div>
+                                {batchProgress.errors > 0 && (
+                                    <span className="text-red-700 text-sm font-bold">⚠️ {batchProgress.errors} con error</span>
+                                )}
+                            </div>
+                            <div className="w-full bg-purple-200 rounded-full h-3 overflow-hidden">
+                                <div 
+                                    className="bg-purple-600 h-full transition-all duration-500 rounded-full"
+                                    style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}
+                                ></div>
+                            </div>
+                            <p className="text-xs text-purple-700 mt-2">Pausa de ~4 segundos entre solicitudes para respetar el límite gratuito de Gemini (15/min). Tiempo estimado: {Math.ceil((batchProgress.total - batchProgress.current) * 4.5)}s restantes.</p>
+                        </div>
+                    )}
 
                     <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden overflow-x-auto">
                         <table className="w-full border-collapse table-fixed min-w-[1200px]">
                             <thead>
-                                <tr className="bg-slate-800 text-white text-center font-black py-5 uppercase tracking-widest border-b border-slate-700"><th colSpan="5" className="py-5 text-xl tracking-tighter">Consecutivos Bitácoras Promotores PEI</th></tr>
-                                <tr className="bg-[#558235] text-white text-left font-bold text-[10px] uppercase tracking-wider text-center">
-                                    <th className="p-4 w-[15%] border-r border-white/10 tracking-widest">N° bitácora</th>
-                                    <th className="p-4 w-[18%] border-r border-white/10 tracking-widest text-left px-6">Tipo</th>
-                                    <th className="p-4 w-[42%] border-r border-white/10 tracking-widest text-left px-6">Asunto (IA: {provider})</th>
-                                    <th className="p-4 w-[10%] border-r border-white/10 tracking-widest">Fecha</th>
-                                    <th className="p-4 w-[15%] tracking-widest text-left px-6">Persona atendida</th>
+                                <tr className="bg-gray-800 text-white text-center font-black py-4 uppercase"><th colSpan="5" className="py-4">Consecutivos Bitácoras PEI</th></tr>
+                                <tr className="bg-[#558235] text-white text-left font-bold text-[10px] uppercase tracking-wider">
+                                    <th className="p-4 w-[15%] border-r border-green-600/30">N° bitácora</th>
+                                    <th className="p-4 w-[20%] border-r border-green-600/30">Tipo</th>
+                                    <th className="p-4 w-[35%] border-r border-green-600/30">Asunto</th>
+                                    <th className="p-4 w-[10%] border-r border-green-600/30">Fecha</th>
+                                    <th className="p-4 w-[20%]">Persona atendida</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100 text-center">
+                            <tbody className="divide-y divide-gray-100">
                                 {bitacoras.length === 0 ? (
-                                    <tr><td colSpan="5" className="p-20 text-center text-slate-300 italic text-xl font-light tracking-tight">Sube archivos PDF para empezar a procesar...</td></tr>
+                                    <tr><td colSpan="5" className="p-20 text-center text-gray-300 italic text-xl font-light">Sube tus archivos PDF para comenzar...</td></tr>
                                 ) : bitacoras.map(b => (
-                                    <tr key={b.id} className="group hover:bg-blue-50/10 transition-colors">
-                                        <td className="p-4 bg-slate-500 text-white relative align-top font-mono text-[11px] font-bold">
-                                            <div contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'bitacora', e.target.innerText)} className="outline-none p-1 rounded uppercase tracking-tighter cursor-text">{b.bitacora}</div>
-                                            <div className="absolute right-2 top-2 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <button onClick={() => handleSummarize(b.id, b.asunto)} disabled={aiLoadingId === b.id || isSummarizingAll} className="p-2 bg-white rounded-xl shadow-lg text-purple-600 hover:scale-110 active:scale-95 transition-all">
-                                                    {aiLoadingId === b.id ? <div className="animate-spin h-4 w-4 border-2 border-purple-600 border-t-transparent rounded-full"></div> : <IconSparkles />}
-                                                </button>
-                                                <button onClick={() => setBitacoras(prev => prev.filter(x => x.id !== b.id))} className="p-2 bg-white rounded-xl shadow-lg text-red-600 hover:scale-110 active:scale-95 transition-all"><IconTrash2 /></button>
+                                    <tr key={b.id} className="group hover:bg-blue-50/20">
+                                        <td className="p-4 bg-gray-500 text-white relative align-top font-mono text-[11px] font-bold">
+                                            <div contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'bitacora', e.target.innerText)} className="outline-none focus:ring-2 focus:ring-white p-1 rounded">{b.bitacora}</div>
+                                            <button onClick={() => setBitacoras(prev => prev.filter(x => x.id !== b.id))} className="absolute right-2 top-2 p-2 bg-white rounded-xl shadow-lg text-red-600 hover:scale-110 transition-transform opacity-0 group-hover:opacity-100" title="Eliminar"><IconTrash2 /></button>
+                                        </td>
+                                        <td className="p-4 text-[10px] align-top text-gray-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'tipo', e.target.innerText)}>{b.tipo}</td>
+                                        <td className="p-4 align-top relative">
+                                            <div className={`text-[11px] whitespace-pre-wrap leading-relaxed pr-16 ${aiLoadingId === b.id ? 'opacity-40 animate-pulse text-purple-800' : 'text-gray-800'}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'asunto', e.target.innerText)}>
+                                                {aiLoadingId === b.id ? "Generando resumen..." : b.asunto}
+                                            </div>
+                                            <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <button onClick={() => handleSummarizeLocal(b.id, b.asunto)} className="p-2 bg-green-600 text-white rounded-xl shadow-lg hover:scale-110 hover:bg-green-700 transition-all" title="Resumen LOCAL (sin internet)"><IconBolt /></button>
+                                                <button onClick={() => handleSummarizeAI(b.id, b.asunto)} disabled={aiLoadingId === b.id} className="p-2 bg-purple-600 text-white rounded-xl shadow-lg hover:scale-110 hover:bg-purple-700 transition-all disabled:opacity-50" title="Resumen con IA Gemini"><IconSparkles /></button>
                                             </div>
                                         </td>
-                                        <td className="p-4 text-[10px] align-top text-gray-500 font-bold uppercase text-left leading-tight px-6" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'tipo', e.target.innerText)}>{b.tipo}</td>
-                                        <td className={`p-4 text-[11px] align-top whitespace-pre-wrap leading-relaxed text-left px-6 ${aiLoadingId === b.id ? 'opacity-40 animate-pulse text-purple-800 font-bold' : 'text-slate-800'}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'asunto', e.target.innerText)}>
-                                            {b.asunto}
-                                        </td>
-                                        <td className="p-4 text-center text-xs font-bold align-top text-slate-400" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'fecha', e.target.innerText)}>{b.fecha}</td>
-                                        <td className="p-4 text-[11px] align-top whitespace-pre-wrap font-bold text-slate-700 text-left leading-relaxed tracking-tight px-6" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'persona', e.target.innerText)}>{b.persona}</td>
+                                        <td className="p-4 text-center text-xs font-bold align-top text-gray-500" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'fecha', e.target.innerText)}>{b.fecha}</td>
+                                        <td className="p-4 text-[11px] align-top whitespace-pre-wrap font-semibold text-gray-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'persona', e.target.innerText)}>{b.persona}</td>
                                     </tr>
                                 ))}
                             </tbody>
                         </table>
                     </div>
 
+                    <footer className="text-center text-gray-400 text-xs mt-8">
+                        <p>💡 <b>Botón verde ⚡</b>: resumen local (sin internet, siempre funciona) — <b>Botón morado ✨</b>: resumen con IA Gemini (requiere API Key)</p>
+                    </footer>
+
                     {toast && (
-                        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-10 py-5 rounded-3xl shadow-2xl z-50 animate-bounce flex items-center gap-3 font-bold border-2 ${toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-slate-900 border-slate-700 text-white'}`}>
-                            {toast.message}
+                        <div onClick={() => diagnostico && setToast(null)} className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-4 rounded-3xl shadow-2xl z-50 flex items-center gap-3 font-bold border-2 max-w-2xl cursor-pointer ${toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-900 border-gray-700 text-white'}`}>
+                            {toast.type !== 'error' && <div className="bg-green-500 rounded-full p-1 flex-shrink-0"><svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg></div>}
+                            <span className="text-sm">{toast.message}</span>
                         </div>
                     )}
                 </div>
