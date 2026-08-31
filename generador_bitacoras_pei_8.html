@@ -1,0 +1,960 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generador de Bitácoras PEI</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen font-sans">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // ============================================================
+        // CATÁLOGO DE PROVEEDORES DE IA
+        // Fácil de extender: agregue una entrada aquí para soportar otro
+        // ============================================================
+        const PROVIDERS = {
+            gemini: {
+                name: "Google Gemini",
+                format: "gemini",
+                color: "bg-emerald-100 text-emerald-800 border-emerald-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "AIzaSy...",
+                signupUrl: "https://aistudio.google.com/apikey",
+                models: ["gemini-2.5-flash", "gemini-2.5-flash-lite", "gemini-2.5-pro", "gemini-2.0-flash", "gemini-2.0-flash-lite"],
+                defaultModel: "gemini-2.5-flash",
+                note: "Free: 15 req/min, 1500/día por cuenta"
+            },
+            groq: {
+                name: "Groq",
+                format: "openai",
+                color: "bg-orange-100 text-orange-800 border-orange-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "gsk_...",
+                signupUrl: "https://console.groq.com/keys",
+                baseUrl: "https://api.groq.com/openai/v1/chat/completions",
+                models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "gemma2-9b-it", "openai/gpt-oss-20b", "openai/gpt-oss-120b", "moonshotai/kimi-k2-instruct"],
+                defaultModel: "llama-3.3-70b-versatile",
+                note: "Free: 30 req/min. Inferencia ultra rápida"
+            },
+            deepseek: {
+                name: "DeepSeek",
+                format: "openai",
+                color: "bg-blue-100 text-blue-800 border-blue-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "sk-...",
+                signupUrl: "https://platform.deepseek.com/api_keys",
+                baseUrl: "https://api.deepseek.com/chat/completions",
+                models: ["deepseek-chat", "deepseek-reasoner"],
+                defaultModel: "deepseek-chat",
+                note: "Muy económico (~$0.14/1M tokens). Requiere saldo"
+            },
+            openrouter: {
+                name: "OpenRouter",
+                format: "openai",
+                color: "bg-purple-100 text-purple-800 border-purple-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "sk-or-...",
+                signupUrl: "https://openrouter.ai/keys",
+                baseUrl: "https://openrouter.ai/api/v1/chat/completions",
+                models: ["meta-llama/llama-3.3-70b-instruct:free", "google/gemini-2.0-flash-exp:free", "deepseek/deepseek-chat-v3.1:free", "qwen/qwen-2.5-72b-instruct:free", "mistralai/mistral-small-3.2-24b-instruct:free"],
+                defaultModel: "meta-llama/llama-3.3-70b-instruct:free",
+                note: "Agregador: acceso a modelos :free sin costo"
+            },
+            mistral: {
+                name: "Mistral AI",
+                format: "openai",
+                color: "bg-red-100 text-red-800 border-red-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "...",
+                signupUrl: "https://console.mistral.ai/api-keys/",
+                baseUrl: "https://api.mistral.ai/v1/chat/completions",
+                models: ["mistral-small-latest", "mistral-large-latest", "open-mistral-nemo", "ministral-8b-latest", "ministral-3b-latest"],
+                defaultModel: "mistral-small-latest",
+                note: "Free tier disponible al activar 'Experiment' plan"
+            },
+            cerebras: {
+                name: "Cerebras",
+                format: "openai",
+                color: "bg-yellow-100 text-yellow-800 border-yellow-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "csk-...",
+                signupUrl: "https://cloud.cerebras.ai/",
+                baseUrl: "https://api.cerebras.ai/v1/chat/completions",
+                models: ["llama-3.3-70b", "llama3.1-8b", "qwen-3-32b", "qwen-3-235b-a22b-instruct-2507"],
+                defaultModel: "llama-3.3-70b",
+                note: "Free: 30 req/min. Ultra rápido (>1000 tok/s)"
+            },
+            ollama: {
+                name: "Ollama (local)",
+                format: "openai",
+                color: "bg-gray-200 text-gray-800 border-gray-300",
+                needsKey: false,
+                needsBaseUrl: true,
+                baseUrlPlaceholder: "http://localhost:11434/v1/chat/completions",
+                defaultBaseUrl: "http://localhost:11434/v1/chat/completions",
+                signupUrl: "https://ollama.com/download",
+                models: ["llama3.2", "qwen2.5:7b", "gemma3:4b", "phi4", "mistral", "deepseek-r1:7b"],
+                defaultModel: "llama3.2",
+                note: "Corre local. Requiere setear OLLAMA_ORIGINS='*' para permitir CORS del navegador"
+            },
+            lmstudio: {
+                name: "LM Studio (local)",
+                format: "openai",
+                color: "bg-slate-200 text-slate-800 border-slate-300",
+                needsKey: false,
+                needsBaseUrl: true,
+                baseUrlPlaceholder: "http://localhost:1234/v1/chat/completions",
+                defaultBaseUrl: "http://localhost:1234/v1/chat/completions",
+                signupUrl: "https://lmstudio.ai/",
+                models: ["local-model"],
+                defaultModel: "local-model",
+                note: "Corre local. Habilite CORS en Server settings"
+            },
+            openai: {
+                name: "OpenAI",
+                format: "openai",
+                color: "bg-teal-100 text-teal-800 border-teal-300",
+                needsKey: true,
+                needsBaseUrl: false,
+                keyPlaceholder: "sk-...",
+                signupUrl: "https://platform.openai.com/api-keys",
+                baseUrl: "https://api.openai.com/v1/chat/completions",
+                models: ["gpt-4o-mini", "gpt-4o", "gpt-4.1-mini", "gpt-4.1-nano", "gpt-5-mini", "gpt-5-nano"],
+                defaultModel: "gpt-4o-mini",
+                note: "De pago. gpt-4o-mini es económico"
+            },
+            custom: {
+                name: "Custom (OpenAI-compatible)",
+                format: "openai",
+                color: "bg-indigo-100 text-indigo-800 border-indigo-300",
+                needsKey: true,
+                needsBaseUrl: true,
+                keyPlaceholder: "opcional",
+                baseUrlPlaceholder: "https://tu-endpoint.com/v1/chat/completions",
+                models: [],
+                defaultModel: "",
+                note: "Cualquier API compatible con formato OpenAI /chat/completions"
+            }
+        };
+
+        // --- Iconos ---
+        const IconFile = () => (<svg className="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5.586a1 1 0 0 1 .707.293l5.414 5.414a1 1 0 0 1 .293.707V19a2 2 0 0 0 2 2z"/></svg>);
+        const IconUpload = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>);
+        const IconSparkles = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>);
+        const IconBolt = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>);
+        const IconSettings = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 0 0 2.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 0 0 1.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 0 0-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 0 0-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 0 0-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 0 0-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 0 0 1.066-2.573c-.94-1.543.826-3.31 2.37-2.37a1.724 1.724 0 0 0 2.572-1.065z"/><circle cx="12" cy="12" r="3" strokeWidth="2"/></svg>);
+        const IconCopy = () => (<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+        const IconTrash2 = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" strokeLinecap="round" strokeLinejoin="round"/></svg>);
+        const IconPlus = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4"/></svg>);
+
+        // ============================================================
+        // RESUMIDOR LOCAL
+        // ============================================================
+        function localSummarize(rawText) {
+            if (!rawText || rawText.trim().length < 20) return "Texto insuficiente para resumir.";
+            const text = rawText.replace(/---[^-]+---/g, ' ').replace(/\s+/g, ' ').replace(/•/g, ' ').trim();
+            const stopWords = /Unidad(?:\s+de\s+estudio)?|Resultado(?:\s+de\s+aprendizaje)?|Actividades|Observaciones|Nombre\s+del\s+docente|Firma|Recibido|OPORTUNIDADES/i;
+            const extractSection = (labelRegex) => {
+                const combined = new RegExp(labelRegex.source + '\\s*[:\\-]?\\s*(.+?)(?=' + stopWords.source + '|$)', 'is');
+                const m = text.match(combined);
+                if (!m || !m[1]) return '';
+                return m[1].replace(/\s+/g, ' ').replace(/^[:\-\s•]+/, '').trim();
+            };
+            const trim = (s, n) => {
+                if (!s) return '';
+                s = s.replace(/\.+$/, '');
+                if (s.length <= n) return s;
+                const cut = s.substring(0, n);
+                const lastSpace = cut.lastIndexOf(' ');
+                return (lastSpace > n * 0.6 ? cut.substring(0, lastSpace) : cut) + '...';
+            };
+            const unidad = extractSection(/Unidad(?:\s+de\s+estudio)?/i);
+            const resultado = extractSection(/Resultado(?:\s+de\s+aprendizaje)?/i);
+            const actividades = extractSection(/Actividades/i);
+            const observaciones = extractSection(/Observaciones/i);
+            const partes = [];
+            if (unidad) partes.push(`Unidad: ${trim(unidad, 80)}`);
+            if (resultado) partes.push(`Resultado: ${trim(resultado, 90)}`);
+            if (actividades) partes.push(`Actividades: ${trim(actividades, 120)}`);
+            if (observaciones && observaciones.length > 5 && !/^n\/?a$|^ninguna?$/i.test(observaciones)) {
+                partes.push(`Obs: ${trim(observaciones, 60)}`);
+            }
+            if (partes.length === 0) {
+                const words = text.split(/\s+/).slice(0, 45);
+                return words.join(' ') + (text.split(/\s+/).length > 45 ? '...' : '');
+            }
+            return partes.join('. ') + '.';
+        }
+
+        // ============================================================
+        // FUSIÓN DE BITÁCORAS POR CONSECUTIVO
+        // ============================================================
+        function mergeBitacoras(existing, incoming) {
+            const map = new Map();
+            let mergeCount = 0;
+            const addOrMerge = (item) => {
+                const key = (item.bitacora && item.bitacora !== "N/D" && item.bitacora.trim())
+                    ? item.bitacora.trim().toUpperCase() : `__solo_${item.id}`;
+                if (map.has(key) && !key.startsWith("__solo_")) {
+                    const cur = map.get(key);
+                    const personasSet = new Set((cur.persona || "").split("\n").map(s => s.trim()).filter(Boolean));
+                    (item.persona || "").split("\n").map(s => s.trim()).filter(Boolean).forEach(p => personasSet.add(p));
+                    cur.persona = Array.from(personasSet).join("\n");
+                    if (item.asunto && item.asunto.trim()) {
+                        cur.asunto = (cur.asunto || "").trim() + "\n\n" + item.asunto.trim();
+                    }
+                    if ((!cur.tipo || cur.tipo === "BITÁCORA") && item.tipo) cur.tipo = item.tipo;
+                    if ((!cur.fecha || cur.fecha === "N/D") && item.fecha) cur.fecha = item.fecha;
+                    map.set(key, cur);
+                    mergeCount++;
+                } else {
+                    map.set(key, { ...item });
+                }
+            };
+            existing.forEach(addOrMerge);
+            incoming.forEach(addOrMerge);
+            return { list: Array.from(map.values()), mergeCount };
+        }
+
+        // ============================================================
+        // ORDENAR POR CONSECUTIVO (ej: PEI-060-2025 -> 60)
+        // Extrae el número del medio y ordena. N/D va al final.
+        // Si hay diferentes prefijos, agrupa por prefijo primero.
+        // ============================================================
+        function sortByConsecutivo(list) {
+            const parse = (b) => {
+                const c = (b.bitacora || "").trim().toUpperCase();
+                if (!c || c === "N/D") return { prefix: '~~~ZZZ', num: Infinity };
+                const m = c.match(/^(.*?PEI-)(\d+)(-\d{4})?/);
+                if (m) return { prefix: m[1], num: parseInt(m[2], 10) };
+                const anyNum = c.match(/\d+/);
+                return { prefix: c, num: anyNum ? parseInt(anyNum[0], 10) : 0 };
+            };
+            return [...list].sort((a, b) => {
+                const pa = parse(a), pb = parse(b);
+                // N/D o sin número: siempre al final
+                if (pa.num === Infinity && pb.num !== Infinity) return 1;
+                if (pb.num === Infinity && pa.num !== Infinity) return -1;
+                if (pa.prefix !== pb.prefix) return pa.prefix.localeCompare(pb.prefix);
+                return pa.num - pb.num;
+            });
+        }
+
+        // ============================================================
+        // LLAMADAS A IA (multi-formato)
+        // Retorna: { text } en éxito, o { error, status, raw } en fallo
+        // ============================================================
+        const SYSTEM_PROMPT = (input) => `Resume de forma profesional y muy breve (máximo 50 palabras, sin negritas ni asteriscos ni viñetas) las siguientes actividades educativas para una tabla de Excel:\n\n${input}\n\nResponda solo con el resumen.`;
+
+        async function callGeminiFormat(endpoint, prompt) {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${endpoint.model}:generateContent?key=${encodeURIComponent(endpoint.key)}`;
+            const body = { contents: [{ parts: [{ text: prompt }] }] };
+            let response, raw;
+            try {
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
+                raw = await response.text();
+            } catch (e) {
+                return { error: `Red: ${e.message}`, status: 0, raw: '' };
+            }
+            let data = null; try { data = JSON.parse(raw); } catch {}
+            if (!response.ok) return { error: data?.error?.message || `HTTP ${response.status}`, status: response.status, raw };
+            const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!text) return { error: "Respuesta vacía", status: 500, raw };
+            return { text: text.trim() };
+        }
+
+        async function callOpenAIFormat(endpoint, prompt) {
+            const providerCfg = PROVIDERS[endpoint.provider];
+            const url = endpoint.baseUrl || providerCfg.baseUrl;
+            const headers = { 'Content-Type': 'application/json' };
+            if (endpoint.key) headers['Authorization'] = `Bearer ${endpoint.key}`;
+            const body = {
+                model: endpoint.model,
+                messages: [{ role: "user", content: prompt }],
+                temperature: 0.3,
+                max_tokens: 300
+            };
+            let response, raw;
+            try {
+                response = await fetch(url, {
+                    method: 'POST',
+                    headers,
+                    body: JSON.stringify(body)
+                });
+                raw = await response.text();
+            } catch (e) {
+                return { error: `Red/CORS: ${e.message}`, status: 0, raw: '' };
+            }
+            let data = null; try { data = JSON.parse(raw); } catch {}
+            if (!response.ok) return { error: data?.error?.message || data?.message || `HTTP ${response.status}`, status: response.status, raw };
+            const text = data?.choices?.[0]?.message?.content;
+            if (!text) return { error: "Respuesta vacía", status: 500, raw };
+            return { text: text.trim() };
+        }
+
+        async function callAI(endpoint, text) {
+            const providerCfg = PROVIDERS[endpoint.provider];
+            if (!providerCfg) return { error: `Proveedor desconocido: ${endpoint.provider}`, status: 0, raw: '' };
+            const prompt = SYSTEM_PROMPT(text);
+            if (providerCfg.format === 'gemini') return callGeminiFormat(endpoint, prompt);
+            if (providerCfg.format === 'openai') return callOpenAIFormat(endpoint, prompt);
+            return { error: `Formato no soportado: ${providerCfg.format}`, status: 0, raw: '' };
+        }
+
+        function App() {
+            const [bitacoras, setBitacoras] = useState([]);
+            const [loading, setLoading] = useState(false);
+            const [toast, setToast] = useState(null);
+            const [aiLoadingId, setAiLoadingId] = useState(null);
+            const [showSettings, setShowSettings] = useState(false);
+            const [endpoints, setEndpoints] = useState([]); // Lista mixta de endpoints
+            const [diagnostico, setDiagnostico] = useState(null);
+            const [batchProgress, setBatchProgress] = useState(null);
+            const [tick, setTick] = useState(0);
+            const keyRotationRef = useRef(0);
+
+            // Form state para agregar nuevo endpoint
+            const [newProvider, setNewProvider] = useState("gemini");
+            const [newKey, setNewKey] = useState("");
+            const [newBaseUrl, setNewBaseUrl] = useState("");
+            const [newModel, setNewModel] = useState(PROVIDERS.gemini.defaultModel);
+            const [newLabel, setNewLabel] = useState("");
+
+            // Cargar endpoints de localStorage + migración
+            useEffect(() => {
+                if (window.pdfjsLib) {
+                    window.pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+                }
+                const stored = localStorage.getItem('bitacora_ai_endpoints');
+                if (stored) {
+                    try {
+                        const parsed = JSON.parse(stored);
+                        if (Array.isArray(parsed)) setEndpoints(parsed);
+                    } catch (e) { console.warn("Error al leer endpoints:", e); }
+                } else {
+                    // Migración desde formato anterior (solo Gemini keys)
+                    const oldArr = localStorage.getItem('bitacora_gemini_keys');
+                    const oldModel = localStorage.getItem('bitacora_gemini_model') || 'gemini-2.5-flash';
+                    let migrated = [];
+                    if (oldArr) {
+                        try {
+                            const parsed = JSON.parse(oldArr);
+                            if (Array.isArray(parsed)) {
+                                migrated = parsed.map((k, i) => ({
+                                    id: Date.now() + i,
+                                    provider: 'gemini',
+                                    key: k.key,
+                                    baseUrl: '',
+                                    model: oldModel,
+                                    label: k.label || `Gemini #${i + 1}`,
+                                    blockedUntil: null,
+                                    enabled: true
+                                }));
+                            }
+                        } catch {}
+                    } else {
+                        const oldKey = localStorage.getItem('bitacora_gemini_key');
+                        if (oldKey && oldKey.trim()) {
+                            migrated = [{ id: Date.now(), provider: 'gemini', key: oldKey.trim(), baseUrl: '', model: oldModel, label: 'Gemini migrada', blockedUntil: null, enabled: true }];
+                        }
+                    }
+                    if (migrated.length > 0) {
+                        setEndpoints(migrated);
+                        localStorage.setItem('bitacora_ai_endpoints', JSON.stringify(migrated));
+                    }
+                }
+            }, []);
+
+            // Timer para countdown de bloqueos
+            useEffect(() => {
+                const hayBloq = endpoints.some(k => k.blockedUntil && k.blockedUntil > Date.now());
+                if (!hayBloq) return;
+                const t = setInterval(() => setTick(v => v + 1), 1000);
+                return () => clearInterval(t);
+            }, [endpoints, tick]);
+
+            // Actualizar modelo por defecto cuando cambia el proveedor en el form
+            useEffect(() => {
+                const cfg = PROVIDERS[newProvider];
+                if (cfg) {
+                    setNewModel(cfg.defaultModel || '');
+                    setNewBaseUrl(cfg.defaultBaseUrl || '');
+                    setNewKey('');
+                }
+            }, [newProvider]);
+
+            const showToast = (message, type = 'success', duration = 5000) => {
+                setToast({ message, type });
+                setTimeout(() => setToast(null), duration);
+            };
+
+            const persistEndpoints = (list) => {
+                setEndpoints(list);
+                localStorage.setItem('bitacora_ai_endpoints', JSON.stringify(list));
+            };
+
+            const addEndpoint = () => {
+                const cfg = PROVIDERS[newProvider];
+                if (!cfg) return;
+                if (cfg.needsKey && !newKey.trim()) { showToast("Ingrese la API Key", "error"); return; }
+                if (cfg.needsBaseUrl && !newBaseUrl.trim()) { showToast("Ingrese la URL base", "error"); return; }
+                if (!newModel.trim()) { showToast("Ingrese o seleccione un modelo", "error"); return; }
+                const item = {
+                    id: Date.now(),
+                    provider: newProvider,
+                    key: newKey.trim(),
+                    baseUrl: newBaseUrl.trim(),
+                    model: newModel.trim(),
+                    label: newLabel.trim() || `${cfg.name} #${endpoints.filter(e => e.provider === newProvider).length + 1}`,
+                    blockedUntil: null,
+                    enabled: true
+                };
+                persistEndpoints([...endpoints, item]);
+                setNewKey(''); setNewLabel('');
+                showToast(`✅ ${cfg.name} agregado. Total: ${endpoints.length + 1}`);
+            };
+
+            const removeEndpoint = (id) => {
+                persistEndpoints(endpoints.filter(x => x.id !== id));
+                showToast("Endpoint eliminado");
+            };
+
+            const toggleEnabled = (id) => {
+                persistEndpoints(endpoints.map(x => x.id === id ? { ...x, enabled: !x.enabled } : x));
+            };
+
+            const updateEndpointField = (id, field, val) => {
+                persistEndpoints(endpoints.map(x => x.id === id ? { ...x, [field]: val } : x));
+            };
+
+            const markBlocked = (id, ms = 65000) => {
+                persistEndpoints(endpoints.map(x => x.id === id ? { ...x, blockedUntil: Date.now() + ms } : x));
+            };
+
+            const resetAllLocks = () => {
+                persistEndpoints(endpoints.map(x => ({ ...x, blockedUntil: null })));
+                showToast("🔓 Bloqueos reiniciados");
+            };
+
+            const getNextAvailable = () => {
+                const now = Date.now();
+                const available = endpoints.filter(k => k.enabled && (!k.blockedUntil || k.blockedUntil < now));
+                if (available.length === 0) return null;
+                const ep = available[keyRotationRef.current % available.length];
+                keyRotationRef.current++;
+                return ep;
+            };
+
+            // ============================================================
+            // Orquestador con rotación
+            // ============================================================
+            const callWithRotation = async (text) => {
+                if (endpoints.filter(e => e.enabled).length === 0) throw new Error("Sin endpoints activos. Agregue uno en ⚙️.");
+                const cleanInput = (text || "").replace(/\s+/g, ' ').trim();
+                if (cleanInput.length < 20) throw new Error("Texto muy corto.");
+
+                const maxAttempts = Math.max(1, endpoints.filter(e => e.enabled).length);
+                let lastError = null;
+
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                    const ep = getNextAvailable();
+                    if (!ep) {
+                        const now = Date.now();
+                        const activos = endpoints.filter(e => e.enabled);
+                        const proxima = Math.min(...activos.map(k => k.blockedUntil || Infinity));
+                        const segs = Math.ceil((proxima - now) / 1000);
+                        throw new Error(`Todos los ${activos.length} endpoints activos están agotados. Espere ${segs}s o agregue otro.`);
+                    }
+
+                    console.log(`[IA] Intento ${attempt + 1}/${maxAttempts}: ${PROVIDERS[ep.provider].name} · ${ep.model} · ${ep.label}`);
+
+                    const result = await callAI(ep, cleanInput);
+
+                    if (result.text) return result.text;
+
+                    // Manejo de error
+                    if (result.status === 429 || /quota|rate.?limit|too many/i.test(result.error || '')) {
+                        console.warn(`[IA] ${ep.label} agotado (429), rotando`);
+                        markBlocked(ep.id, 65000);
+                        lastError = new Error(`${ep.label} agotado`);
+                        continue;
+                    }
+
+                    // Otro tipo de error: mostrar diagnóstico y detener rotación (es config problem)
+                    setDiagnostico({
+                        provider: PROVIDERS[ep.provider].name,
+                        endpoint: ep.label,
+                        model: ep.model,
+                        status: result.status,
+                        error: result.error,
+                        raw: result.raw
+                    });
+                    throw new Error(`${PROVIDERS[ep.provider].name} (${ep.label}): ${result.error}`);
+                }
+                throw lastError || new Error("Falló tras rotar todos los endpoints.");
+            };
+
+            const handleSummarizeAI = async (id, text) => {
+                if (endpoints.filter(e => e.enabled).length === 0) {
+                    showToast("⚙️ Agregue al menos un endpoint IA o use el Local (⚡)", "error", 7000);
+                    setShowSettings(true);
+                    return;
+                }
+                setAiLoadingId(id);
+                try {
+                    const summary = await callWithRotation(text);
+                    setBitacoras(prev => prev.map(b => b.id === id ? { ...b, asunto: summary } : b));
+                    showToast("✨ Resumen IA generado.");
+                } catch (err) {
+                    console.error(err);
+                    showToast(`❌ ${err.message}`, "error", 10000);
+                } finally {
+                    setAiLoadingId(null);
+                }
+            };
+
+            const handleSummarizeLocal = (id, text) => {
+                const summary = localSummarize(text);
+                setBitacoras(prev => prev.map(b => b.id === id ? { ...b, asunto: summary } : b));
+                showToast("⚡ Resumen local generado.");
+            };
+
+            const handleSummarizeAllLocal = () => {
+                setBitacoras(prev => prev.map(b => ({ ...b, asunto: localSummarize(b.asunto) })));
+                showToast(`⚡ ${bitacoras.length} bitácoras resumidas localmente.`);
+            };
+
+            const handleSummarizeAllAI = async () => {
+                const activos = endpoints.filter(e => e.enabled).length;
+                if (activos === 0) { showToast("⚙️ Sin endpoints activos", "error"); setShowSettings(true); return; }
+                if (bitacoras.length === 0) return;
+
+                const pauseMs = Math.max(600, Math.round(2500 / activos));
+                if (bitacoras.length > 5) {
+                    const est = Math.ceil((bitacoras.length * pauseMs) / 1000);
+                    const ok = window.confirm(`Se procesarán ${bitacoras.length} bitácoras rotando entre ${activos} endpoint(s).\n\nTiempo estimado: ~${est}s\nPausa entre solicitudes: ${(pauseMs/1000).toFixed(1)}s\n\n¿Continuar?`);
+                    if (!ok) return;
+                }
+
+                const total = bitacoras.length;
+                const errores = [];
+                setBatchProgress({ current: 0, total, errors: 0 });
+
+                for (let i = 0; i < bitacoras.length; i++) {
+                    const b = bitacoras[i];
+                    setBatchProgress({ current: i + 1, total, errors: errores.length });
+                    setAiLoadingId(b.id);
+                    try {
+                        const summary = await callWithRotation(b.asunto);
+                        setBitacoras(prev => prev.map(x => x.id === b.id ? { ...x, asunto: summary } : x));
+                    } catch (err) {
+                        console.error(`Error en ${b.bitacora}:`, err);
+                        errores.push({ bitacora: b.bitacora, error: err.message });
+                        if (err.message.includes("agotados") || err.message.includes("Sin endpoints")) {
+                            showToast(`⛔ Batch detenido: ${err.message}`, "error", 12000);
+                            break;
+                        }
+                    }
+                    if (i < bitacoras.length - 1) await new Promise(r => setTimeout(r, pauseMs));
+                }
+
+                setAiLoadingId(null);
+                setBatchProgress(null);
+                const exit = total - errores.length;
+                if (errores.length === 0) showToast(`✨ ${total} resumidas con IA.`, "success", 6000);
+                else if (errores.length === total) showToast(`❌ Fallaron TODAS. Revise diagnóstico.`, "error", 10000);
+                else showToast(`⚠️ ${exit} exitosas, ${errores.length} fallidas.`, "error", 8000);
+            };
+
+            const handleMergeDuplicates = () => {
+                if (bitacoras.length < 2) { showToast("Se necesitan al menos 2 filas.", "error"); return; }
+                const { list, mergeCount } = mergeBitacoras([], bitacoras);
+                const sorted = sortByConsecutivo(list);
+                if (mergeCount === 0) { setBitacoras(sorted); showToast("Sin duplicados. Solo se ordenó por consecutivo.", "success"); return; }
+                setBitacoras(sorted);
+                showToast(`🔗 ${mergeCount} fila(s) fusionada(s) y ordenadas.`, "success", 6000);
+            };
+
+            const handleSortOnly = () => {
+                if (bitacoras.length < 2) { showToast("Se necesitan al menos 2 filas.", "error"); return; }
+                setBitacoras(sortByConsecutivo(bitacoras));
+                showToast(`↕️ ${bitacoras.length} filas ordenadas por consecutivo.`);
+            };
+
+            const testSingleEndpoint = async (ep) => {
+                showToast(`🔄 Probando ${PROVIDERS[ep.provider].name}...`, "success", 2000);
+                const result = await callAI(ep, "Prueba de conexión. Responda solo: OK");
+                if (result.text) {
+                    showToast(`✅ ${ep.label} funciona: "${result.text.substring(0, 60)}"`, "success", 6000);
+                    if (ep.blockedUntil) updateEndpointField(ep.id, 'blockedUntil', null);
+                } else {
+                    showToast(`❌ ${ep.label}: ${(result.error || '').substring(0, 100)}`, "error", 8000);
+                    setDiagnostico({
+                        provider: PROVIDERS[ep.provider].name, endpoint: ep.label, model: ep.model,
+                        status: result.status, error: result.error, raw: result.raw
+                    });
+                }
+            };
+
+            // --- EXTRACCIÓN DE DATOS (intacta) ---
+            const extractInfo = (fullText, pages) => {
+                const cleanText = fullText.replace(/\s+/g, ' ');
+                const textFlat = fullText.replace(/\s+/g, '').toUpperCase();
+                let consecutivo = "N/D";
+                const conMatch = textFlat.match(/([A-Z0-9]+-PEI-\d+-\d{4})/) || textFlat.match(/(PEI-\d+-\d{4})/);
+                if (conMatch) consecutivo = conMatch[0];
+                let tipo = "BITÁCORA";
+                if (/ATENCI.N\s*A\s*GRUPOS/i.test(cleanText)) tipo = "BITÁCORA DE ATENCIÓN A GRUPOS";
+                else if (/REUNI.N/i.test(cleanText)) tipo = "BITÁCORA DE ATENCIÓN A REUNIÓN";
+                const fMatch = cleanText.match(/(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4})/);
+                const fecha = fMatch ? fMatch[0] : "N/D";
+                if (tipo.includes("GRUPOS")) {
+                    let personas = [], contenidos = [];
+                    pages.forEach(p => {
+                        if (p.length < 100) return;
+                        const secMatch = p.match(/Secci[oó]n\s*[:\-\.]?\s*(\d{1,2}\s*[-\/_]\s*\d+(?:\s*[\/\\]\s*\d+)?(?:\s+[A-Z]\b)?)/i);
+                        let seccionStr = secMatch ? "Sección " + secMatch[1].replace(/\s+/g, '').toUpperCase() : "";
+                        let carreraStr = "";
+                        const catalogo = {
+                            "Contabilidad y Finanzas": /CONTABILIDAD\s*Y\s*FINANZAS/i,
+                            "Contabilidad y Costos": /CONTABILIDAD\s*Y\s*COSTOS/i,
+                            "Ejecutivo Comercial": /EJECUTIVO\s*COMERCIAL/i,
+                            "Desarrollo Web": /DESARROLLO\s*WEB/i,
+                            "Secretariado Ejecutivo": /SECRETARIADO\s*EJECUTIVO/i,
+                            "Ciberseguridad": /CIBERSEGURIDAD/i,
+                            "Contabilidad": /CONTABILIDAD/i
+                        };
+                        for (const [n, r] of Object.entries(catalogo)) if (r.test(p)) { carreraStr = n; break; }
+                        const ident = (seccionStr + (carreraStr ? " - " + carreraStr : "")).trim() || "Grupo Estudiantes";
+                        if (!personas.includes(ident)) {
+                            personas.push(ident);
+                            const m = p.match(/(?:Unidad|Resultado|Actividades|OPORTUNIDADES)[\s\S]*?(?=Nombre del docente|Firma|Recibido|$)/i);
+                            const as = m ? m[0].replace(/\s+/g, ' ')
+                                .replace(/Unidad de estudio:?/gi, "\n• Unidad: ")
+                                .replace(/Resultado de aprendizaje:?/gi, "\n• Resultado: ")
+                                .replace(/Actividades:?/gi, "\n• Actividades: ")
+                                .replace(/Observaciones:?/gi, "\n• Observaciones: ").trim() : "";
+                            contenidos.push(`--- ${ident} ---\n${as}`);
+                        }
+                    });
+                    return { id: Math.random(), bitacora: consecutivo, tipo, fecha, persona: personas.join("\n"), asunto: contenidos.join("\n\n") };
+                }
+                return { id: Math.random(), bitacora: consecutivo, tipo, fecha, persona: "Dirección / Técnica", asunto: cleanText.substring(0, 1000) };
+            };
+
+            const handleFileUpload = async (e) => {
+                const files = Array.from(e.target.files);
+                if (!files.length) return;
+                setLoading(true);
+                const results = [];
+                for (const file of files) {
+                    try {
+                        const ab = await file.arrayBuffer();
+                        const pdf = await window.pdfjsLib.getDocument(ab).promise;
+                        let fullText = "", pages = [];
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const page = await pdf.getPage(i);
+                            const c = await page.getTextContent();
+                            const t = c.items.map(s => s.str).join(" ");
+                            pages.push(t);
+                            fullText += t + " ";
+                        }
+                        results.push(extractInfo(fullText, pages));
+                    } catch (err) { showToast("Error en: " + file.name, "error"); }
+                }
+                setBitacoras(prev => {
+                    const { list, mergeCount } = mergeBitacoras(prev, results);
+                    const sorted = sortByConsecutivo(list);
+                    if (mergeCount > 0) setTimeout(() => showToast(`✅ ${results.length} PDF(s) procesados. ${mergeCount} fusionado(s). Ordenado por consecutivo.`, "success", 6000), 100);
+                    else setTimeout(() => showToast(`✅ ${results.length} PDF(s) procesados y ordenados.`), 100);
+                    return sorted;
+                });
+                setLoading(false);
+                e.target.value = null;
+            };
+
+            const updateCell = (id, field, val) => {
+                setBitacoras(prev => {
+                    const updated = prev.map(b => b.id === id ? { ...b, [field]: val } : b);
+                    // Si se editó el consecutivo, reordenar automáticamente
+                    return field === 'bitacora' ? sortByConsecutivo(updated) : updated;
+                });
+            };
+
+            const now = Date.now();
+            const activos = endpoints.filter(e => e.enabled && (!e.blockedUntil || e.blockedUntil < now)).length;
+            const bloqueados = endpoints.filter(e => e.enabled && e.blockedUntil && e.blockedUntil > now).length;
+            const deshabilitados = endpoints.filter(e => !e.enabled).length;
+
+            const newProviderCfg = PROVIDERS[newProvider];
+
+            return (
+                <div className="max-w-7xl mx-auto py-10 px-4">
+                    <header className="bg-white p-8 rounded-3xl shadow-xl border border-gray-100 text-center mb-8 relative">
+                        <div className="absolute top-0 left-0 w-full h-2 bg-green-500"></div>
+                        <div className="absolute right-6 top-6">
+                            <button onClick={() => setShowSettings(!showSettings)} className="relative text-gray-400 hover:text-green-600 p-2" title="Configuración">
+                                <IconSettings />
+                                {endpoints.length > 0 && (
+                                    <span className="absolute -top-1 -right-1 bg-purple-600 text-white text-[10px] font-bold rounded-full w-5 h-5 flex items-center justify-center">{endpoints.length}</span>
+                                )}
+                            </button>
+                        </div>
+                        <h1 className="text-4xl font-black text-gray-800 flex justify-center items-center gap-4">
+                            <IconFile /> Generador PEI
+                        </h1>
+                        <p className="text-gray-500 mt-2">Carga tus bitácoras y genera el cuadro para Excel automáticamente.</p>
+                        <div className="mt-4 flex flex-wrap items-center justify-center gap-3 text-xs">
+                            <span className="inline-flex items-center gap-2 bg-green-50 border border-green-200 text-green-800 px-3 py-1.5 rounded-full font-semibold">
+                                <IconBolt /> Resumidor Local: siempre disponible
+                            </span>
+                            <span className={`inline-flex items-center gap-2 border px-3 py-1.5 rounded-full font-semibold ${activos > 0 ? 'bg-purple-50 border-purple-200 text-purple-800' : 'bg-amber-50 border-amber-200 text-amber-800'}`}>
+                                <IconSparkles /> IA: {endpoints.length === 0 ? 'sin endpoints' : `${activos} activo(s)${bloqueados > 0 ? ` · ${bloqueados} bloqueado(s)` : ''}${deshabilitados > 0 ? ` · ${deshabilitados} deshab.` : ''}`}
+                            </span>
+                        </div>
+                    </header>
+
+                    {showSettings && (
+                        <div className="bg-blue-50 border-2 border-blue-200 rounded-3xl p-6 mb-8">
+                            <h3 className="font-bold text-blue-900 mb-2 text-lg">🔑 Endpoints de IA (multi-proveedor)</h3>
+                            <p className="text-blue-700 text-sm mb-4">
+                                Agregue endpoints de <b>cualquier proveedor</b>: Gemini, Groq, DeepSeek, OpenRouter, Mistral, Cerebras, Ollama, LM Studio, OpenAI o cualquier API OpenAI-compatible. El sistema rota entre todos los endpoints activos y salta al siguiente cuando uno alcanza su cuota.
+                            </p>
+
+                            {/* Lista de endpoints */}
+                            {endpoints.length > 0 && (
+                                <div className="space-y-2 mb-4">
+                                    {endpoints.map((ep, idx) => {
+                                        const cfg = PROVIDERS[ep.provider] || { name: '?', color: 'bg-gray-100 text-gray-800 border-gray-300' };
+                                        const blocked = ep.blockedUntil && ep.blockedUntil > now;
+                                        const segs = blocked ? Math.ceil((ep.blockedUntil - now) / 1000) : 0;
+                                        return (
+                                            <div key={ep.id} className={`bg-white p-3 rounded-xl border-2 ${!ep.enabled ? 'border-gray-200 opacity-50' : blocked ? 'border-red-200' : 'border-gray-100'}`}>
+                                                <div className="flex items-center gap-2 flex-wrap">
+                                                    <span className="text-xs font-bold text-gray-400 w-6">#{idx + 1}</span>
+                                                    <span className={`text-[10px] font-bold uppercase px-2 py-1 rounded-lg border ${cfg.color}`}>{cfg.name}</span>
+                                                    <input value={ep.label} onChange={e => updateEndpointField(ep.id, 'label', e.target.value)} className="text-xs font-semibold bg-transparent outline-none border-b border-transparent focus:border-blue-300 w-32" />
+                                                    <span className="text-[10px] font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded">{ep.model}</span>
+                                                    {ep.key && <span className="font-mono text-[10px] text-gray-400">...{ep.key.slice(-4)}</span>}
+                                                    {ep.baseUrl && <span className="font-mono text-[10px] text-gray-400 truncate max-w-[200px]">{ep.baseUrl}</span>}
+                                                    <span className="flex-1"></span>
+                                                    {!ep.enabled ? (
+                                                        <span className="text-gray-500 text-[10px] font-bold bg-gray-100 px-2 py-1 rounded-lg">⏹ Deshab.</span>
+                                                    ) : blocked ? (
+                                                        <span className="text-red-600 text-[10px] font-bold bg-red-50 px-2 py-1 rounded-lg">⏸ {segs}s</span>
+                                                    ) : (
+                                                        <span className="text-green-600 text-[10px] font-bold bg-green-50 px-2 py-1 rounded-lg">✓ Activo</span>
+                                                    )}
+                                                    <button onClick={() => testSingleEndpoint(ep)} className="text-purple-600 hover:bg-purple-50 p-1.5 rounded-lg text-xs" title="Probar">🧪</button>
+                                                    <button onClick={() => toggleEnabled(ep.id)} className="text-gray-600 hover:bg-gray-50 p-1.5 rounded-lg text-xs" title={ep.enabled ? 'Deshabilitar' : 'Habilitar'}>{ep.enabled ? '⏸' : '▶'}</button>
+                                                    <button onClick={() => removeEndpoint(ep.id)} className="text-red-600 hover:bg-red-50 p-1.5 rounded-lg" title="Eliminar"><IconTrash2 /></button>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                    {bloqueados > 0 && (
+                                        <button onClick={resetAllLocks} className="text-xs text-blue-700 underline hover:text-blue-900">🔓 Desbloquear todos manualmente</button>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* Agregar nuevo endpoint */}
+                            <div className="bg-white border-2 border-blue-300 rounded-2xl p-4">
+                                <h4 className="font-bold text-blue-900 mb-3 text-sm">➕ Agregar endpoint</h4>
+                                
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-blue-900 mb-1 uppercase">Proveedor</label>
+                                        <select value={newProvider} onChange={e => setNewProvider(e.target.value)} className="w-full px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 bg-white text-sm">
+                                            {Object.entries(PROVIDERS).map(([id, cfg]) => (
+                                                <option key={id} value={id}>{cfg.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label className="block text-[10px] font-bold text-blue-900 mb-1 uppercase">Etiqueta (opcional)</label>
+                                        <input value={newLabel} onChange={e => setNewLabel(e.target.value)} placeholder="Ej: Cuenta trabajo" className="w-full px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 text-sm" />
+                                    </div>
+                                </div>
+
+                                {newProviderCfg && (
+                                    <>
+                                        <div className={`text-xs mb-3 px-3 py-2 rounded-lg ${newProviderCfg.color}`}>
+                                            💡 <b>{newProviderCfg.name}:</b> {newProviderCfg.note}
+                                            {newProviderCfg.signupUrl && <> · <a href={newProviderCfg.signupUrl} target="_blank" rel="noopener" className="underline font-bold">Obtener acceso</a></>}
+                                        </div>
+
+                                        {newProviderCfg.needsKey && (
+                                            <div className="mb-3">
+                                                <label className="block text-[10px] font-bold text-blue-900 mb-1 uppercase">API Key</label>
+                                                <input type="password" value={newKey} onChange={e => setNewKey(e.target.value)} placeholder={newProviderCfg.keyPlaceholder} className="w-full px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 font-mono text-sm" />
+                                            </div>
+                                        )}
+
+                                        {newProviderCfg.needsBaseUrl && (
+                                            <div className="mb-3">
+                                                <label className="block text-[10px] font-bold text-blue-900 mb-1 uppercase">URL base</label>
+                                                <input value={newBaseUrl} onChange={e => setNewBaseUrl(e.target.value)} placeholder={newProviderCfg.baseUrlPlaceholder} className="w-full px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 font-mono text-sm" />
+                                            </div>
+                                        )}
+
+                                        <div className="mb-3">
+                                            <label className="block text-[10px] font-bold text-blue-900 mb-1 uppercase">Modelo</label>
+                                            {newProviderCfg.models.length > 0 ? (
+                                                <div className="flex gap-2">
+                                                    <select value={newProviderCfg.models.includes(newModel) ? newModel : '__custom__'} onChange={e => e.target.value !== '__custom__' && setNewModel(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 bg-white text-sm">
+                                                        {newProviderCfg.models.map(m => <option key={m} value={m}>{m}</option>)}
+                                                        <option value="__custom__">✏️ Escribir otro...</option>
+                                                    </select>
+                                                    <input value={newModel} onChange={e => setNewModel(e.target.value)} className="flex-1 px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 font-mono text-sm" />
+                                                </div>
+                                            ) : (
+                                                <input value={newModel} onChange={e => setNewModel(e.target.value)} placeholder="Ej: gpt-4o-mini" className="w-full px-3 py-2 rounded-lg border border-blue-300 outline-none focus:ring-2 focus:ring-blue-100 font-mono text-sm" />
+                                            )}
+                                        </div>
+                                    </>
+                                )}
+
+                                <button onClick={addEndpoint} className="w-full bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 flex items-center justify-center gap-2"><IconPlus /> Agregar endpoint</button>
+                            </div>
+
+                            <button onClick={() => setShowSettings(false)} className="mt-4 bg-white border border-gray-300 text-gray-600 px-6 py-2 rounded-xl font-bold hover:bg-gray-50">Cerrar</button>
+                        </div>
+                    )}
+
+                    {diagnostico && (
+                        <div className="bg-red-50 border-2 border-red-300 rounded-3xl p-6 mb-8">
+                            <div className="flex justify-between items-start mb-3">
+                                <h3 className="font-bold text-red-900 text-lg">🔬 Diagnóstico técnico</h3>
+                                <button onClick={() => setDiagnostico(null)} className="text-red-600 font-bold text-xl">✕</button>
+                            </div>
+                            <div className="text-sm text-red-800 space-y-2 font-mono bg-white p-4 rounded-xl border border-red-200 overflow-x-auto">
+                                {diagnostico.provider && <div><b>Proveedor:</b> {diagnostico.provider}</div>}
+                                {diagnostico.endpoint && <div><b>Endpoint:</b> {diagnostico.endpoint}</div>}
+                                {diagnostico.model && <div><b>Modelo:</b> {diagnostico.model}</div>}
+                                {diagnostico.status !== undefined && <div><b>HTTP Status:</b> {diagnostico.status}</div>}
+                                {diagnostico.error && <div><b>Error:</b> {diagnostico.error}</div>}
+                                <div className="mt-3">
+                                    <b>Respuesta cruda:</b>
+                                    <pre className="mt-1 text-xs whitespace-pre-wrap bg-gray-50 p-2 rounded max-h-60 overflow-y-auto">{diagnostico.raw || "(vacío)"}</pre>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="flex flex-col md:flex-row gap-6 mb-8 items-stretch">
+                        <div className="flex-1 bg-white p-6 rounded-3xl shadow-lg border border-gray-100 relative group cursor-pointer hover:border-green-300 transition-all text-center">
+                            <input type="file" multiple accept=".pdf" onChange={handleFileUpload} className="absolute inset-0 opacity-0 cursor-pointer z-10" disabled={loading} />
+                            <div className={`p-4 inline-block rounded-2xl mb-2 ${loading ? 'bg-gray-100' : 'bg-green-50 text-green-600'}`}>
+                                {loading ? <div className="animate-spin h-8 w-8 border-4 border-green-600 border-t-transparent rounded-full"></div> : <IconUpload />}
+                            </div>
+                            <div className="font-bold text-gray-700 block">{loading ? "Procesando..." : "Subir Bitácoras PDF"}</div>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <button onClick={handleSummarizeAllLocal} disabled={bitacoras.length === 0 || batchProgress} className="bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconBolt /> Resumir TODAS (Local)</button>
+                            <button onClick={handleSummarizeAllAI} disabled={bitacoras.length === 0 || batchProgress} className="bg-purple-600 hover:bg-purple-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconSparkles /> Resumir TODAS (IA · {activos} activos)</button>
+                            <button onClick={() => {
+                                const rows = bitacoras.map(b => [b.bitacora, b.tipo, `"${b.asunto.replace(/"/g, '""')}"`, b.fecha, `"${b.persona.replace(/"/g, '""')}"`].join("\t")).join("\n");
+                                const txt = document.createElement("textarea"); txt.value = rows; document.body.appendChild(txt); txt.select(); document.execCommand("copy"); document.body.removeChild(txt);
+                                showToast("📋 Copiado. Pega en Excel.");
+                            }} disabled={bitacoras.length === 0} className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg disabled:opacity-40"><IconCopy /> Copiar Tabla</button>
+                            <button onClick={handleMergeDuplicates} disabled={bitacoras.length < 2 || batchProgress} className="bg-white border-2 border-blue-200 text-blue-700 px-6 py-2 rounded-2xl font-bold hover:bg-blue-50 text-sm disabled:opacity-40">🔗 Combinar duplicados</button>
+                            <button onClick={handleSortOnly} disabled={bitacoras.length < 2 || batchProgress} className="bg-white border-2 border-blue-200 text-blue-700 px-6 py-2 rounded-2xl font-bold hover:bg-blue-50 text-sm disabled:opacity-40">↕️ Ordenar por consecutivo</button>
+                            <button onClick={() => setBitacoras([])} disabled={batchProgress} className="bg-white border-2 border-red-100 text-red-600 px-6 py-2 rounded-2xl font-bold hover:bg-red-50 text-sm disabled:opacity-40">Limpiar</button>
+                        </div>
+                    </div>
+
+                    {batchProgress && (
+                        <div className="bg-purple-50 border-2 border-purple-300 rounded-3xl p-5 mb-6">
+                            <div className="flex items-center justify-between mb-2">
+                                <div className="flex items-center gap-3 text-purple-900 font-bold">
+                                    <div className="animate-spin h-5 w-5 border-2 border-purple-600 border-t-transparent rounded-full"></div>
+                                    Procesando: {batchProgress.current} de {batchProgress.total}
+                                </div>
+                                <span className="text-xs text-purple-700">
+                                    {activos}/{endpoints.filter(e => e.enabled).length} activos
+                                    {batchProgress.errors > 0 && <span className="ml-2 text-red-700 font-bold">⚠️ {batchProgress.errors} error(es)</span>}
+                                </span>
+                            </div>
+                            <div className="w-full bg-purple-200 rounded-full h-3 overflow-hidden">
+                                <div className="bg-purple-600 h-full transition-all duration-500 rounded-full" style={{ width: `${(batchProgress.current / batchProgress.total) * 100}%` }}></div>
+                            </div>
+                        </div>
+                    )}
+
+                    <div className="bg-white rounded-3xl shadow-2xl border border-gray-200 overflow-hidden overflow-x-auto">
+                        <table className="w-full border-collapse table-fixed min-w-[1200px]">
+                            <thead>
+                                <tr className="bg-gray-800 text-white text-center font-black py-4 uppercase"><th colSpan="5" className="py-4">Consecutivos Bitácoras PEI</th></tr>
+                                <tr className="bg-[#558235] text-white text-left font-bold text-[10px] uppercase tracking-wider">
+                                    <th className="p-4 w-[15%] border-r border-green-600/30">N° bitácora</th>
+                                    <th className="p-4 w-[20%] border-r border-green-600/30">Tipo</th>
+                                    <th className="p-4 w-[35%] border-r border-green-600/30">Asunto</th>
+                                    <th className="p-4 w-[10%] border-r border-green-600/30">Fecha</th>
+                                    <th className="p-4 w-[20%]">Persona atendida</th>
+                                </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-100">
+                                {bitacoras.length === 0 ? (
+                                    <tr><td colSpan="5" className="p-20 text-center text-gray-300 italic text-xl font-light">Sube tus archivos PDF para comenzar...</td></tr>
+                                ) : bitacoras.map(b => (
+                                    <tr key={b.id} className="group hover:bg-blue-50/20">
+                                        <td className="p-4 bg-gray-500 text-white relative align-top font-mono text-[11px] font-bold">
+                                            <div contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'bitacora', e.target.innerText)} className="outline-none focus:ring-2 focus:ring-white p-1 rounded">{b.bitacora}</div>
+                                            <button onClick={() => setBitacoras(prev => prev.filter(x => x.id !== b.id))} className="absolute right-2 top-2 p-2 bg-white rounded-xl shadow-lg text-red-600 hover:scale-110 opacity-0 group-hover:opacity-100" title="Eliminar"><IconTrash2 /></button>
+                                        </td>
+                                        <td className="p-4 text-[10px] align-top text-gray-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'tipo', e.target.innerText)}>{b.tipo}</td>
+                                        <td className="p-4 align-top relative">
+                                            <div className={`text-[11px] whitespace-pre-wrap leading-relaxed pr-16 ${aiLoadingId === b.id ? 'opacity-40 animate-pulse text-purple-800' : 'text-gray-800'}`} contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'asunto', e.target.innerText)}>
+                                                {aiLoadingId === b.id ? "Generando resumen..." : b.asunto}
+                                            </div>
+                                            <div className="absolute right-2 top-2 flex flex-col gap-1 opacity-0 group-hover:opacity-100">
+                                                <button onClick={() => handleSummarizeLocal(b.id, b.asunto)} className="p-2 bg-green-600 text-white rounded-xl shadow-lg hover:scale-110 hover:bg-green-700" title="Local"><IconBolt /></button>
+                                                <button onClick={() => handleSummarizeAI(b.id, b.asunto)} disabled={aiLoadingId === b.id} className="p-2 bg-purple-600 text-white rounded-xl shadow-lg hover:scale-110 hover:bg-purple-700 disabled:opacity-50" title="IA"><IconSparkles /></button>
+                                            </div>
+                                        </td>
+                                        <td className="p-4 text-center text-xs font-bold align-top text-gray-500" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'fecha', e.target.innerText)}>{b.fecha}</td>
+                                        <td className="p-4 text-[11px] align-top whitespace-pre-wrap font-semibold text-gray-600" contentEditable suppressContentEditableWarning onBlur={(e) => updateCell(b.id, 'persona', e.target.innerText)}>{b.persona}</td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <footer className="text-center text-gray-400 text-xs mt-8">
+                        <p>💡 <b>⚡ Verde</b>: local · <b>✨ Morado</b>: IA con rotación multi-proveedor ({endpoints.length} configurados)</p>
+                    </footer>
+
+                    {toast && (
+                        <div className={`fixed bottom-10 left-1/2 -translate-x-1/2 px-6 py-4 rounded-3xl shadow-2xl z-50 flex items-center gap-3 font-bold border-2 max-w-2xl ${toast.type === 'error' ? 'bg-red-50 border-red-200 text-red-700' : 'bg-gray-900 border-gray-700 text-white'}`}>
+                            {toast.type !== 'error' && <div className="bg-green-500 rounded-full p-1 flex-shrink-0"><svg className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"/></svg></div>}
+                            <span className="text-sm">{toast.message}</span>
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
